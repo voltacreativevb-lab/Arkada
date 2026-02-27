@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arena Skener</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 20px; background: #121212; color: white; }
+        #reader { width: 100%; max-width: 400px; margin: auto; border-radius: 10px; overflow: hidden; }
+        input { width: 80%; padding: 12px; margin: 10px 0; border-radius: 5px; border: none; }
+        button { padding: 12px 20px; background: #00ff88; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        #status { margin-top: 20px; color: #00ff88; }
+    </style>
+</head>
+<body>
+    <h2>🏆 Arkada Turnir</h2>
+    <p>Unesite svoj Email i skenirajte aparat</p>
+    
+    <input type="email" id="email" placeholder="Vaš Email" required>
+    <div id="reader"></div>
+    <p id="status"></p>
+
+    <script>
+        const html5QrCode = new Html5Qrcode("reader");
+        const statusText = document.getElementById('status');
+
+        const onScanSuccess = (decodedText, decodedResult) => {
+            const email = document.getElementById('email').value;
+            if(!email) {
+                alert("Molimo unesite email prvo!");
+                return;
+            }
+
+            html5QrCode.stop(); // Zaustavi kameru nakon skeniranja
+            statusText.innerText = "Slanje podataka...";
+
+            // Šaljemo podatke tvom Render serveru
+            fetch('/skeniraj', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, aparatId: decodedText })
+            })
+            .then(res => res.json())
+            .then(data => {
+                statusText.innerText = "Uspešno! Možete početi sa igrom.";
+                alert("Srećno! Aparat je aktiviran.");
+            })
+            .catch(err => {
+                statusText.innerText = "Greška pri slanju.";
+                console.error(err);
+            });
+        };
+
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
+    </script>
+</body>
+</html>
