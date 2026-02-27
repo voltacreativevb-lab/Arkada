@@ -13,10 +13,11 @@ app.use(express.json());
 const supabase = createClient('https://wdnndorxgdzhlytqkyvh.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indkbm5kb3J4Z2R6aGx5dHFreXZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNzIzMDQsImV4cCI6MjA4Nzc0ODMwNH0.O5PxSn58e0m8uy9zXSraGs9FfxCzUgVcxKF-8SqNgbU');
 
 // 2. POVEZIVANJE NA MQTT (HIVEMQ)
-const mqttClient = mqtt.connect('mqtts://TVOJ_CLUSTER_URL_OVDE', {
+const mqttClient = mqtt.connect('mqtts://8444eb8746d2443a864e05dee69c84bc.s1.eu.hivemq.cloud', { // Ovde ide onaj dugi URL
     port: 8883,
-    username: 'admin',
-    password: 'Sifra123'
+    username: 'Volta',      // Korisnik kojeg si napravio u Access Management
+    password: 'Arkadavolta2026', // Šifra koju si mu dodelio
+    rejectUnauthorized: false // Važno za Render da bi prihvatio SSL sertifikat
 });
 
 // POSLUŽIVANJE HTML STRANICE
