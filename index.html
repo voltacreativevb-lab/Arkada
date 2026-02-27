@@ -3,32 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prijava Tiketa</title>
+    <title>Prijava Tiketa | Volta ARKADA</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; background: #1a1a1a; color: white; }
-        #reader { width: 100%; max-width: 500px; margin: 20px auto; border: 2px solid #00ff88; border-radius: 15px; overflow: hidden; }
-        .input-group { margin-bottom: 20px; }
-        input { width: 85%; padding: 15px; border-radius: 8px; border: none; font-size: 16px; }
-        .instructions { color: #aaa; font-size: 14px; margin-bottom: 10px; }
-        #status { font-weight: bold; margin-top: 20px; padding: 15px; border-radius: 8px; display: none; }
-        .success { background: #004422; color: #00ff88; display: block !important; }
-        .error { background: #440000; color: #ff4444; display: block !important; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; text-align: center; padding: 20px; background: #121212; color: white; margin: 0; }
+        .container { max-width: 500px; margin: auto; padding-top: 20px; }
+        h2 { color: #00ff88; text-transform: uppercase; letter-spacing: 2px; }
+        #reader { width: 100%; border: 2px solid #333; border-radius: 15px; overflow: hidden; background: #000; }
+        .input-group { margin: 20px 0; }
+        input { width: 90%; padding: 15px; border-radius: 10px; border: 2px solid #333; background: #1a1a1a; color: white; font-size: 16px; outline: none; transition: 0.3s; }
+        input:focus { border-color: #00ff88; }
+        .instructions { color: #888; font-size: 14px; margin-bottom: 10px; }
+        #status { margin-top: 20px; padding: 15px; border-radius: 10px; font-weight: bold; display: none; line-height: 1.5; }
+        .success { background: #004422; color: #00ff88; display: block !important; border: 1px solid #00ff88; }
+        .error { background: #440000; color: #ff4444; display: block !important; border: 1px solid #ff4444; }
+        .loading { background: #333; color: #fff; display: block !important; }
     </style>
 </head>
 <body>
-    <h2>🎟️ Aktiviraj svoj tiket u Volta ARKADI</h2>
-    <p class="instructions">Unesite email i skenirajte barkod sa vašeg tiketa</p>
-    
-    <div class="input-group">
-        <input type="email" id="email" placeholder="Vaš Email" required>
+    <div class="container">
+        <h2>⚡ Volta ARKADA</h2>
+        <p class="instructions">Unesite email i skenirajte barkod sa tiketa</p>
+        
+        <div class="input-group">
+            <input type="email" id="email" placeholder="Vaš Email" required>
+        </div>
+
+        <div id="reader"></div>
+        <div id="status"></div>
     </div>
 
-    <div id="reader"></div>
-    <div id="status"></div>
-
     <script>
-        // Konfiguracija skenera da čita i QR i Bar kodove (Code 128, EAN, itd.)
+        // 1. Automatski saznajemo koji je aparat u pitanju iz URL-a (npr. ?aparat=5)
+        const urlParams = new URLSearchParams(window.location.search);
+        const mojAparat = urlParams.get('aparat') || "APARAT_1";
+
         const html5QrCode = new Html5Qrcode("reader");
         const statusDiv = document.getElementById('status');
 
@@ -36,46 +45,63 @@
             const email = document.getElementById('email').value;
             
             if(!email || !email.includes('@')) {
-                alert("Molimo unesite ispravan email pre skeniranja tiketa!");
+                alert("Greška: Morate uneti ispravan Email pre skeniranja!");
                 return;
             }
 
-            // Zaustavi kameru da ne skenira više puta isti tiket
-            html5QrCode.stop();
-            
-            statusDiv.className = ""; 
-            statusDiv.innerText = "Proveravam tiket: " + decodedText;
-            statusDiv.classList.add('success');
+            // Pauziraj skener i pokaži da radimo proveru
+            html5QrCode.pause(true); 
+            statusDiv.className = "loading";
+            statusDiv.innerText = "⏳ Provera tiketa u toku...";
 
-            // Šaljemo Email i Barkod Tiketa na tvoj Render
+            // 2. Šaljemo podatke na Render
             fetch('/skeniraj', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     email: email, 
                     tiketId: decodedText,
-                    aparatId: "APARAT_1" // Ovo možeš menjati po aparatu
+                    aparatId: mojAparat 
                 })
             })
-            .then(res => res.json())
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok) {
+                    // Ako server vrati grešku (npr. Tiket je iskorišćen)
+                    throw new Error(data.message || "Greška na serveru");
+                }
+                return data;
+            })
             .then(data => {
-                statusDiv.innerText = "Tiket prihvaćen! Srećno u igri!";
+                // SCENARIO: USPEH
+                statusDiv.className = "success";
+                statusDiv.innerHTML = "✅ TIKET PRIHVAĆEN!<br>Uređaj se aktivira... Srećno!";
+                console.log("Server kaže:", data.message);
             })
             .catch(err => {
+                // SCENARIO: GREŠKA (Tiket već iskorišćen ili mrežna greška)
                 statusDiv.className = "error";
-                statusDiv.innerText = "Greška pri povezivanju sa serverom.";
+                statusDiv.innerHTML = "❌ " + err.message;
+                
+                // Resetuj skener nakon 4 sekunde da igrač može da proba drugi tiket
+                setTimeout(() => {
+                    statusDiv.style.display = "none";
+                    html5QrCode.resume();
+                }, 4000);
             });
         };
 
-        // Podešavanja za bolji fokus na barkodove
         const config = { 
-            fps: 20, 
-            qrbox: { width: 300, height: 150 }, // Pravougaoni oblik je bolji za barkod
+            fps: 15, 
+            qrbox: { width: 300, height: 150 }, 
             aspectRatio: 1.0 
         };
 
-        // Pokreni kameru (zadnju)
-        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
+        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
+        .catch(err => {
+            statusDiv.className = "error";
+            statusDiv.innerText = "Kamera nije dostupna. Proverite dozvole.";
+        });
     </script>
 </body>
 </html>
