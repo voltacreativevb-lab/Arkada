@@ -3,8 +3,25 @@ const { createClient } = require('@supabase/supabase-js');
 const mqtt = require('mqtt');
 const cron = require('node-cron');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
+// Da bi server mogao da čita JSON podatke sa sajta
+app.use(express.json());
+
+// Kada neko poseti tvoj link, otvori index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Ruta koja prima podatke sa skenera
+app.post('/skeniraj', async (req, res) => {
+    const { email, aparatId } = req.body;
+    console.log(`Igrač ${email} je skenirao aparat ${aparatId}`);
+    
+    // Ovde ćemo kasnije dodati Supabase kod da upiše "tiket"
+    res.json({ message: "Uspešno skenirano!" });
+});
 app.use(cors());
 app.use(express.json());
 
