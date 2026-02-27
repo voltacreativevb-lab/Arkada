@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 // OVDE UNESI SVOJE PODATKE SA SUPABASE-A
-const supabase = createClient('TVOJ_URL_OVDE', 'TVOJ_ANON_KEY_OVDE');
+const supabase = createClient('https://wdnndorxgdzhlytqkyvh.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indkbm5kb3J4Z2R6aGx5dHFreXZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNzIzMDQsImV4cCI6MjA4Nzc0ODMwNH0.O5PxSn58e0m8uy9zXSraGs9FfxCzUgVcxKF-8SqNgbU');
 
 // OVDE UNESI SVOJE PODATKE SA HIVEMQ-A
 const mqttClient = mqtt.connect('mqtts://TVOJ_CLUSTER_URL_OVDE', {
