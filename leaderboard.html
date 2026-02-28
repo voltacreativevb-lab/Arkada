@@ -23,11 +23,9 @@
             align-items: center;
             min-height: 100vh;
             overflow: hidden;
-            background-image: 
-                radial-gradient(circle at 50% 50%, #1a1a2e 0%, #05050a 100%);
+            background-image: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #05050a 100%);
         }
 
-        /* Suptilna pozadinska animacija skeniranja */
         body::before {
             content: "";
             position: absolute;
@@ -105,10 +103,9 @@
         td:last-child { border-radius: 0 10px 10px 0; border-right: 1px solid rgba(255, 255, 255, 0.05); }
 
         .rank { font-weight: bold; color: var(--neon-cyan); width: 50px; }
-        .barcode { font-family: 'Orbitron', sans-serif; letter-spacing: 2px; }
+        .player-name { font-family: 'Orbitron', sans-serif; letter-spacing: 1px; font-size: 1.1rem; }
         .score { text-align: right; font-size: 1.5rem; color: var(--neon-magenta); font-weight: bold; }
 
-        /* Stil za prvo mesto */
         tr:first-child td {
             background: rgba(0, 242, 255, 0.05);
             border-color: rgba(0, 242, 255, 0.2);
@@ -128,10 +125,6 @@
             font-weight: bold;
             text-decoration: none;
             transition: 0.3s;
-        }
-
-        .volta-brand:hover {
-            text-shadow: 0 0 10px var(--neon-cyan);
         }
 
         .status-dot {
@@ -162,7 +155,7 @@
         <thead>
             <tr>
                 <th>#</th>
-                <th>Player ID</th>
+                <th>Player</th>
                 <th style="text-align: right;">Score</th>
             </tr>
         </thead>
@@ -183,30 +176,37 @@
 
     async function fetchRankings() {
         try {
-            const response = await fetch(`/api/rang-lista?aparat=${aparat}`);
+            // Pozivamo API koji vraća formatirane podatke (prikaz_imena i finalni_skor)
+            const response = await fetch(`/api/rang-lista?aparat=${encodeURIComponent(aparat)}`);
             const data = await response.json();
             
             let html = "";
-            data.forEach((igrac, index) => {
-                let b = igrac.barcode;
-                let masked = b.substring(0,3) + "••" + b.substring(b.length - 2);
-                
-                html += `
-                    <tr>
-                        <td class="rank">${index + 1}</td>
-                        <td class="barcode">${masked}</td>
-                        <td class="score">${igrac.finalni_skor}</td>
-                    </tr>
-                `;
-            });
-            document.getElementById('lista-telo').innerHTML = html || "<tr><td colspan='3' style='text-align:center; opacity:0.5; padding:40px;'>NO DATA IN CURRENT SESSION</td></tr>";
+            if (data && data.length > 0) {
+                data.forEach((igrac, index) => {
+                    // Koristimo prikaz_imena (npr. petar.petrovic@) i finalni_skor iz tvog novog index.js
+                    html += `
+                        <tr>
+                            <td class="rank">${index + 1}</td>
+                            <td class="player-name">${igrac.prikaz_imena}</td>
+                            <td class="score">${igrac.finalni_skor}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                html = "<tr><td colspan='3' style='text-align:center; opacity:0.5; padding:40px;'>NO DATA IN CURRENT SESSION</td></tr>";
+            }
+            
+            document.getElementById('lista-telo').innerHTML = html;
         } catch (err) {
             console.error("API Error:", err);
+            document.getElementById('lista-telo').innerHTML = "<tr><td colspan='3' style='text-align:center; color:red;'>API CONNECTION ERROR</td></tr>";
         }
     }
 
+    // Prvo učitavanje
     fetchRankings();
-    setInterval(fetchRankings, 20000); // Osvežavanje na 20 sekundi
+    // Osvežavanje na svakih 20 sekundi
+    setInterval(fetchRankings, 20000);
 </script>
 
 </body>
