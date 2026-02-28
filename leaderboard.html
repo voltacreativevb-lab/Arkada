@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOLTA | ARENA LEADERBOARD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-cyan: #00f2ff;
+            --neon-magenta: #bc13fe;
+            --bg-dark: #05050a;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+        }
+
+        body {
+            background: var(--bg-dark);
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 50%, #1a1a2e 0%, #05050a 100%);
+        }
+
+        /* Suptilna pozadinska animacija skeniranja */
+        body::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: rgba(0, 242, 255, 0.1);
+            top: 0;
+            animation: scan 8s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { top: -10%; }
+            100% { top: 110%; }
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            margin: 0;
+            letter-spacing: 8px;
+            background: linear-gradient(to right, var(--neon-cyan), var(--neon-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .lokacija-tag {
+            font-size: 0.9rem;
+            letter-spacing: 3px;
+            color: var(--neon-cyan);
+            opacity: 0.7;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+
+        th {
+            text-align: left;
+            padding: 10px 20px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        tr {
+            transition: transform 0.3s ease;
+        }
+
+        td {
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        td:first-child { border-radius: 10px 0 0 10px; border-left: 1px solid rgba(255, 255, 255, 0.05); }
+        td:last-child { border-radius: 0 10px 10px 0; border-right: 1px solid rgba(255, 255, 255, 0.05); }
+
+        .rank { font-weight: bold; color: var(--neon-cyan); width: 50px; }
+        .barcode { font-family: 'Orbitron', sans-serif; letter-spacing: 2px; }
+        .score { text-align: right; font-size: 1.5rem; color: var(--neon-magenta); font-weight: bold; }
+
+        /* Stil za prvo mesto */
+        tr:first-child td {
+            background: rgba(0, 242, 255, 0.05);
+            border-color: rgba(0, 242, 255, 0.2);
+            color: #fff;
+        }
+
+        .footer {
+            margin-top: 40px;
+            font-size: 0.7rem;
+            letter-spacing: 4px;
+            color: rgba(255, 255, 255, 0.2);
+            text-transform: uppercase;
+        }
+
+        .volta-brand {
+            color: var(--neon-cyan);
+            font-weight: bold;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .volta-brand:hover {
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: var(--neon-cyan);
+            border-radius: 50%;
+            margin-right: 10px;
+            box-shadow:
