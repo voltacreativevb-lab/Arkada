@@ -24,6 +24,11 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// Ruta za prikaz rang liste
+app.get('/leaderboard.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'leaderboard.html'));
+});
+
 // POMOĆNA FUNKCIJA: Izračunavanje trenutne sedmice u godini (1-52)
 function getWeekNumber(d) {
     d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
