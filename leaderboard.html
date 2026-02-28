@@ -141,4 +141,73 @@
             background: var(--neon-cyan);
             border-radius: 50%;
             margin-right: 10px;
-            box-shadow:
+            box-shadow: 0 0 10px var(--neon-cyan);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Leaderboard</h1>
+    <div class="lokacija-tag" id="lokal-ime">SYSTEM OFFLINE</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Player ID</th>
+                <th style="text-align: right;">Score</th>
+            </tr>
+        </thead>
+        <tbody id="lista-telo">
+            </tbody>
+    </table>
+
+    <div class="footer">
+        <span class="status-dot"></span> 
+        Live data feed | Powered by <a href="#" class="volta-brand">Volta Creative</a>
+    </div>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const aparat = urlParams.get('aparat') || 'Global Network';
+    document.getElementById('lokal-ime').innerText = "Location: " + aparat;
+
+    async function fetchRankings() {
+        try {
+            const response = await fetch(`/api/rang-lista?aparat=${aparat}`);
+            const data = await response.json();
+            
+            let html = "";
+            data.forEach((igrac, index) => {
+                let b = igrac.barcode;
+                let masked = b.substring(0,3) + "••" + b.substring(b.length - 2);
+                
+                html += `
+                    <tr>
+                        <td class="rank">${index + 1}</td>
+                        <td class="barcode">${masked}</td>
+                        <td class="score">${igrac.finalni_skor}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('lista-telo').innerHTML = html || "<tr><td colspan='3' style='text-align:center; opacity:0.5; padding:40px;'>NO DATA IN CURRENT SESSION</td></tr>";
+        } catch (err) {
+            console.error("API Error:", err);
+        }
+    }
+
+    fetchRankings();
+    setInterval(fetchRankings, 20000); // Osvežavanje na 20 sekundi
+</script>
+
+</body>
+</html>
