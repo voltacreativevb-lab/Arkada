@@ -37,30 +37,45 @@ function getWeekNumber(d) {
     return weekNo;
 }
 
-// --- NOVA RUTA KOJA JE FALILA (API ZA LEADERBOARD) ---
+// --- RUTA ZA RANG LISTU (Prikazuje korisnik@ format) ---
 app.get('/api/rang-lista', async (req, res) => {
     try {
         const { aparat } = req.query;
         const trenutnaSedmica = getWeekNumber(new Date());
 
-        console.log(`Zahtev za rang listu. Sedmica: ${trenutnaSedmica}, Aparat: ${aparat}`);
+        console.log(`Zahtev za rang listu. Sedmica: ${trenutnaSedmica}, Lokal: ${aparat}`);
 
+        // Povlačimo skor i email preko stranog ključa (foreign key)
         let query = supabase
             .from('turnir')
-            .select('*')
+            .select(`
+                finalni_skor,
+                barcode,
+                tiketi ( email )
+            `)
             .eq('aktivna_sedmica', trenutnaSedmica)
             .order('finalni_skor', { ascending: false })
             .limit(10);
 
-        // Ako u URL-u piše npr ?aparat=APARAT_1, filtriraj samo to
         if (aparat && aparat !== 'Global Network' && aparat !== 'Globalno') {
             query = query.eq('aparat_id', aparat);
         }
 
         const { data, error } = await query;
-
         if (error) throw error;
-        res.json(data); // Šalje niz rezultata tvom HTML-u
+
+        // Transformacija podataka za front-end (petar.petrovic@)
+        const formatiraniPodaci = data.map(stavka => {
+            const puniEmail = (stavka.tiketi && stavka.tiketi.email) ? stavka.tiketi.email : "Gost@";
+            const korisnikDeo = puniEmail.split('@')[0]; // Uzima sve pre @
+            
+            return {
+                prikaz_imena: korisnikDeo + "@",
+                finalni_skor: stavka.finalni_skor
+            };
+        });
+
+        res.json(formatiraniPodaci);
 
     } catch (err) {
         console.error("API Error:", err.message);
@@ -121,7 +136,7 @@ mqttClient.on('message', async (topic, message) => {
                 aparat_id: resultData.aparat_id,
                 pogodaka: resultData.pogodaka,
                 promasaja: resultData.promasaja,
-                vreme_igre: 35, // Možeš i resultData.vremeigre ako ga ESP šalje
+                vreme_igre: 35, 
                 finalni_skor: resultData.finalni_skor,
                 aktivna_sedmica: trenutnaSedmica
             };
