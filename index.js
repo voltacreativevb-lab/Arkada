@@ -8,10 +8,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 1. POVEZIVANJE NA SUPABASE (Tvoji ključevi)
+// 1. POVEZIVANJE NA SUPABASE
 const supabase = createClient('https://wdnndorxgdzhlytqkyvh.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indkbm5kb3J4Z2R6aGx5dHFreXZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNzIzMDQsImV4cCI6MjA4Nzc0ODMwNH0.O5PxSn58e0m8uy9zXSraGs9FfxCzUgVcxKF-8SqNgbU');
 
-// 2. POVEZIVANJE NA MQTT (HIVEMQ)
+// 2. POVEZIVANJE NA MQTT
 const mqttClient = mqtt.connect('mqtts://8444eb8746d2443a864e05dee69c84bc.s1.eu.hivemq.cloud', {
     port: 8883,
     username: 'Volta',
@@ -19,17 +19,16 @@ const mqttClient = mqtt.connect('mqtts://8444eb8746d2443a864e05dee69c84bc.s1.eu.
     rejectUnauthorized: false
 });
 
-// POSLUŽIVANJE HTML STRANICE (Za skeniranje QR koda)
+// POSLUŽIVANJE STRANICA
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Ruta za prikaz rang liste
 app.get('/leaderboard.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'leaderboard.html'));
 });
 
-// POMOĆNA FUNKCIJA: Izračunavanje trenutne sedmice u godini (1-52)
+// POMOĆNA FUNKCIJA ZA SEDMICU
 function getWeekNumber(d) {
     d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
     d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
@@ -38,15 +37,43 @@ function getWeekNumber(d) {
     return weekNo;
 }
 
-// 3. RUTA ZA SKENIRANJE TIKETA (Poziva je index.html)
+// --- NOVA RUTA KOJA JE FALILA (API ZA LEADERBOARD) ---
+app.get('/api/rang-lista', async (req, res) => {
+    try {
+        const { aparat } = req.query;
+        const trenutnaSedmica = getWeekNumber(new Date());
+
+        console.log(`Zahtev za rang listu. Sedmica: ${trenutnaSedmica}, Aparat: ${aparat}`);
+
+        let query = supabase
+            .from('turnir')
+            .select('*')
+            .eq('aktivna_sedmica', trenutnaSedmica)
+            .order('finalni_skor', { ascending: false })
+            .limit(10);
+
+        // Ako u URL-u piše npr ?aparat=APARAT_1, filtriraj samo to
+        if (aparat && aparat !== 'Global Network' && aparat !== 'Globalno') {
+            query = query.eq('aparat_id', aparat);
+        }
+
+        const { data, error } = await query;
+
+        if (error) throw error;
+        res.json(data); // Šalje niz rezultata tvom HTML-u
+
+    } catch (err) {
+        console.error("API Error:", err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 3. RUTA ZA SKENIRANJE TIKETA
 app.post('/skeniraj', async (req, res) => {
     const { email, tiketId, aparatId } = req.body;
-    const aId = aparatId || 'APARAT_1'; // Sigurnosni default
+    const aId = aparatId || 'APARAT_1';
     
-    console.log(`Pokušaj prijave: Email: ${email}, Tiket: ${tiketId}, Aparat: ${aId}`);
-
     try {
-        // Provjera da li je ovaj tiket već iskorišten
         const { data: postojeciTiket } = await supabase
             .from('tiketi')
             .select('*')
@@ -57,7 +84,6 @@ app.post('/skeniraj', async (req, res) => {
             return res.status(400).json({ success: false, message: "Ovaj tiket je već iskorišćen!" });
         }
 
-        // Upis tiketa u bazu (tabela 'tiketi')
         const { error: insertError } = await supabase
             .from('tiketi')
             .insert([{ 
@@ -69,10 +95,8 @@ app.post('/skeniraj', async (req, res) => {
 
         if (insertError) throw insertError;
 
-        // Slanje komande baš tom ESP32 uređaju
         mqttClient.publish(`arene/${aId}/komanda`, `START:${tiketId}`);
-
-        res.json({ success: true, message: "Tiket aktiviran! Igra počinje na aparatu." });
+        res.json({ success: true, message: "Tiket aktiviran!" });
 
     } catch (err) {
         console.error("Greška na serveru:", err);
@@ -80,7 +104,7 @@ app.post('/skeniraj', async (req, res) => {
     }
 });
 
-// 4. PRIJEM REZULTATA SA ESP32 I UPIS U TABELU 'TURNIR'
+// 4. PRIJEM REZULTATA I UPIS
 mqttClient.on('connect', () => {
     console.log("Povezan na HiveMQ Cloud!");
     mqttClient.subscribe('arene/rezultati');
@@ -90,38 +114,28 @@ mqttClient.on('message', async (topic, message) => {
     if (topic === 'arene/rezultati') {
         try {
             const resultData = JSON.parse(message.toString());
-            console.log("Stigao rezultat sa aparata:", resultData.aparat_id);
-
-            // Automatski dodajemo podatak o trenutnoj sedmici
             const trenutnaSedmica = getWeekNumber(new Date());
 
-            // Priprema podataka za Supabase (precizno mapiranje kolona)
             const zaUpis = {
                 barcode: resultData.barcode,
                 aparat_id: resultData.aparat_id,
                 pogodaka: resultData.pogodaka,
                 promasaja: resultData.promasaja,
-                vreme_igre: resultData.vremeigre,
+                vreme_igre: 35, // Možeš i resultData.vremeigre ako ga ESP šalje
                 finalni_skor: resultData.finalni_skor,
                 aktivna_sedmica: trenutnaSedmica
             };
 
-            const { error } = await supabase
-                .from('turnir')
-                .insert([zaUpis]);
+            const { error } = await supabase.from('turnir').insert([zaUpis]);
 
-            if (error) {
-                console.error("Greška pri upisu rezultata:", error.message);
-            } else {
-                console.log(`Rezultat sačuvan! Tiket: ${zaUpis.barcode}, Skor: ${zaUpis.finalni_skor}, Sedmica: ${trenutnaSedmica}`);
-            }
+            if (error) console.error("Greška pri upisu:", error.message);
+            else console.log("Rezultat upisan u bazu!");
 
         } catch (e) {
-            console.error("Greška pri obradi JSON poruke sa ESP32:", e);
+            console.error("Greška pri obradi JSON-a:", e);
         }
     }
 });
 
-// SERVER POKRETANJE
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server radi na portu ${PORT}`));
