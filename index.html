@@ -3,104 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Volta Fast Scan</title>
-    <script src="https://unpkg.com/@zxing/library@latest"></script>
+    <title>Volta Arena | Prijava</title>
     <style>
-        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
-        #video { width: 100vw; height: 100vh; object-fit: cover; }
-        
-        /* Vizir (okvir) koji simulira Scanbot osećaj */
-        .overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: rgba(0,0,0,0.3);
+        :root {
+            --neon-green: #00ff88;
+            --dark-bg: #0a0a0a;
+            --card-bg: #161616;
         }
-        .scanner-frame {
-            width: 280px; height: 280px; border: 2px solid rgba(255,255,255,0.2);
-            border-radius: 20px; position: relative;
-        }
-        .corner { position: absolute; width: 40px; height: 40px; border: 4px solid #00ff88; border-radius: 5px; }
-        .tl { top: -5px; left: -5px; border-right: 0; border-bottom: 0; }
-        .tr { top: -5px; right: -5px; border-left: 0; border-bottom: 0; }
-        .bl { bottom: -5px; left: -5px; border-right: 0; border-top: 0; }
-        .br { bottom: -5px; right: -5px; border-left: 0; border-top: 0; }
 
-        .laser {
-            position: absolute; width: 100%; height: 2px; background: rgba(0, 255, 136, 0.5);
-            box-shadow: 0 0 10px #00ff88; top: 0; animation: scan 2s infinite linear;
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--dark-bg);
+            color: white;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh;
         }
-        @keyframes scan { from { top: 0%; } to { top: 100%; } }
 
-        .ui-box {
-            position: absolute; bottom: 30px; width: 90%; background: rgba(20,20,20,0.9);
-            padding: 20px; border-radius: 15px; border: 1px solid #333; text-align: center;
+        .container {
+            width: 90%; max-width: 400px;
+            background: var(--card-bg);
+            padding: 30px; border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #222; text-align: center;
         }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #000; color: #fff; font-size: 16px; }
-        button { width: 100%; padding: 15px; background: #00ff88; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        #status { font-size: 14px; color: #00ff88; margin-bottom: 5px; }
+
+        .logo {
+            font-size: 2.8rem; font-weight: 800;
+            color: var(--neon-green); margin-bottom: 5px;
+            letter-spacing: -1px;
+        }
+
+        h2 { font-size: 1.1rem; margin-bottom: 25px; color: #ccc; font-weight: 400; text-transform: uppercase; }
+
+        .input-group { margin-bottom: 20px; text-align: left; }
+
+        label {
+            display: block; margin-bottom: 8px; font-size: 0.85rem;
+            color: var(--neon-green); font-weight: bold; text-transform: uppercase;
+        }
+
+        input {
+            width: 100%; padding: 15px; border-radius: 12px;
+            border: 2px solid #333; background: #000; color: #fff;
+            font-size: 1rem; box-sizing: border-box; transition: border-color 0.3s;
+        }
+
+        input:focus { outline: none; border-color: var(--neon-green); }
+
+        .btn-start {
+            width: 100%; padding: 18px; background: var(--neon-green);
+            color: #000; border: none; border-radius: 12px;
+            font-size: 1.2rem; font-weight: 900; cursor: pointer;
+            margin-top: 10px; text-transform: uppercase;
+        }
+
+        /* Stil za odbrojavanje */
+        #status {
+            margin-top: 20px; font-size: 1.2rem; font-weight: bold;
+            min-height: 30px; line-height: 1.4;
+        }
+
+        .countdown-num {
+            font-size: 3rem; color: var(--neon-green);
+            display: block; margin-top: 10px;
+        }
+
+        .info-box {
+            margin-top: 30px; padding: 15px;
+            background: rgba(0, 255, 136, 0.05);
+            border-radius: 10px; border: 1px dashed #333;
+        }
+
+        .info-box p { margin: 0; font-size: 0.85rem; color: #aaa; }
+        .highlight { color: var(--neon-green); font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <video id="video"></video>
-    
-    <div class="overlay">
-        <div class="scanner-frame">
-            <div class="corner tl"></div><div class="corner tr"></div>
-            <div class="corner bl"></div><div class="corner br"></div>
-            <div class="laser"></div>
-        </div>
-        
-        <div class="ui-box">
-            <div id="status">Približite račun...</div>
-            <input type="email" id="email" placeholder="E-mail">
-            <input type="text" id="manual" placeholder="Zadnja 4 broja PFR-a">
-            <button onclick="manualStart()">AKTIVIRAJ RUČNO</button>
-        </div>
+<div class="container" id="main-content">
+    <div class="logo">VOLTA</div>
+    <h2>Prijava za turnir</h2>
+
+    <div class="input-group">
+        <label>E-mail adresa</label>
+        <input type="email" id="email" placeholder="vas@mail.com" required>
     </div>
 
-    <script>
-        const codeReader = new ZXing.BrowserQRCodeReader();
-        const videoElement = document.getElementById('video');
-        const status = document.getElementById('status');
+    <div class="input-group">
+        <label>PFR Broj (zadnje cifre iz 3. reda)</label>
+        <input type="text" id="pfr" placeholder="Npr. 123456" inputmode="numeric">
+    </div>
 
-        // Forsiranje maksimalnih performansi kamere
-        const hints = new Map();
-        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.QR_CODE]);
-        hints.set(ZXing.DecodeHintType.TRY_HARDER, true); // Agresivno skeniranje
+    <button class="btn-start" id="startBtn" onclick="pokreniAparat()">POKRENI APARAT</button>
 
-        codeReader.decodeFromVideoDevice(null, 'video', (result, err) => {
-            if (result) {
-                if (navigator.vibrate) navigator.vibrate(150);
-                sendData(result.text);
+    <div id="status"></div>
+
+    <div class="info-box">
+        <p>Račun obavezno <span class="highlight">sačuvajte kao dokaz</span> radi preuzimanja nagrade na kraju turnira!</p>
+    </div>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const aparatId = urlParams.get('aparat') || "APARAT_1";
+
+    function pokreniAparat() {
+        const email = document.getElementById('email').value.trim();
+        const pfr = document.getElementById('pfr').value.trim();
+        const statusDiv = document.getElementById('status');
+        const btn = document.getElementById('startBtn');
+
+        if (!email.includes('@')) {
+            alert("Unesite ispravan email.");
+            return;
+        }
+        if (pfr.length < 4) {
+            alert("Unesite poslednje cifre PFR broja sa računa.");
+            return;
+        }
+
+        // Vizuelna povratna informacija
+        btn.disabled = true;
+        btn.style.opacity = "0.5";
+        statusDiv.innerHTML = "⏳ Proveravam račun...";
+
+        fetch('/skeniraj', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, tiketId: pfr, aparatId })
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                pokreniOdbrojavanje();
+            } else {
+                statusDiv.innerHTML = "❌ " + (res.message || "Greška!");
+                statusDiv.style.color = "#ff4444";
+                btn.disabled = false;
+                btn.style.opacity = "1";
             }
-        }, hints);
+        })
+        .catch(() => {
+            statusDiv.innerHTML = "❌ Greška na serveru.";
+            btn.disabled = false;
+            btn.style.opacity = "1";
+        });
+    }
 
-        function sendData(text) {
-            const email = document.getElementById('email').value;
-            if(!email.includes('@')) return alert("Unesite email!");
-            
-            status.innerText = "⏳ PROVERA...";
-            const ruta = text.includes("suf.purs.gov.rs") ? '/procesuiraj-racun' : '/skeniraj';
-            
-            fetch(ruta, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, [ruta === '/skeniraj' ? 'tiketId' : 'url']: text })
-            })
-            .then(r => r.json())
-            .then(res => {
-                if(res.success) status.innerText = "✅ USPEH!";
-                else status.innerText = "❌ " + res.message;
-            })
-            .catch(() => status.innerText = "❌ Greška na serveru");
-        }
+    function pokreniOdbrojavanje() {
+        let sekunde = 10;
+        const statusDiv = document.getElementById('status');
+        
+        // Sakrij formu da ostane samo poruka
+        document.querySelectorAll('.input-group, .btn-start, .info-box').forEach(el => el.style.display = 'none');
+        
+        const interval = setInterval(() => {
+            statusDiv.innerHTML = `Vaša igra počinje za:<br><span class="countdown-num">${sekunde}</span><br>Srećno! 🎮`;
+            sekunde--;
 
-        function manualStart() {
-            const val = document.getElementById('manual').value;
-            if(val.length < 4) return alert("Unesite bar 4 broja!");
-            sendData(val);
-        }
-    </script>
+            if (sekunde < 0) {
+                clearInterval(interval);
+                statusDiv.innerHTML = "<span class='countdown-num'>KRENI!</span>";
+            }
+        }, 1000);
+    }
+</script>
+
 </body>
 </html>
