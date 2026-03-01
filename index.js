@@ -3,7 +3,7 @@ const { createClient } = require('@supabase/supabase-js');
 const mqtt = require('mqtt');
 const cors = require('cors');
 const path = require('path');
-const axios = require('axios'); // Mnogo brže i lakše za Render
+const axios = require('axios');
 
 const app = express();
 app.use(cors());
@@ -23,100 +23,71 @@ const mqttClient = mqtt.connect('mqtts://8444eb8746d2443a864e05dee69c84bc.s1.eu.
     rejectUnauthorized: false
 });
 
-// Pomoćna funkcija za vreme
 function getSerbianDate() {
     const now = new Date();
     now.setHours(now.getHours() + 1);
     return now.toISOString();
 }
 
-// --- RUTA ZA FISKALNE RAČUNE (QR KOD) ---
-app.post('/procesuiraj-racun', async (req, res) => {
-    const { url, email, aparatId } = req.body;
-    const aId = aparatId || 'APARAT_1';
-
-    if (!url || !url.includes('suf.purs.gov.rs')) {
-        return res.status(400).json({ success: false, message: "Nevalidan link Poreske." });
-    }
-
-    try {
-        // EKSTREMNO BRZO: Dobijamo JSON direktno od Poreske bez browsera
-        const apiURL = url.replace('https://suf.purs.gov.rs/', 'https://suf.purs.gov.rs/api/v1/check');
-        const response = await axios.get(apiURL, { timeout: 5000 });
-        
-        const pfrBroj = response.data.pfr || response.data.invoiceNumber;
-
-        if (!pfrBroj) {
-            return res.status(400).json({ success: false, message: "Poreska nije prepoznala račun." });
-        }
-
-        // Provera duplikata
-        const { data: postojeci } = await supabase
-            .from('tiketi')
-            .select('barcode')
-            .eq('barcode', pfrBroj)
-            .maybeSingle();
-
-        if (postojeci) {
-            return res.status(400).json({ success: false, message: "Ovaj račun je već iskorišćen!" });
-        }
-
-        // Upis u bazu
-        await supabase.from('tiketi').insert([{ 
-            email, 
-            barcode: pfrBroj, 
-            arena_id: aId,
-            vreme_prijave: getSerbianDate(),
-            napomena: 'QR Sken'
-        }]);
-
-        mqttClient.publish(`arene/${aId}/komanda`, `START:${pfrBroj}`);
-        res.json({ success: true, pfr: pfrBroj });
-
-    } catch (err) {
-        console.error("Greška Axios:", err.message);
-        res.status(500).json({ success: false, message: "Poreska uprava trenutno ne odgovara." });
-    }
-});
-
-// --- RUTA ZA RUČNI UNOS ILI OBIČNE TIKETE ---
+// --- RUTA ZA RUČNI UNOS (VAŠ NOVI HTML KORISTI OVU RUTU) ---
 app.post('/skeniraj', async (req, res) => {
     const { email, tiketId, aparatId } = req.body;
     const aId = aparatId || 'APARAT_1';
     
+    console.log(`--- NOVI POKUŠAJ UPISA ---`);
+    console.log(`Podaci: Email: ${email}, PFR: ${tiketId}, Aparat: ${aId}`);
+
     try {
-        // Pretraga: Da li se bilo koji PFR u bazi završava na unete cifre?
-        // Ovo sprečava da neko ponovo unese zadnja 4 broja već iskorišćenog računa
-        const { data: postojeci } = await supabase
+        // 1. Provera duplikata (da li je ovaj tačan broj već u bazi)
+        const { data: postojeci, error: proveraError } = await supabase
             .from('tiketi')
-            .select('*')
-            .ilike('barcode', `%${tiketId}`)
+            .select('barcode')
+            .eq('barcode', tiketId)
             .maybeSingle();
 
-        if (postojeci) {
-            return res.status(400).json({ success: false, message: "Već iskorišćeno!" });
+        if (proveraError) {
+            console.error("Greška pri proveri duplikata:", proveraError);
         }
 
-        await supabase.from('tiketi').insert([{ 
-            email, 
+        if (postojeci) {
+            console.log("Status: Duplikat pronađen.");
+            return res.status(400).json({ success: false, message: "Ovaj račun je već iskorišćen!" });
+        }
+
+        // 2. Upis u bazu
+        const upisPodaci = { 
+            email: email, 
             barcode: tiketId, 
             arena_id: aId,
-            vreme_prijave: getSerbianDate(),
-            napomena: 'Ručni unos'
-        }]);
+            vreme_prijave: getSerbianDate()
+        };
 
+        const { error: insertError } = await supabase
+            .from('tiketi')
+            .insert([upisPodaci]);
+
+        if (insertError) {
+            console.error("SUPABASE GREŠKA:", insertError.message);
+            return res.status(500).json({ success: false, message: "Baza nije prihvatila upis: " + insertError.message });
+        }
+
+        console.log("Status: Uspešno upisano u Supabase.");
+
+        // 3. Slanje MQTT komande
         mqttClient.publish(`arene/${aId}/komanda`, `START:${tiketId}`);
+        console.log(`Status: MQTT komanda poslata na arene/${aId}/komanda`);
+
         res.json({ success: true, message: "Aktivirano!" });
 
     } catch (err) {
-        res.status(500).json({ success: false, message: "Greška baze." });
+        console.error("SERVER ERROR:", err.message);
+        res.status(500).json({ success: false, message: "Serverska greška." });
     }
 });
 
-// --- RANG LISTA I MQTT REZULTATI (Nepromenjeno, ali stabilno) ---
+// --- RANG LISTA ---
 app.get('/api/rang-lista', async (req, res) => {
     try {
-        const { aparat } = req.query;
         const { data, error } = await supabase
             .from('turnir')
             .select(`finalni_skor, tiketi ( email )`)
@@ -125,7 +96,7 @@ app.get('/api/rang-lista', async (req, res) => {
         
         if (error) throw error;
         res.json(data.map(d => ({ 
-            prikaz_imena: d.tiketi?.email.split('@')[0] + "@", 
+            prikaz_imena: d.tiketi?.email ? d.tiketi.email.split('@')[0] + "@" : "Gost@", 
             finalni_skor: d.finalni_skor 
         })));
     } catch (err) { res.status(500).json({ error: err.message }); }
@@ -145,13 +116,14 @@ mqttClient.on('message', async (topic, message) => {
                 aparat_id: resData.aparat_id,
                 pogodaka: resData.pogodaka,
                 finalni_skor: resData.finalni_skor,
-                aktivna_sedmica: 1 // Možeš dodati funkciju za sedmice
+                aktivna_sedmica: 1
             }]);
-        } catch (e) { console.error("MQTT Error:", e); }
+            console.log("Rezultat upisan u turnir tabelu.");
+        } catch (e) { console.error("MQTT Message Error:", e); }
     }
 });
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server na ${PORT}`));
+app.listen(PORT, () => console.log(`Server pokrenut na portu ${PORT}`));
