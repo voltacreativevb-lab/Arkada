@@ -3,142 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Scanner Pro | Volta</title>
-    <script src="https://unpkg.com/html5-qrcode"></script>
+    <title>Volta Scanner</title>
+    <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest"></script>
     <style>
-        body { font-family: -apple-system, system-ui, sans-serif; background: #000; color: #fff; margin: 0; padding: 0; overflow: hidden; }
+        body { margin: 0; background: #000; font-family: sans-serif; color: white; overflow: hidden; }
+        .video-container { position: relative; width: 100vw; height: 100vh; }
+        video { width: 100%; height: 100%; object-fit: cover; }
         
-        /* Kamera preko celog gornjeg dela sa overlay-om */
-        #reader { width: 100%; height: 65vh; background: #000; position: relative; }
-        
-        /* Force hardware acceleration */
-        #reader video { 
-            object-fit: cover !important; 
-            transform: translateZ(0); 
-            filter: contrast(1.2) brightness(1.1) sharp(1);
+        /* Overlay sa nišanom */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            background: rgba(0,0,0,0.2); pointer-events: none;
         }
+        .scanner-box {
+            width: 280px; height: 280px; border: 2px solid #00ff88;
+            box-shadow: 0 0 20px rgba(0,255,136,0.5); position: relative;
+        }
+        .scanner-box::after {
+            content: ''; position: absolute; top: 50%; left: -10%; width: 120%; height: 2px;
+            background: #ff0000; box-shadow: 0 0 10px #ff0000; animation: scan 2s infinite;
+        }
+        @keyframes scan { 0%, 100% { top: 5%; } 50% { top: 95%; } }
 
-        /* Profesionalni nišan (Scanner Overlay) */
-        .scanner-viewfinder {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 260px; height: 260px; border: 2px solid rgba(0, 255, 136, 0.3);
-            z-index: 5; pointer-events: none;
+        /* Donji panel sa unosom */
+        .bottom-panel {
+            position: absolute; bottom: 0; width: 100%; background: rgba(20,20,20,0.95);
+            padding: 20px; border-top: 2px solid #00ff88; pointer-events: all;
+            box-sizing: border-box; text-align: center;
         }
-        .scanner-viewfinder::before {
-            content: ''; position: absolute; top: -2px; left: -2px; width: 30px; height: 30px;
-            border-top: 4px solid #00ff88; border-left: 4px solid #00ff88;
-        }
-        .scanner-viewfinder::after {
-            content: ''; position: absolute; bottom: -2px; right: -2px; width: 30px; height: 30px;
-            border-bottom: 4px solid #00ff88; border-right: 4px solid #00ff88;
-        }
-        .laser-line {
-            position: absolute; width: 100%; height: 2px; background: #00ff88;
-            top: 0; left: 0; box-shadow: 0 0 10px #00ff88;
-            animation: laserMove 2s infinite linear;
-        }
-        @keyframes laserMove { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
-
-        .control-panel {
-            height: 35vh; background: #121212; padding: 20px;
-            border-top: 2px solid #00ff88; display: flex; flex-direction: column; gap: 10px;
-        }
-
         input {
-            width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #333;
-            background: #1a1a1a; color: white; font-size: 16px; outline: none; text-align: center;
+            width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 10px;
+            border: 1px solid #444; background: #222; color: #fff; font-size: 16px; box-sizing: border-box;
         }
-
-        .btn-manual {
-            background: #00ff88; color: #000; border: none; padding: 16px;
-            border-radius: 12px; font-weight: bold; font-size: 16px; text-transform: uppercase;
+        .btn {
+            width: 100%; padding: 15px; border-radius: 10px; border: none;
+            background: #00ff88; color: #000; font-weight: bold; font-size: 16px;
         }
-
-        #status { text-align: center; font-weight: bold; min-height: 24px; color: #00ff88; }
-        .hint { font-size: 11px; color: #666; text-align: center; margin: 0; }
+        #status { font-size: 14px; margin-bottom: 10px; color: #00ff88; }
     </style>
 </head>
 <body>
 
-    <div id="reader">
-        <div class="scanner-viewfinder">
-            <div class="laser-line"></div>
+<div class="video-container">
+    <video id="video"></video>
+    <div class="overlay">
+        <div style="margin-top: 20px; text-transform: uppercase; letter-spacing: 2px;">Skeniraj QR Kod</div>
+        <div class="scanner-box"></div>
+        <div class="bottom-panel">
+            <div id="status">Centriraj kod u kvadrat</div>
+            <input type="email" id="email" placeholder="Tvoj E-mail">
+            <input type="text" id="pfr" placeholder="PFR broj (poslednjih 6+ karaktera)">
+            <button class="btn" onclick="manualSubmit()">AKTIVIRAJ RUČNO</button>
         </div>
     </div>
+</div>
 
-    <div class="control-panel">
-        <div id="status">Skenirajte QR kod</div>
-        <input type="email" id="email" placeholder="E-mail">
-        <input type="text" id="manual-pfr" placeholder="Poslednje 4 cifre PFR-a" maxlength="6">
-        <button class="btn-manual" onclick="manualAction()">POKRENI RUČNO</button>
-        <p class="hint">Centrirajte QR kod u kvadrat i sačekajte fokus</p>
-    </div>
+<script>
+    const codeReader = new ZXing.BrowserQRCodeReader();
+    const videoElement = document.getElementById('video');
+    const urlParams = new URLSearchParams(window.location.search);
+    const aparatId = urlParams.get('aparat') || "APARAT_1";
 
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const aparatId = urlParams.get('aparat') || "APARAT_1";
-        const scanner = new Html5Qrcode("reader");
+    // POKRETANJE KAMERE
+    codeReader.decodeFromVideoDevice(null, 'video', (result, err) => {
+        if (result) {
+            console.log("Skenirano:", result.text);
+            handleData(result.text);
+        }
+    });
 
-        // PODESAVANJA ZA MAKSIMALNU BRZINU
-        const scanConfig = {
-            fps: 30, // Brži frejmrejt za glatko praćenje
-            qrbox: { width: 260, height: 260 },
-            aspectRatio: 1.0,
-            // Koristimo Engine koji Google Chrome ima u sebi ako je dostupan
-            experimentalFeatures: {
-                useBarCodeDetectorIfSupported: true
-            },
-            videoConstraints: {
-                facingMode: "environment",
-                focusMode: "continuous",
-                // Forsiramo rezoluciju koja je oštra ali ne preteška za procesor
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
+    function manualSubmit() {
+        const manualCode = document.getElementById('pfr').value.trim();
+        if (manualCode.length < 4) return alert("Unesite bar 4-6 cifara!");
+        handleData(manualCode);
+    }
+
+    function handleData(text) {
+        const email = document.getElementById('email').value;
+        if (!email.includes('@')) return alert("Unesite ispravan e-mail!");
+
+        document.getElementById('status').innerText = "⏳ PROVERA...";
+
+        const ruta = text.includes("suf.purs.gov.rs") ? '/procesuiraj-racun' : '/skeniraj';
+        
+        fetch(ruta, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, [ruta === '/skeniraj' ? 'tiketId' : 'url']: text, aparatId })
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                document.getElementById('status').innerText = "✅ APARAT AKTIVIRAN!";
+                document.getElementById('status').style.color = "#00ff88";
+            } else {
+                document.getElementById('status').innerText = "❌ " + res.message;
+                document.getElementById('status').style.color = "#ff4444";
             }
-        };
-
-        const onScanSuccess = (text) => {
-            handleProcess(text);
-        };
-
-        function manualAction() {
-            const code = document.getElementById('manual-pfr').value.trim();
-            if(code.length < 4) return alert("Unesite bar 4 cifre!");
-            handleProcess(code);
-        }
-
-        function handleProcess(tiketId) {
-            const email = document.getElementById('email').value;
-            if(!email.includes('@')) return alert("Unesite ispravan email!");
-
-            const status = document.getElementById('status');
-            status.innerText = "⏳ PROVERA...";
-            
-            // Logika rute
-            const ruta = tiketId.includes("suf.purs.gov.rs") ? '/procesuiraj-racun' : '/skeniraj';
-            
-            fetch(ruta, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, [ruta === '/skeniraj' ? 'tiketId' : 'url']: tiketId, aparatId })
-            })
-            .then(r => r.json())
-            .then(res => {
-                if(res.success) {
-                    status.innerText = "✅ APARAT JE AKTIVIRAN!";
-                } else {
-                    status.style.color = "#ff4444";
-                    status.innerText = "❌ " + res.message;
-                    setTimeout(() => { status.style.color = "#00ff88"; status.innerText = "Skenirajte QR kod"; }, 3000);
-                }
-            })
-            .catch(() => status.innerText = "❌ Greška na serveru");
-        }
-
-        // Auto-start
-        scanner.start({ facingMode: "environment" }, scanConfig, onScanSuccess)
-        .catch(() => { document.getElementById('status').innerText = "Kamera nedostupna"; });
-
-    </script>
+        });
+    }
+</script>
 </body>
 </html>
