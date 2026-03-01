@@ -3,111 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Volta Scanner Pro</title>
+    <title>Volta Fast Scan</title>
     <script src="https://unpkg.com/@zxing/library@latest"></script>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
-        .scanner-wrapper { position: relative; width: 100vw; height: 100vh; }
+        #video { width: 100vw; height: 100vh; object-fit: cover; }
         
-        /* Video preko celog ekrana */
-        #video { width: 100%; height: 100%; object-fit: cover; }
-
-        /* Vizir za fokus */
+        /* Vizir (okvir) koji simulira Scanbot osećaj */
         .overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-            pointer-events: none;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.3);
         }
-        .guide-box {
-            width: 260px; height: 260px; border: 2px solid #00ff88;
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.4); border-radius: 10px;
-            position: relative; margin-top: 15vh;
+        .scanner-frame {
+            width: 280px; height: 280px; border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 20px; position: relative;
         }
-        .laser {
-            position: absolute; width: 100%; height: 2px; background: red;
-            top: 50%; box-shadow: 0 0 8px red; animation: move 2s infinite linear;
-        }
-        @keyframes move { 0%, 100% { top: 10%; } 50% { top: 90%; } }
+        .corner { position: absolute; width: 40px; height: 40px; border: 4px solid #00ff88; border-radius: 5px; }
+        .tl { top: -5px; left: -5px; border-right: 0; border-bottom: 0; }
+        .tr { top: -5px; right: -5px; border-left: 0; border-bottom: 0; }
+        .bl { bottom: -5px; left: -5px; border-right: 0; border-top: 0; }
+        .br { bottom: -5px; right: -5px; border-left: 0; border-top: 0; }
 
-        /* Donji panel */
-        .ui-panel {
-            width: 100%; background: rgba(18, 18, 18, 0.9); padding: 20px;
-            border-top: 2px solid #00ff88; pointer-events: all; box-sizing: border-box;
+        .laser {
+            position: absolute; width: 100%; height: 2px; background: rgba(0, 255, 136, 0.5);
+            box-shadow: 0 0 10px #00ff88; top: 0; animation: scan 2s infinite linear;
         }
-        input {
-            width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #333;
-            background: #1a1a1a; color: #fff; font-size: 16px; margin-bottom: 10px; box-sizing: border-box;
+        @keyframes scan { from { top: 0%; } to { top: 100%; } }
+
+        .ui-box {
+            position: absolute; bottom: 30px; width: 90%; background: rgba(20,20,20,0.9);
+            padding: 20px; border-radius: 15px; border: 1px solid #333; text-align: center;
         }
-        .btn {
-            width: 100%; padding: 16px; background: #00ff88; color: #000;
-            border: none; border-radius: 10px; font-weight: bold; font-size: 16px;
-        }
-        #status { margin-bottom: 10px; font-weight: bold; color: #00ff88; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #000; color: #fff; font-size: 16px; }
+        button { width: 100%; padding: 15px; background: #00ff88; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        #status { font-size: 14px; color: #00ff88; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
-<div class="scanner-wrapper">
     <video id="video"></video>
     
     <div class="overlay">
-        <div class="guide-box"><div class="laser"></div></div>
+        <div class="scanner-frame">
+            <div class="corner tl"></div><div class="corner tr"></div>
+            <div class="corner bl"></div><div class="corner br"></div>
+            <div class="laser"></div>
+        </div>
         
-        <div class="ui-panel">
-            <div id="status">Približite fiskalni račun (20cm)</div>
-            <input type="email" id="email" placeholder="Unesite Vaš E-mail">
-            <input type="text" id="manual-pfr" placeholder="Zadnja 4 broja PFR-a (opciono)">
-            <button class="btn" onclick="manualStart()">AKTIVIRAJ ODMAH</button>
+        <div class="ui-box">
+            <div id="status">Približite račun...</div>
+            <input type="email" id="email" placeholder="E-mail">
+            <input type="text" id="manual" placeholder="Zadnja 4 broja PFR-a">
+            <button onclick="manualStart()">AKTIVIRAJ RUČNO</button>
         </div>
     </div>
-</div>
 
-<script>
-    const codeReader = new ZXing.BrowserQRCodeReader();
-    const videoElement = document.getElementById('video');
-    const status = document.getElementById('status');
-    const urlParams = new URLSearchParams(window.location.search);
-    const aparatId = urlParams.get('aparat') || "APARAT_1";
+    <script>
+        const codeReader = new ZXing.BrowserQRCodeReader();
+        const videoElement = document.getElementById('video');
+        const status = document.getElementById('status');
 
-    // POKRETANJE KAMERE SA MAX PERFORMANSAMA
-    codeReader.decodeFromVideoDevice(null, 'video', (result, err) => {
-        if (result) {
-            if (navigator.vibrate) navigator.vibrate(150);
-            processData(result.text);
-        }
-    });
+        // Forsiranje maksimalnih performansi kamere
+        const hints = new Map();
+        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.QR_CODE]);
+        hints.set(ZXing.DecodeHintType.TRY_HARDER, true); // Agresivno skeniranje
 
-    function manualStart() {
-        const pfr = document.getElementById('manual-pfr').value.trim();
-        if (pfr.length < 4) return alert("Unesite bar 4 broja!");
-        processData(pfr);
-    }
-
-    function processData(tiketId) {
-        const email = document.getElementById('email').value;
-        if (!email.includes('@')) return alert("Unesite ispravan email!");
-
-        status.innerText = "⏳ PROVERA U TOKU...";
-        
-        const ruta = tiketId.includes("suf.purs.gov.rs") ? '/procesuiraj-racun' : '/skeniraj';
-        
-        fetch(ruta, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, [ruta === '/skeniraj' ? 'tiketId' : 'url']: tiketId, aparatId })
-        })
-        .then(r => r.json())
-        .then(res => {
-            if (res.success) {
-                status.innerText = "✅ USPEH! APARAT RADI!";
-                status.style.color = "#00ff88";
-            } else {
-                status.innerText = "❌ " + res.message;
-                status.style.color = "#ff4444";
+        codeReader.decodeFromVideoDevice(null, 'video', (result, err) => {
+            if (result) {
+                if (navigator.vibrate) navigator.vibrate(150);
+                sendData(result.text);
             }
-        })
-        .catch(() => status.innerText = "❌ Greška na serveru");
-    }
-</script>
+        }, hints);
+
+        function sendData(text) {
+            const email = document.getElementById('email').value;
+            if(!email.includes('@')) return alert("Unesite email!");
+            
+            status.innerText = "⏳ PROVERA...";
+            const ruta = text.includes("suf.purs.gov.rs") ? '/procesuiraj-racun' : '/skeniraj';
+            
+            fetch(ruta, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, [ruta === '/skeniraj' ? 'tiketId' : 'url']: text })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if(res.success) status.innerText = "✅ USPEH!";
+                else status.innerText = "❌ " + res.message;
+            })
+            .catch(() => status.innerText = "❌ Greška na serveru");
+        }
+
+        function manualStart() {
+            const val = document.getElementById('manual').value;
+            if(val.length < 4) return alert("Unesite bar 4 broja!");
+            sendData(val);
+        }
+    </script>
 </body>
 </html>
