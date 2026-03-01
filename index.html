@@ -2,118 +2,145 @@
 <html lang="sr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Skeniraj Račun | Volta ARKADA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Prijava | Volta ARKADA</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; background: #121212; color: white; margin: 0; }
-        .container { max-width: 500px; margin: auto; }
-        h2 { color: #00ff88; letter-spacing: 2px; }
-        .instructions { color: #888; font-size: 14px; margin-bottom: 25px; }
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 15px; background: #0f0f0f; color: white; margin: 0; }
+        .container { max-width: 450px; margin: auto; }
+        h2 { color: #00ff88; margin-top: 10px; text-transform: uppercase; }
+        
+        #reader { 
+            width: 100%; 
+            border-radius: 15px; 
+            overflow: hidden; 
+            border: 2px solid #333;
+            background: #000;
+        }
 
-        /* Stil za dugme koje otvara kameru */
-        .camera-trigger {
-            background: #00ff88; color: #000; border: none; padding: 20px 40px;
-            border-radius: 50px; font-size: 18px; font-weight: bold; cursor: pointer;
-            box-shadow: 0 0 20px rgba(0,255,136,0.4); width: 90%; margin-bottom: 20px;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
+        #reader video { 
+            filter: contrast(1.2); 
+            object-fit: cover !important;
+        }
+
+        .input-group { margin: 15px 0; }
+        input { 
+            width: 90%; padding: 14px; border-radius: 10px; border: 2px solid #333; 
+            background: #1a1a1a; color: white; font-size: 16px; outline: none; text-align: center;
+        }
+        input:focus { border-color: #00ff88; }
+
+        .manual-box { 
+            margin-top: 20px; 
+            padding: 15px; 
+            border: 1px dashed #444; 
+            border-radius: 15px;
+            background: #161616;
         }
         
-        .input-group { margin: 20px 0; }
-        input[type="email"] { width: 90%; padding: 15px; border-radius: 10px; border: 2px solid #333; background: #1a1a1a; color: white; font-size: 16px; outline: none; }
-        
-        #status { margin-top: 20px; padding: 20px; border-radius: 15px; font-weight: bold; display: none; }
-        .success { background: #004422; color: #00ff88; border: 1px solid #00ff88; }
-        .error { background: #440000; color: #ff4444; border: 1px solid #ff4444; }
-        .loading { background: #333; color: #fff; }
+        .btn-submit { 
+            background: #00ff88; color: #000; border: none; padding: 14px; 
+            width: 95%; border-radius: 10px; font-weight: bold; margin-top: 10px;
+            font-size: 16px; cursor: pointer;
+        }
 
-        /* Nevidljivi input koji zapravo otvara kameru */
-        #file-input { display: none; }
+        #status { margin-top: 15px; padding: 15px; border-radius: 10px; display: none; font-weight: bold; }
+        .success { background: #004422; color: #00ff88; }
+        .error { background: #440000; color: #ff4444; }
+        .loading { background: #222; color: #00ff88; }
+
+        .info-text { font-size: 12px; color: #888; margin-bottom: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>⚡ Volta ARKADA</h2>
-        <p class="instructions">Uslikajte fiskalni račun oštro i pod pravim uglom</p>
-
+        
         <div class="input-group">
-            <input type="email" id="email" placeholder="Vaš Email" required>
+            <input type="email" id="email" placeholder="E-mail za rang listu" required>
         </div>
 
-        <label for="file-input" class="camera-trigger">
-            📸 USLIKAJ RAČUN
-        </label>
-        <input type="file" id="file-input" accept="image/*" capture="environment">
+        <div id="reader"></div>
+        <p class="info-text">Približite QR kod centru kvadrata</p>
 
         <div id="status">
             <span id="statusText"></span>
+        </div>
+
+        <div class="manual-box">
+            <p style="margin: 0 0 10px 0; font-size: 14px; color: #00ff88;">Neće da skenira?</p>
+            <p class="info-text">Unesite PFR broj (ispod QR koda na računu):</p>
+            <input type="text" id="manual-pfr" placeholder="PR123456-A1B2C3D4-..." style="font-size: 13px;">
+            <button class="btn-submit" onclick="posaljiRucno()">AKTIVIRAJ RUČNO</button>
         </div>
     </div>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const mojAparat = urlParams.get('aparat') || "APARAT_1";
-        const fileInput = document.getElementById('file-input');
-        const statusDiv = document.getElementById('status');
-        const statusText = document.getElementById('statusText');
+        const html5QrCode = new Html5Qrcode("reader");
 
-        // Inicijalizacija skenera u "fajl" modu (ne video)
-        const html5QrCode = new Html5Qrcode("status"); // Koristimo bilo koji div
+        // Podešavanje skenera
+        const config = { 
+            fps: 20, 
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0 
+        };
 
-        fileInput.addEventListener('change', e => {
-            if (e.target.files.length === 0) return;
-
+        const onScanSuccess = (decodedText) => {
             const email = document.getElementById('email').value;
-            if(!email || !email.includes('@')) {
-                alert("Unesite ispravan Email!");
-                fileInput.value = "";
+            if(!email.includes('@')) {
+                alert("Prvo unesite ispravan e-mail.");
                 return;
             }
+            html5QrCode.pause(true);
+            obradiPodatke(decodedText, email);
+        };
 
-            const imageFile = e.target.files[0];
+        function obradiPodatke(text, email) {
+            // Ako je link (skenirano), ide na /procesuiraj-racun. Ako je čist PFR (ručno), ide na /skeniraj.
+            let ruta = text.includes("suf.purs.gov.rs") ? '/procesuiraj-racun' : '/skeniraj';
+            let data = ruta === '/procesuiraj-racun' ? { email, url: text, aparatId: mojAparat } : { email, tiketId: text, aparatId: mojAparat };
             
-            // Prikaži loading
-            statusDiv.style.display = "block";
-            statusDiv.className = "loading";
-            statusText.innerText = "⏳ Analiziram sliku... Sačekajte...";
+            prikaziStatus("loading", "⏳ Provera u toku...");
 
-            // SKENIRANJE USLIKANE SLIKE
-            html5QrCode.scanFile(imageFile, true)
-            .then(decodedText => {
-                obradiRezultat(decodedText, email);
-            })
-            .catch(err => {
-                statusDiv.className = "error";
-                statusText.innerHTML = "❌ Kod nije prepoznat.<br><small>Pokušajte ponovo, pazite da slika ne bude mutna ili previše tamna.</small>";
-                console.error(err);
-            });
-        });
-
-        function obradiRezultat(decodedText, email) {
-            let targetRoute = decodedText.includes("suf.purs.gov.rs") ? '/procesuiraj-racun' : '/skeniraj';
-            let bodyData = targetRoute === '/procesuiraj-racun' ? { email, url: decodedText } : { email, tiketId: decodedText, aparatId: mojAparat };
-
-            statusText.innerText = "🔍 Verifikacija... (2-3s)";
-
-            fetch(targetRoute, {
+            fetch(ruta, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(bodyData)
+                body: JSON.stringify(data)
             })
             .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    statusDiv.className = "success";
-                    statusText.innerHTML = `✅ USPEŠNO!<br>PFR: ${data.pfr || "Aktivirano"}<br>Srećno u igri!`;
+            .then(resData => {
+                if(resData.success) {
+                    prikaziStatus("success", "✅ USPEŠNO!<br>Aparat se aktivira...");
                 } else {
-                    throw new Error(data.message);
+                    prikaziStatus("error", "❌ " + resData.message);
+                    setTimeout(() => { 
+                        document.getElementById('status').style.display='none';
+                        html5QrCode.resume(); 
+                    }, 4000);
                 }
             })
-            .catch(err => {
-                statusDiv.className = "error";
-                statusText.innerText = "❌ " + err.message;
-            });
+            .catch(() => prikaziStatus("error", "❌ Greška na serveru. Pokušajte ponovo."));
         }
+
+        function posaljiRucno() {
+            const email = document.getElementById('email').value;
+            const pfr = document.getElementById('manual-pfr').value.trim();
+            if(!email.includes('@')) return alert("Unesite e-mail.");
+            if(pfr.length < 5) return alert("Unesite ispravan PFR broj.");
+            obradiPodatke(pfr, email);
+        }
+
+        function prikaziStatus(klasa, tekst) {
+            const s = document.getElementById('status');
+            s.style.display = "block";
+            s.className = klasa;
+            document.getElementById('statusText').innerHTML = tekst;
+        }
+
+        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
+        .catch(err => console.error("Greška sa kamerom."));
     </script>
 </body>
 </html>
