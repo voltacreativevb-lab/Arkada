@@ -3,6 +3,7 @@ const { createClient } = require('@supabase/supabase-js');
 const mqtt = require('mqtt');
 const cors = require('cors');
 const path = require('path');
+const puppeteer = require('puppeteer'); // DODATO
 
 const app = express();
 app.use(cors());
@@ -17,6 +18,68 @@ const mqttClient = mqtt.connect('mqtts://8444eb8746d2443a864e05dee69c84bc.s1.eu.
     username: 'Volta',
     password: 'Arkadavolta2026',
     rejectUnauthorized: false
+});
+
+// --- NOVO: FUNKCIJA ZA ODLAZAK NA SAJT PORESKE ---
+async function ocitajPfrSaPoreske(url) {
+    const browser = await puppeteer.launch({
+        args: ['--no-sandbox', '--disable-setuid-sandbox'] // Obavezno za Render
+    });
+    const page = await browser.newPage();
+    try {
+        await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+        
+        // Čekamo da se pojavi PFR broj (na osnovu tvojih linkova, tražimo ID ili specifičan tekst)
+        // Napomena: Proveri tačan ID na sajtu poreske, obično je #pfrId ili slično
+        await page.waitForSelector('body'); 
+        
+        const podaci = await page.evaluate(() => {
+            // Pokušavamo da nađemo tekst koji prati 'PFR broj računa:'
+            const bodyText = document.body.innerText;
+            const match = bodyText.match(/[A-Z0-9]{8}-[A-Z0-9]{8}-[0-9]+/);
+            return match ? match[0] : null;
+        });
+
+        await browser.close();
+        return podaci;
+    } catch (e) {
+        console.error("Greška pri scrapingu:", e);
+        await browser.close();
+        return null;
+    }
+}
+
+// --- NOVO: RUTA KOJU POZIVA TVOJ QR SKENER ---
+app.post('/procesuiraj-racun', async (req, res) => {
+    const { url, email } = req.body;
+
+    if (!url || !url.includes('suf.purs.gov.rs')) {
+        return res.status(400).json({ success: false, message: "Nevalidan link Poreske uprave." });
+    }
+
+    try {
+        const pfrBroj = await ocitajPfrSaPoreske(url);
+
+        if (pfrBroj) {
+            // Upisujemo u bazu u tabelu 'tiketi' ili novu tabelu 'racuni'
+            const { error } = await supabase
+                .from('tiketi')
+                .insert([{ 
+                    email: email, 
+                    barcode: pfrBroj, // Koristimo PFR broj kao jedinstveni kod
+                    vreme_prijave: new Date(),
+                    napomena: 'Skeniran fiskalni račun'
+                }]);
+
+            if (error) throw error;
+            res.json({ success: true, pfr: pfrBroj, message: "Račun uspešno verifikovan!" });
+        } else {
+            res.status(500).json({ success: false, message: "Sajt poreske nije vratio broj računa." });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Greška pri obradi računa." });
+    }
 });
 
 // POSLUŽIVANJE STRANICA
@@ -37,15 +100,12 @@ function getWeekNumber(d) {
     return weekNo;
 }
 
-// --- RUTA ZA RANG LISTU (Prikazuje korisnik@ format) ---
+// RUTA ZA RANG LISTU
 app.get('/api/rang-lista', async (req, res) => {
     try {
         const { aparat } = req.query;
         const trenutnaSedmica = getWeekNumber(new Date());
 
-        console.log(`Zahtev za rang listu. Sedmica: ${trenutnaSedmica}, Lokal: ${aparat}`);
-
-        // Povlačimo skor i email preko stranog ključa (foreign key)
         let query = supabase
             .from('turnir')
             .select(`
@@ -64,11 +124,9 @@ app.get('/api/rang-lista', async (req, res) => {
         const { data, error } = await query;
         if (error) throw error;
 
-        // Transformacija podataka za front-end (petar.petrovic@)
         const formatiraniPodaci = data.map(stavka => {
             const puniEmail = (stavka.tiketi && stavka.tiketi.email) ? stavka.tiketi.email : "Gost@";
-            const korisnikDeo = puniEmail.split('@')[0]; // Uzima sve pre @
-            
+            const korisnikDeo = puniEmail.split('@')[0];
             return {
                 prikaz_imena: korisnikDeo + "@",
                 finalni_skor: stavka.finalni_skor
@@ -76,14 +134,12 @@ app.get('/api/rang-lista', async (req, res) => {
         });
 
         res.json(formatiraniPodaci);
-
     } catch (err) {
-        console.error("API Error:", err.message);
         res.status(500).json({ error: err.message });
     }
 });
 
-// 3. RUTA ZA SKENIRANJE TIKETA
+// RUTA ZA SKENIRANJE TIKETA (Standardna)
 app.post('/skeniraj', async (req, res) => {
     const { email, tiketId, aparatId } = req.body;
     const aId = aparatId || 'APARAT_1';
@@ -114,12 +170,10 @@ app.post('/skeniraj', async (req, res) => {
         res.json({ success: true, message: "Tiket aktiviran!" });
 
     } catch (err) {
-        console.error("Greška na serveru:", err);
         res.status(500).json({ success: false, message: "Greška baze podataka." });
     }
 });
 
-// 4. PRIJEM REZULTATA I UPIS
 mqttClient.on('connect', () => {
     console.log("Povezan na HiveMQ Cloud!");
     mqttClient.subscribe('arene/rezultati');
@@ -142,12 +196,9 @@ mqttClient.on('message', async (topic, message) => {
             };
 
             const { error } = await supabase.from('turnir').insert([zaUpis]);
-
             if (error) console.error("Greška pri upisu:", error.message);
-            else console.log("Rezultat upisan u bazu!");
-
         } catch (e) {
-            console.error("Greška pri obradi JSON-a:", e);
+            console.error("Greška pri obradi rezultata:", e);
         }
     }
 });
