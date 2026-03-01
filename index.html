@@ -3,157 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prijava Tiketa | Volta ARKADA</title>
+    <title>Skeniraj Račun | Volta ARKADA</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; text-align: center; padding: 20px; background: #121212; color: white; margin: 0; }
-        .container { max-width: 500px; margin: auto; padding-top: 20px; }
-        h2 { color: #00ff88; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
-        .instructions { color: #888; font-size: 14px; margin-bottom: 20px; }
-        
-        #reader { 
-            width: 100%; 
-            border: 2px solid #333; 
-            border-radius: 15px; 
-            overflow: hidden; 
-            background: #000; 
-            box-shadow: 0 0 20px rgba(0,255,136,0.1); 
-            position: relative;
-        }
-        
-        /* Brutalan kontrast za bolji sken */
-        #reader video {
-            object-fit: cover !important;
-            filter: contrast(1.3) brightness(1.1);
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; background: #121212; color: white; margin: 0; }
+        .container { max-width: 500px; margin: auto; }
+        h2 { color: #00ff88; letter-spacing: 2px; }
+        .instructions { color: #888; font-size: 14px; margin-bottom: 25px; }
+
+        /* Stil za dugme koje otvara kameru */
+        .camera-trigger {
+            background: #00ff88; color: #000; border: none; padding: 20px 40px;
+            border-radius: 50px; font-size: 18px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 0 20px rgba(0,255,136,0.4); width: 90%; margin-bottom: 20px;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
         }
         
         .input-group { margin: 20px 0; }
-        input { width: 90%; padding: 15px; border-radius: 10px; border: 2px solid #333; background: #1a1a1a; color: white; font-size: 16px; outline: none; transition: 0.3s; }
-        input:focus { border-color: #00ff88; box-shadow: 0 0 10px rgba(0,255,136,0.3); }
+        input[type="email"] { width: 90%; padding: 15px; border-radius: 10px; border: 2px solid #333; background: #1a1a1a; color: white; font-size: 16px; outline: none; }
         
-        #status { margin-top: 20px; padding: 15px; border-radius: 10px; font-weight: bold; display: none; line-height: 1.5; }
-        
-        /* Dugme za blic */
-        .controls { margin-top: 15px; display: flex; justify-content: center; gap: 10px; }
-        .btn-flash {
-            background: #333; color: #fff; border: 1px solid #444; padding: 10px 20px;
-            border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px;
-        }
-        .btn-flash.active { background: #00ff88; color: #000; }
+        #status { margin-top: 20px; padding: 20px; border-radius: 15px; font-weight: bold; display: none; }
+        .success { background: #004422; color: #00ff88; border: 1px solid #00ff88; }
+        .error { background: #440000; color: #ff4444; border: 1px solid #ff4444; }
+        .loading { background: #333; color: #fff; }
 
-        .spinner {
-            display: none; width: 40px; height: 40px; margin: 10px auto;
-            border: 4px solid rgba(255, 255, 255, 0.1); border-left-color: #00ff88;
-            border-radius: 50%; animation: spin 1s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .loading-content { display: flex; flex-direction: column; align-items: center; }
-        .success { background: #004422; color: #00ff88; display: block !important; border: 1px solid #00ff88; }
-        .error { background: #440000; color: #ff4444; display: block !important; border: 1px solid #ff4444; }
-        .loading { background: #1a1a1a; color: #fff; display: block !important; border: 1px solid #888; }
+        /* Nevidljivi input koji zapravo otvara kameru */
+        #file-input { display: none; }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>⚡ Volta ARKADA</h2>
-        <p class="instructions">Udaljite telefon oko 15cm i upalite blic po potrebi</p>
-        
+        <p class="instructions">Uslikajte fiskalni račun oštro i pod pravim uglom</p>
+
         <div class="input-group">
             <input type="email" id="email" placeholder="Vaš Email" required>
         </div>
 
-        <div id="reader"></div>
+        <label for="file-input" class="camera-trigger">
+            📸 USLIKAJ RAČUN
+        </label>
+        <input type="file" id="file-input" accept="image/*" capture="environment">
 
-        <div class="controls">
-            <button id="flashBtn" class="btn-flash">🔦 UPALI BLIC</button>
-        </div>
-        
         <div id="status">
-            <div class="loading-content">
-                <div class="spinner" id="statusSpinner"></div>
-                <span id="statusText">⏳ Provera...</span>
-            </div>
+            <span id="statusText"></span>
         </div>
     </div>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const mojAparat = urlParams.get('aparat') || "APARAT_1";
-        const html5QrCode = new Html5Qrcode("reader");
-        let isFlashOn = false;
+        const fileInput = document.getElementById('file-input');
+        const statusDiv = document.getElementById('status');
+        const statusText = document.getElementById('statusText');
 
-        const onScanSuccess = (decodedText, decodedResult) => {
+        // Inicijalizacija skenera u "fajl" modu (ne video)
+        const html5QrCode = new Html5Qrcode("status"); // Koristimo bilo koji div
+
+        fileInput.addEventListener('change', e => {
+            if (e.target.files.length === 0) return;
+
             const email = document.getElementById('email').value;
             if(!email || !email.includes('@')) {
                 alert("Unesite ispravan Email!");
+                fileInput.value = "";
                 return;
             }
 
-            html5QrCode.pause(true); 
-            document.getElementById('status').className = "loading";
-            document.getElementById('status').style.display = "block";
-            document.getElementById('statusSpinner').style.display = "block";
+            const imageFile = e.target.files[0];
+            
+            // Prikaži loading
+            statusDiv.style.display = "block";
+            statusDiv.className = "loading";
+            statusText.innerText = "⏳ Analiziram sliku... Sačekajte...";
 
+            // SKENIRANJE USLIKANE SLIKE
+            html5QrCode.scanFile(imageFile, true)
+            .then(decodedText => {
+                obradiRezultat(decodedText, email);
+            })
+            .catch(err => {
+                statusDiv.className = "error";
+                statusText.innerHTML = "❌ Kod nije prepoznat.<br><small>Pokušajte ponovo, pazite da slika ne bude mutna ili previše tamna.</small>";
+                console.error(err);
+            });
+        });
+
+        function obradiRezultat(decodedText, email) {
             let targetRoute = decodedText.includes("suf.purs.gov.rs") ? '/procesuiraj-racun' : '/skeniraj';
             let bodyData = targetRoute === '/procesuiraj-racun' ? { email, url: decodedText } : { email, tiketId: decodedText, aparatId: mojAparat };
-            
-            document.getElementById('statusText').innerText = targetRoute === '/procesuiraj-racun' ? "🔍 Provera na Poreskoj..." : "⏳ Aktivacija...";
+
+            statusText.innerText = "🔍 Verifikacija... (2-3s)";
 
             fetch(targetRoute, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(bodyData)
             })
-            .then(res => res.json().then(data => ({ status: res.status, data })))
-            .then(({ status, data }) => {
-                document.getElementById('statusSpinner').style.display = "none";
-                if (status !== 200) throw new Error(data.message || "Greška");
-                
-                document.getElementById('status').className = "success";
-                document.getElementById('statusText').innerHTML = `✅ PRIHVAĆENO!<br>${data.pfr || "Uživajte!"}`;
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    statusDiv.className = "success";
+                    statusText.innerHTML = `✅ USPEŠNO!<br>PFR: ${data.pfr || "Aktivirano"}<br>Srećno u igri!`;
+                } else {
+                    throw new Error(data.message);
+                }
             })
             .catch(err => {
-                document.getElementById('statusSpinner').style.display = "none";
-                document.getElementById('status').className = "error";
-                document.getElementById('statusText').innerText = "❌ " + err.message;
-                setTimeout(() => {
-                    document.getElementById('status').style.display = "none";
-                    html5QrCode.resume();
-                }, 4000);
+                statusDiv.className = "error";
+                statusText.innerText = "❌ " + err.message;
             });
-        };
-
-        const config = { 
-            fps: 60, 
-            qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0,
-            videoConstraints: {
-                facingMode: "environment",
-                width: { ideal: 1280 },
-                height: { ideal: 720 },
-                focusMode: "continuous"
-            }
-        };
-
-        // Pokretanje samo sa QR formatom radi brzine
-        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
-        .then(() => {
-            // Logika za blic
-            const flashBtn = document.getElementById('flashBtn');
-            flashBtn.addEventListener('click', () => {
-                isFlashOn = !isFlashOn;
-                html5QrCode.applyVideoConstraints({
-                    advanced: [{ torch: isFlashOn }]
-                }).then(() => {
-                    flashBtn.innerText = isFlashOn ? "🔌 UGASI BLIC" : "🔦 UPALI BLIC";
-                    flashBtn.classList.toggle('active', isFlashOn);
-                }).catch(() => alert("Blic nije podržan na ovom uređaju"));
-            });
-        })
-        .catch(() => {
-            document.getElementById('statusText').innerText = "Kamera nedostupna.";
-        });
+        }
     </script>
 </body>
 </html>
