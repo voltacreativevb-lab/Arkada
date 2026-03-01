@@ -8,16 +8,44 @@
     <style>
         body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; text-align: center; padding: 20px; background: #121212; color: white; margin: 0; }
         .container { max-width: 500px; margin: auto; padding-top: 20px; }
-        h2 { color: #00ff88; text-transform: uppercase; letter-spacing: 2px; }
-        #reader { width: 100%; border: 2px solid #333; border-radius: 15px; overflow: hidden; background: #000; }
+        h2 { color: #00ff88; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
+        .instructions { color: #888; font-size: 14px; margin-bottom: 20px; }
+        
+        #reader { width: 100%; border: 2px solid #333; border-radius: 15px; overflow: hidden; background: #000; box-shadow: 0 0 20px rgba(0,255,136,0.1); }
+        
         .input-group { margin: 20px 0; }
         input { width: 90%; padding: 15px; border-radius: 10px; border: 2px solid #333; background: #1a1a1a; color: white; font-size: 16px; outline: none; transition: 0.3s; }
-        input:focus { border-color: #00ff88; }
-        .instructions { color: #888; font-size: 14px; margin-bottom: 10px; }
-        #status { margin-top: 20px; padding: 15px; border-radius: 10px; font-weight: bold; display: none; line-height: 1.5; }
+        input:focus { border-color: #00ff88; box-shadow: 0 0 10px rgba(0,255,136,0.3); }
+        
+        #status { margin-top: 20px; padding: 15px; border-radius: 10px; font-weight: bold; display: none; line-height: 1.5; position: relative; }
+        
+        /* Stilovi za spinner (krug koji se okreće) */
+        .spinner {
+            display: none; /* Sakriven po defaultu */
+            width: 40px;
+            height: 40px;
+            margin: 10px auto;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #00ff88;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Dodatni stil za loading status da bi spinner lepo stajao */
+        .loading-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
         .success { background: #004422; color: #00ff88; display: block !important; border: 1px solid #00ff88; }
         .error { background: #440000; color: #ff4444; display: block !important; border: 1px solid #ff4444; }
-        .loading { background: #333; color: #fff; display: block !important; border: 1px solid #888; }
+        .loading { background: #1a1a1a; color: #fff; display: block !important; border: 1px solid #888; }
     </style>
 </head>
 <body>
@@ -26,11 +54,17 @@
         <p class="instructions">Unesite email i skenirajte barkod ili QR račun</p>
         
         <div class="input-group">
-            <input type="email" id="email" placeholder="Vaš Email" required>
+            <input type="email" id="email" placeholder="Vaš Email (za potvrdu popusta)" required>
         </div>
 
         <div id="reader"></div>
-        <div id="status"></div>
+        
+        <div id="status">
+            <div class="loading-content">
+                <div class="spinner" id="statusSpinner"></div>
+                <span id="statusText">⏳ Provera...</span>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -39,6 +73,8 @@
 
         const html5QrCode = new Html5Qrcode("reader");
         const statusDiv = document.getElementById('status');
+        const statusText = document.getElementById('statusText');
+        const statusSpinner = document.getElementById('statusSpinner');
 
         const onScanSuccess = (decodedText, decodedResult) => {
             const email = document.getElementById('email').value;
@@ -48,10 +84,11 @@
                 return;
             }
 
-            // Pauziraj skener
+            // Pauziraj skener i prikaži loading status sa spinnerom
             html5QrCode.pause(true); 
             statusDiv.className = "loading";
             statusDiv.style.display = "block";
+            statusSpinner.style.display = "block"; // Prikaži krug
 
             // ODREĐIVANJE RUTE: Da li je fiskalni račun ili običan tiket?
             let targetRoute = '/skeniraj';
@@ -67,9 +104,9 @@
                     email: email, 
                     url: decodedText 
                 };
-                statusDiv.innerText = "🔍 Verifikacija fiskalnog računa... Sačekajte (do 20s)";
+                statusText.innerText = "🔍 Verifikacija fiskalnog računa na Poreskoj... Sačekajte (do 20s)";
             } else {
-                statusDiv.innerText = "⏳ Aktivacija uređaja...";
+                statusText.innerText = "⏳ Aktivacija uređaja...";
             }
 
             // Slanje na Render
@@ -84,16 +121,18 @@
                 return data;
             })
             .then(data => {
+                statusSpinner.style.display = "none"; // Sakrij krug
                 statusDiv.className = "success";
                 if (targetRoute === '/procesuiraj-racun') {
-                    statusDiv.innerHTML = `✅ RAČUN PRIHVAĆEN!<br>PFR: ${data.pfr}<br>Uređaj spreman!`;
+                    statusText.innerHTML = `✅ RAČUN PRIHVAĆEN!<br>PFR: ${data.pfr}<br>Uređaj spreman!`;
                 } else {
-                    statusDiv.innerHTML = "✅ TIKET PRIHVAĆEN!<br>Uređaj se aktivira... Srećno!";
+                    statusText.innerHTML = "✅ TIKET PRIHVAĆEN!<br>Uređaj se aktivira... Srećno!";
                 }
             })
             .catch(err => {
+                statusSpinner.style.display = "none"; // Sakrij krug
                 statusDiv.className = "error";
-                statusDiv.innerHTML = "❌ " + err.message;
+                statusText.innerHTML = "❌ " + err.message;
                 
                 // Resetuj skener nakon 4 sekunde
                 setTimeout(() => {
@@ -113,7 +152,8 @@
         .catch(err => {
             statusDiv.className = "error";
             statusDiv.style.display = "block";
-            statusDiv.innerText = "Kamera nije dostupna. Proverite dozvole.";
+            statusSpinner.style.display = "none";
+            statusText.innerText = "Kamera nije dostupna. Proverite dozvole.";
         });
     </script>
 </body>
