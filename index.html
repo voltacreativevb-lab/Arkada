@@ -17,13 +17,13 @@
         #status { margin-top: 20px; padding: 15px; border-radius: 10px; font-weight: bold; display: none; line-height: 1.5; }
         .success { background: #004422; color: #00ff88; display: block !important; border: 1px solid #00ff88; }
         .error { background: #440000; color: #ff4444; display: block !important; border: 1px solid #ff4444; }
-        .loading { background: #333; color: #fff; display: block !important; }
+        .loading { background: #333; color: #fff; display: block !important; border: 1px solid #888; }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>⚡ Volta ARKADA</h2>
-        <p class="instructions">Unesite email i skenirajte barkod sa tiketa</p>
+        <p class="instructions">Unesite email i skenirajte barkod ili QR račun</p>
         
         <div class="input-group">
             <input type="email" id="email" placeholder="Vaš Email" required>
@@ -34,7 +34,6 @@
     </div>
 
     <script>
-        // 1. Automatski saznajemo koji je aparat u pitanju iz URL-a (npr. ?aparat=5)
         const urlParams = new URLSearchParams(window.location.search);
         const mojAparat = urlParams.get('aparat') || "APARAT_1";
 
@@ -49,41 +48,54 @@
                 return;
             }
 
-            // Pauziraj skener i pokaži da radimo proveru
+            // Pauziraj skener
             html5QrCode.pause(true); 
             statusDiv.className = "loading";
-            statusDiv.innerText = "⏳ Provera tiketa u toku...";
+            statusDiv.style.display = "block";
 
-            // 2. Šaljemo podatke na Render
-            fetch('/skeniraj', {
+            // ODREĐIVANJE RUTE: Da li je fiskalni račun ili običan tiket?
+            let targetRoute = '/skeniraj';
+            let bodyData = { 
+                email: email, 
+                tiketId: decodedText, 
+                aparatId: mojAparat 
+            };
+
+            if (decodedText.includes("suf.purs.gov.rs")) {
+                targetRoute = '/procesuiraj-racun';
+                bodyData = { 
+                    email: email, 
+                    url: decodedText 
+                };
+                statusDiv.innerText = "🔍 Verifikacija fiskalnog računa... Sačekajte (do 20s)";
+            } else {
+                statusDiv.innerText = "⏳ Aktivacija uređaja...";
+            }
+
+            // Slanje na Render
+            fetch(targetRoute, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    email: email, 
-                    tiketId: decodedText,
-                    aparatId: mojAparat 
-                })
+                body: JSON.stringify(bodyData)
             })
             .then(async res => {
                 const data = await res.json();
-                if (!res.ok) {
-                    // Ako server vrati grešku (npr. Tiket je iskorišćen)
-                    throw new Error(data.message || "Greška na serveru");
-                }
+                if (!res.ok) throw new Error(data.message || "Greška na serveru");
                 return data;
             })
             .then(data => {
-                // SCENARIO: USPEH
                 statusDiv.className = "success";
-                statusDiv.innerHTML = "✅ TIKET PRIHVAĆEN!<br>Uređaj se aktivira... Srećno!";
-                console.log("Server kaže:", data.message);
+                if (targetRoute === '/procesuiraj-racun') {
+                    statusDiv.innerHTML = `✅ RAČUN PRIHVAĆEN!<br>PFR: ${data.pfr}<br>Uređaj spreman!`;
+                } else {
+                    statusDiv.innerHTML = "✅ TIKET PRIHVAĆEN!<br>Uređaj se aktivira... Srećno!";
+                }
             })
             .catch(err => {
-                // SCENARIO: GREŠKA (Tiket već iskorišćen ili mrežna greška)
                 statusDiv.className = "error";
                 statusDiv.innerHTML = "❌ " + err.message;
                 
-                // Resetuj skener nakon 4 sekunde da igrač može da proba drugi tiket
+                // Resetuj skener nakon 4 sekunde
                 setTimeout(() => {
                     statusDiv.style.display = "none";
                     html5QrCode.resume();
@@ -93,13 +105,14 @@
 
         const config = { 
             fps: 15, 
-            qrbox: { width: 300, height: 150 }, 
+            qrbox: { width: 280, height: 200 }, 
             aspectRatio: 1.0 
         };
 
         html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
         .catch(err => {
             statusDiv.className = "error";
+            statusDiv.style.display = "block";
             statusDiv.innerText = "Kamera nije dostupna. Proverite dozvole.";
         });
     </script>
