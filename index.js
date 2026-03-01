@@ -3,7 +3,7 @@ const { createClient } = require('@supabase/supabase-js');
 const mqtt = require('mqtt');
 const cors = require('cors');
 const path = require('path');
-const puppeteer = require('puppeteer'); // DODATO
+const puppeteer = require('puppeteer');
 
 const app = express();
 app.use(cors());
@@ -20,28 +20,37 @@ const mqttClient = mqtt.connect('mqtts://8444eb8746d2443a864e05dee69c84bc.s1.eu.
     rejectUnauthorized: false
 });
 
-// --- NOVO: FUNKCIJA ZA ODLAZAK NA SAJT PORESKE ---
+// --- POMOĆNA FUNKCIJA: Dobijanje vremena u Srbiji (UTC+1) ---
+function getSerbianDate() {
+    const now = new Date();
+    // Pomeramo za 1 sat unapred jer Render koristi UTC
+    now.setHours(now.getHours() + 1);
+    return now.toISOString();
+}
+
+// --- NOVO: POBOLJŠANA FUNKCIJA ZA SCRAPING PFR BROJA ---
 async function ocitajPfrSaPoreske(url) {
     const browser = await puppeteer.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox'] // Obavezno za Render
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
     try {
+        // Idemo na sajt i čekamo da se učita sadržaj
         await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
         
-        // Čekamo da se pojavi PFR broj (na osnovu tvojih linkova, tražimo ID ili specifičan tekst)
-        // Napomena: Proveri tačan ID na sajtu poreske, obično je #pfrId ili slično
-        await page.waitForSelector('body'); 
-        
-        const podaci = await page.evaluate(() => {
-            // Pokušavamo da nađemo tekst koji prati 'PFR broj računa:'
-            const bodyText = document.body.innerText;
-            const match = bodyText.match(/[A-Z0-9]{8}-[A-Z0-9]{8}-[0-9]+/);
+        const pfr = await page.evaluate(() => {
+            // Pokušaj 1: Traženje elementa sa ID-om (ako postoji)
+            const pfrElement = document.getElementById('pfrId');
+            if (pfrElement && pfrElement.innerText.trim()) return pfrElement.innerText.trim();
+
+            // Pokušaj 2: Regex pretraga celog teksta stranice za format PFR-a
+            const text = document.body.innerText;
+            const match = text.match(/[A-Z0-9]{8}-[A-Z0-9]{8}-[0-9]+/);
             return match ? match[0] : null;
         });
 
         await browser.close();
-        return podaci;
+        return pfr;
     } catch (e) {
         console.error("Greška pri scrapingu:", e);
         await browser.close();
@@ -49,9 +58,10 @@ async function ocitajPfrSaPoreske(url) {
     }
 }
 
-// --- NOVO: RUTA KOJU POZIVA TVOJ QR SKENER ---
+// --- RUTA ZA FISKALNE RAČUNE ---
 app.post('/procesuiraj-racun', async (req, res) => {
-    const { url, email } = req.body;
+    const { url, email, aparatId } = req.body;
+    const aId = aparatId || 'APARAT_1';
 
     if (!url || !url.includes('suf.purs.gov.rs')) {
         return res.status(400).json({ success: false, message: "Nevalidan link Poreske uprave." });
@@ -60,25 +70,42 @@ app.post('/procesuiraj-racun', async (req, res) => {
     try {
         const pfrBroj = await ocitajPfrSaPoreske(url);
 
-        if (pfrBroj) {
-            // Upisujemo u bazu u tabelu 'tiketi' ili novu tabelu 'racuni'
-            const { error } = await supabase
-                .from('tiketi')
-                .insert([{ 
-                    email: email, 
-                    barcode: pfrBroj, // Koristimo PFR broj kao jedinstveni kod
-                    vreme_prijave: new Date(),
-                    napomena: 'Skeniran fiskalni račun'
-                }]);
-
-            if (error) throw error;
-            res.json({ success: true, pfr: pfrBroj, message: "Račun uspešno verifikovan!" });
-        } else {
-            res.status(500).json({ success: false, message: "Sajt poreske nije vratio broj računa." });
+        if (!pfrBroj) {
+            return res.status(400).json({ success: false, message: "Sajt poreske nije vratio PFR broj. Pokušajte ponovo." });
         }
+
+        // PROVERA DUPLIKATA: Da li je ovaj PFR već u bazi?
+        const { data: postojeci } = await supabase
+            .from('tiketi')
+            .select('barcode')
+            .eq('barcode', pfrBroj)
+            .single();
+
+        if (postojeci) {
+            return res.status(400).json({ success: false, message: "Ovaj račun je već iskorišćen za igru!" });
+        }
+
+        // UPIS U BAZU
+        const { error: dbError } = await supabase
+            .from('tiketi')
+            .insert([{ 
+                email: email, 
+                barcode: pfrBroj, 
+                arena_id: aId,
+                vreme_prijave: getSerbianDate(),
+                napomena: 'Fiskalni račun'
+            }]);
+
+        if (dbError) throw dbError;
+
+        // MQTT KOMANDA ZA APARAT
+        mqttClient.publish(`arene/${aId}/komanda`, `START:${pfrBroj}`);
+        
+        res.json({ success: true, pfr: pfrBroj, message: "Račun verifikovan! Aparat se pali." });
+
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ success: false, message: "Greška pri obradi računa." });
+        console.error("Greška u /procesuiraj-racun:", err.message);
+        res.status(500).json({ success: false, message: "Greška pri obradi: " + err.message });
     }
 });
 
@@ -139,7 +166,7 @@ app.get('/api/rang-lista', async (req, res) => {
     }
 });
 
-// RUTA ZA SKENIRANJE TIKETA (Standardna)
+// RUTA ZA SKENIRANJE OBIČNIH TIKETA
 app.post('/skeniraj', async (req, res) => {
     const { email, tiketId, aparatId } = req.body;
     const aId = aparatId || 'APARAT_1';
@@ -161,7 +188,7 @@ app.post('/skeniraj', async (req, res) => {
                 email: email, 
                 barcode: tiketId, 
                 arena_id: aId,
-                vreme_prijave: new Date() 
+                vreme_prijave: getSerbianDate()
             }]);
 
         if (insertError) throw insertError;
@@ -174,6 +201,7 @@ app.post('/skeniraj', async (req, res) => {
     }
 });
 
+// MQTT LOGIKA ZA REZULTATE
 mqttClient.on('connect', () => {
     console.log("Povezan na HiveMQ Cloud!");
     mqttClient.subscribe('arene/rezultati');
@@ -196,7 +224,7 @@ mqttClient.on('message', async (topic, message) => {
             };
 
             const { error } = await supabase.from('turnir').insert([zaUpis]);
-            if (error) console.error("Greška pri upisu:", error.message);
+            if (error) console.error("Greška pri upisu rezultata:", error.message);
         } catch (e) {
             console.error("Greška pri obradi rezultata:", e);
         }
