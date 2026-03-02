@@ -32,81 +32,95 @@
             font-size: 2.8rem; font-weight: 800;
             color: var(--neon-green); margin-bottom: 5px;
             letter-spacing: -1px;
+            text-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
         }
 
-        h2 { font-size: 1.1rem; margin-bottom: 25px; color: #ccc; font-weight: 400; text-transform: uppercase; }
+        h2 { font-size: 1rem; margin-bottom: 25px; color: #aaa; font-weight: 400; text-transform: uppercase; letter-spacing: 1px; }
 
         .input-group { margin-bottom: 20px; text-align: left; }
 
         label {
-            display: block; margin-bottom: 8px; font-size: 0.85rem;
+            display: block; margin-bottom: 8px; font-size: 0.8rem;
             color: var(--neon-green); font-weight: bold; text-transform: uppercase;
         }
 
         input {
             width: 100%; padding: 15px; border-radius: 12px;
             border: 2px solid #333; background: #000; color: #fff;
-            font-size: 1rem; box-sizing: border-box; transition: border-color 0.3s;
+            font-size: 1rem; box-sizing: border-box; transition: all 0.3s;
         }
 
-        input:focus { outline: none; border-color: var(--neon-green); }
+        input:focus { outline: none; border-color: var(--neon-green); box-shadow: 0 0 10px rgba(0, 255, 136, 0.2); }
 
         .btn-start {
             width: 100%; padding: 18px; background: var(--neon-green);
             color: #000; border: none; border-radius: 12px;
             font-size: 1.2rem; font-weight: 900; cursor: pointer;
             margin-top: 10px; text-transform: uppercase;
+            transition: transform 0.1s, background 0.3s;
         }
 
-        /* Stil za odbrojavanje */
+        .btn-start:active { transform: scale(0.96); }
+
         #status {
             margin-top: 20px; font-size: 1.2rem; font-weight: bold;
             min-height: 30px; line-height: 1.4;
         }
 
         .countdown-num {
-            font-size: 3rem; color: var(--neon-green);
-            display: block; margin-top: 10px;
+            font-size: 4rem; color: var(--neon-green);
+            display: block; margin-top: 15px;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
         }
 
         .info-box {
             margin-top: 30px; padding: 15px;
             background: rgba(0, 255, 136, 0.05);
-            border-radius: 10px; border: 1px dashed #333;
+            border-radius: 12px; border: 1px dashed #333;
         }
 
-        .info-box p { margin: 0; font-size: 0.85rem; color: #aaa; }
+        .info-box p { margin: 0; font-size: 0.85rem; color: #888; line-height: 1.5; }
         .highlight { color: var(--neon-green); font-weight: bold; }
+        
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div class="container" id="main-content">
     <div class="logo">VOLTA</div>
-    <h2>Prijava za turnir</h2>
+    <h2 id="sub-title">Prijava za turnir</h2>
 
-    <div class="input-group">
-        <label>E-mail adresa</label>
-        <input type="email" id="email" placeholder="vas@mail.com" required>
+    <div id="form-ui">
+        <div class="input-group">
+            <label>E-mail adresa</label>
+            <input type="email" id="email" placeholder="vas@mail.com" required>
+        </div>
+
+        <div class="input-group">
+            <label>PFR Broj (zadnje cifre iz 3. reda)</label>
+            <input type="text" id="pfr" placeholder="Npr. 123456" inputmode="numeric">
+        </div>
+
+        <button class="btn-start" id="startBtn" onclick="pokreniAparat()">POKRENI APARAT</button>
     </div>
-
-    <div class="input-group">
-        <label>PFR Broj (zadnje cifre iz 3. reda)</label>
-        <input type="text" id="pfr" placeholder="Npr. 123456" inputmode="numeric">
-    </div>
-
-    <button class="btn-start" id="startBtn" onclick="pokreniAparat()">POKRENI APARAT</button>
 
     <div id="status"></div>
 
-    <div class="info-box">
-        <p>Račun obavezno <span class="highlight">sačuvajte kao dokaz</span> radi preuzimanja nagrade na kraju turnira!</p>
+    <div class="info-box" id="info-box">
+        <p>⚠️ Račun obavezno <span class="highlight">sačuvajte kao dokaz</span> radi preuzimanja nagrade ukoliko osvojite turnir!</p>
     </div>
 </div>
 
 <script>
     const urlParams = new URLSearchParams(window.location.search);
     const aparatId = urlParams.get('aparat') || "APARAT_1";
+
+    // Automatski popuni email ako je igrač već igrao na ovom telefonu
+    window.onload = () => {
+        const savedEmail = localStorage.getItem('volta_email');
+        if (savedEmail) document.getElementById('email').value = savedEmail;
+    };
 
     function pokreniAparat() {
         const email = document.getElementById('email').value.trim();
@@ -119,11 +133,13 @@
             return;
         }
         if (pfr.length < 4) {
-            alert("Unesite poslednje cifre PFR broja sa računa.");
+            alert("Unesite poslednje cifre PFR broja (minimum 4 cifre).");
             return;
         }
 
-        // Vizuelna povratna informacija
+        // Sačuvaj email za sledeći put
+        localStorage.setItem('volta_email', email);
+
         btn.disabled = true;
         btn.style.opacity = "0.5";
         statusDiv.innerHTML = "⏳ Proveravam račun...";
@@ -155,8 +171,10 @@
         let sekunde = 10;
         const statusDiv = document.getElementById('status');
         
-        // Sakrij formu da ostane samo poruka
-        document.querySelectorAll('.input-group, .btn-start, .info-box').forEach(el => el.style.display = 'none');
+        // Sakrij elemente forme da se fokusira na odbrojavanje
+        document.getElementById('form-ui').classList.add('hidden');
+        document.getElementById('info-box').classList.add('hidden');
+        document.getElementById('sub-title').classList.add('hidden');
         
         const interval = setInterval(() => {
             statusDiv.innerHTML = `Vaša igra počinje za:<br><span class="countdown-num">${sekunde}</span><br>Srećno! 🎮`;
@@ -164,7 +182,7 @@
 
             if (sekunde < 0) {
                 clearInterval(interval);
-                statusDiv.innerHTML = "<span class='countdown-num'>KRENI!</span>";
+                statusDiv.innerHTML = "<span class='countdown-num' style='font-size: 3rem;'>KRENI!</span>";
             }
         }, 1000);
     }
