@@ -22,13 +22,22 @@ const mqttClient = mqtt.connect('mqtts://8444eb8746d2443a864e05dee69c84bc.s1.eu.
     rejectUnauthorized: false
 });
 
+// Funkcija za precizan početak sedmice (Ponedeljak 00:00)
+function getStartOfCurrentWeek() {
+    const d = new Date();
+    const day = d.getDay(); 
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); 
+    const monday = new Date(d.setDate(diff));
+    monday.setHours(0, 0, 0, 0);
+    return monday.toISOString();
+}
+
 function getSerbianDate() {
     const now = new Date();
     now.setHours(now.getHours() + 1);
     return now.toISOString();
 }
 
-// --- POSLUŽIVANJE HTML FAJLOVA ---
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/leaderboard.html', (req, res) => res.sendFile(path.join(__dirname, 'leaderboard.html')));
 
@@ -38,105 +47,116 @@ app.post('/skeniraj', async (req, res) => {
     const aId = aparatId || 'APARAT_1';
     
     try {
-        const { data: postojeci } = await supabase
-            .from('tiketi')
-            .select('barcode')
-            .eq('barcode', tiketId)
-            .maybeSingle();
+        const { data: postojeci } = await supabase.from('tiketi').select('barcode').eq('barcode', tiketId).maybeSingle();
+        if (postojeci) return res.status(400).json({ success: false, message: "Račun je već iskorišćen!" });
 
-        if (postojeci) {
-            return res.status(400).json({ success: false, message: "Ovaj račun je već iskorišćen!" });
-        }
+        await supabase.from('tiketi').insert([{ 
+            email: email.trim().toLowerCase(), 
+            barcode: tiketId, 
+            arena_id: aId,
+            vreme_prijave: getSerbianDate(),
+            aktivna_sedmica: 1
+        }]);
 
-        const { error: insertError } = await supabase
-            .from('tiketi')
-            .insert([{ 
-                email: email.trim().toLowerCase(), 
-                barcode: tiketId, 
-                arena_id: aId,
-                vreme_prijave: getSerbianDate(),
-                aktivna_sedmica: 1 // Postavljamo na 1 pri skeniranju
-            }]);
-
-        if (insertError) throw insertError;
-
-        mqttClient.publish(`arene/${aId}/komanda`, `START:${tiketId}`);
-        res.json({ success: true, message: "Aktivirano!" });
-
-    } catch (err) {
-        res.status(500).json({ success: false, message: "Greška: " + err.message });
-    }
+        // REŠENJE ZA TAJMER: Šaljemo Timestamp servera aparatu da se sinhronizuju
+        const serverTime = Date.now();
+        mqttClient.publish(`arene/${aId}/komanda`, `START:${tiketId}:${serverTime}`);
+        
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
 
-// --- RANG LISTA (TOP 50 - FILTRIRANO PO AKTIVNOJ SEDMICI) ---
+// --- RANG LISTA (RESET RADI AUTOMATSKI) ---
 app.get('/api/rang-lista', async (req, res) => {
     try {
-        const { data, error } = await supabase
+        const ponedeljak = getStartOfCurrentWeek();
+
+        // 1. Uzmi barcodove od ponedeljka do danas
+        const { data: noviTiketi, error: errT } = await supabase
+            .from('tiketi')
+            .select('barcode, email')
+            .gte('vreme_prijave', ponedeljak);
+
+        if (errT) throw errT;
+        if (!noviTiketi || noviTiketi.length === 0) return res.json([]);
+
+        const barcodovi = noviTiketi.map(t => t.barcode);
+
+        // 2. Uzmi rezultate za te barcodove
+        const { data: rezultati, error: errR } = await supabase
             .from('turnir')
-            .select(`
-                finalni_skor, 
-                tiketi!inner ( email, aktivna_sedmica )
-            `)
-            .eq('tiketi.aktivna_sedmica', 1) // Gleda kolonu iz tiketi tabele
+            .select('finalni_skor, barcode')
+            .in('barcode', barcodovi)
             .order('finalni_skor', { ascending: false })
             .limit(50);
-        
-        if (error) throw error;
-        res.json(data.map(d => ({ 
-            prikaz_imena: d.tiketi?.email ? d.tiketi.email.split('@')[0] + "@" : "Gost@", 
-            finalni_skor: d.finalni_skor 
-        })));
+
+        if (errR) throw errR;
+
+        const finalnaLista = rezultati.map(r => {
+            const t = noviTiketi.find(tik => tik.barcode === r.barcode);
+            return {
+                prikaz_imena: t?.email ? t.email.split('@')[0] + "@" : "Gost@",
+                finalni_skor: r.finalni_skor
+            };
+        });
+
+        res.json(finalnaLista);
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// --- PRETRAGA PO EMAILU (ISTORIJA I RANG) ---
+// --- PRETRAGA (FIXED: RADI UVEK) ---
 app.get('/api/pronadji-me', async (req, res) => {
     const inputEmail = req.query.email ? req.query.email.trim().toLowerCase() : null;
     if (!inputEmail) return res.status(400).json({ error: "Email nedostaje" });
 
     try {
-        // 1. Globalni rang za aktivnu sedmicu
-        const { data: svi, error: errSvi } = await supabase
+        // 1. Nađi sve tikete korisnika
+        const { data: mojiTiketi } = await supabase
+            .from('tiketi')
+            .select('barcode, vreme_prijave')
+            .eq('email', inputEmail);
+
+        if (!mojiTiketi || mojiTiketi.length === 0) return res.json({ pronadjen: false });
+
+        const mojiBarcodovi = mojiTiketi.map(t => t.barcode);
+
+        // 2. Istorija
+        const { data: istorija } = await supabase
             .from('turnir')
-            .select(`finalni_skor, tiketi!inner(email, aktivna_sedmica)`)
-            .eq('tiketi.aktivna_sedmica', 1)
-            .order('finalni_skor', { ascending: false });
+            .select('finalni_skor, pogodaka, promasaji, vreme_igre, barcode')
+            .in('barcode', mojiBarcodovi)
+            .order('id', { ascending: false });
 
-        if (errSvi) throw errSvi;
-
-        const najboljiIndex = svi.findIndex(d => d.tiketi?.email.toLowerCase() === inputEmail);
+        // 3. Rang (za ovu sedmicu)
+        const ponedeljak = getStartOfCurrentWeek();
+        const { data: ovonedeljni } = await supabase.from('tiketi').select('barcode, email').gte('vreme_prijave', ponedeljak);
         
-        if (najboljiIndex === -1) {
-            return res.json({ pronadjen: false, message: "Nema rezultata za ovu sedmicu." });
+        let mojRang = "N/A";
+        if (ovonedeljni && ovonedeljni.length > 0) {
+            const vazeciBarcodovi = ovonedeljni.map(t => t.barcode);
+            const { data: top } = await supabase.from('turnir').select('barcode, finalni_skor').in('barcode', vazeciBarcodovi).order('finalni_skor', { ascending: false });
+            
+            if (top) {
+                const index = top.findIndex(r => {
+                    const t = ovonedeljni.find(tik => tik.barcode === r.barcode);
+                    return t?.email.toLowerCase() === inputEmail;
+                });
+                if (index !== -1) mojRang = index + 1;
+            }
         }
 
-        // 2. Istorija igara (sve igre tog korisnika)
-        const { data: istorija, error: errIst } = await supabase
-            .from('turnir')
-            .select(`
-                finalni_skor, 
-                pogodaka, 
-                promasaji, 
-                vreme_igre, 
-                tiketi!inner(email, vreme_prijave)
-            `)
-            .eq('tiketi.email', inputEmail)
-            .order('id', { ascending: false }); // Redosled po ID-u jer nema created_at u turnir
-
-        if (errIst) throw errIst;
-
-        res.json({ 
-            pronadjen: true, 
-            najbolja_pozicija: najboljiIndex + 1, 
-            istorija: istorija.map(i => ({
-                ...i,
-                created_at: i.tiketi.vreme_prijave // Mapiramo vreme prijave za frontend
+        res.json({
+            pronadjen: true,
+            najbolja_pozicija: mojRang,
+            istorija: (istorija || []).map(ist => ({
+                ...ist,
+                created_at: mojiTiketi.find(t => t.barcode === ist.barcode)?.vreme_prijave
             }))
         });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// --- MQTT LOGIKA (UKLJUČENI PROMAŠAJI I VREME) ---
+// --- MQTT PRIJEM (SA POPRAVKOM ZA PROMAŠAJE I VREME) ---
 mqttClient.on('connect', () => {
     console.log("MQTT Online!");
     mqttClient.subscribe('arene/rezultati');
@@ -146,20 +166,18 @@ mqttClient.on('message', async (topic, message) => {
     if (topic === 'arene/rezultati') {
         try {
             const resData = JSON.parse(message.toString());
-            console.log("Rezultat primljen:", resData);
-
             await supabase.from('turnir').insert([{
                 barcode: resData.barcode,
                 aparat_id: resData.aparat_id,
                 pogodaka: resData.pogodaka || 0,
-                promasaji: resData.promasaji || 0,     // Dodato
-                vreme_igre: resData.vreme_igre || 0,   // Dodato
+                promasaji: resData.promasaji || 0,
+                vreme_igre: resData.vreme_igre || 0,
                 finalni_skor: resData.finalni_skor
             }]);
-            console.log("Rezultat upisan u bazu.");
-        } catch (e) { console.error("MQTT Error:", e); }
+            console.log("Rezultat upisan.");
+        } catch (e) { console.error("MQTT JSON Error:", e); }
     }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server pokrenut na portu ${PORT}`));
+app.listen(PORT, () => console.log(`Server pokrenut.`));
