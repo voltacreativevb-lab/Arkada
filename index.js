@@ -22,10 +22,10 @@ const mqttClient = mqtt.connect('mqtts://8444eb8746d2443a864e05dee69c84bc.s1.eu.
     rejectUnauthorized: false
 });
 
-// POMOĆNE FUNKCIJE
+// POMOĆNE FUNKCIJE ZA DATUM I VREME
 function getSerbianDate() {
     const now = new Date();
-    now.setHours(now.getHours() + 1); // Srbija UTC+1
+    now.setHours(now.getHours() + 1); // Ručno podešavanje za Srbiju UTC+1
     return now.toISOString();
 }
 
@@ -38,22 +38,22 @@ function getStartOfCurrentWeek() {
     return monday.toISOString();
 }
 
-// SERVIRANJE STRANICA
+// SERVIRANJE FRONTEND STRANICA
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/leaderboard.html', (req, res) => res.sendFile(path.join(__dirname, 'leaderboard.html')));
 
-// --- GLAVNA RUTU ZA PRIJAVU ---
+// --- RUTA ZA SKENIRANJE I START IGRE ---
 app.post('/skeniraj', async (req, res) => {
     const { email, tiketId, aparatId } = req.body;
     const aId = aparatId || 'APARAT_1';
 
-    // EKSTREMNO ČIŠĆENJE ulaza sa telefona
+    // OBAVEZNO ČIŠĆENJE: Brišemo sve razmake iz barcode-a koji dolaze sa telefona
     const cistTiketId = tiketId ? String(tiketId).replace(/\s+/g, '') : null;
 
     try {
         if (!cistTiketId) return res.status(400).json({ success: false, message: "Prazan kod!" });
 
-        // Provera duplikata
+        // 1. Provera da li je tiket već iskorišćen
         const { data: postojeci } = await supabase
             .from('tiketi')
             .select('barcode')
@@ -64,8 +64,8 @@ app.post('/skeniraj', async (req, res) => {
             return res.status(400).json({ success: false, message: "Račun je već iskorišćen!" });
         }
 
-        // Upis u bazu (tabela tiketi)
-        await supabase.from('tiketi').insert([{ 
+        // 2. Upis u tabelu 'tiketi'
+        const { error: ticketErr } = await supabase.from('tiketi').insert([{ 
             email: email.trim().toLowerCase(), 
             barcode: cistTiketId, 
             arena_id: aId,
@@ -73,48 +73,53 @@ app.post('/skeniraj', async (req, res) => {
             aktivna_sedmica: 1
         }]);
 
-        // SINHRONIZACIJA: Aparat čeka 1000ms (1 sekundu) pre nego što krene sa 10, 9, 8...
-        // To mu daje vremena da se poravna sa telefonom.
-        const startDelay = 1000; 
-        mqttClient.publish(`arene/${aId}/komanda`, `START:${cistTiketId}:${startDelay}`);
+        if (ticketErr) throw ticketErr;
+
+        // 3. SLANJE ČISTE KOMANDE APARATU (Bez delay parametra)
+        // Format poruke: START:44278
+        mqttClient.publish(`arene/${aId}/komanda`, `START:${cistTiketId}`);
         
-        console.log(`✅ Registrovan tiket: ${cistTiketId}. Aparat startuje za 1s.`);
+        console.log(`✅ Registrovan tiket: ${cistTiketId}. MQTT komanda poslata.`);
         res.json({ success: true });
 
     } catch (err) {
-        console.error("Greška servera:", err.message);
+        console.error("Greška pri skeniranju:", err.message);
         res.status(500).json({ success: false, message: "Greška na serveru." });
     }
 });
 
-// --- PRIJEM REZULTATA (SA FIX-OM ZA FOREIGN KEY) ---
+// --- PRIJEM REZULTATA SA APARATA (MQTT) ---
 mqttClient.on('connect', () => {
     mqttClient.subscribe('arene/rezultati');
-    console.log("MQTT Online!");
+    console.log("📡 MQTT Klijent je Online!");
 });
 
 mqttClient.on('message', async (topic, message) => {
     try {
         const resData = JSON.parse(message.toString());
         
-        // Čišćenje bar-koda koji stiže sa aparata (često ima nevidljive \r ili \n)
+        // Uzimamo barcode iz JSON-a i čistimo ga od razmaka
         const cistBarcode = resData.barcode ? String(resData.barcode).replace(/\s+/g, '') : null;
 
-        if (!cistBarcode) return;
+        if (!cistBarcode) {
+            console.error("Aparat poslao JSON bez barcode-a.");
+            return;
+        }
 
-        // Provera postojanja u tabeli 'tiketi' pre upisa u 'turnir'
-        const { data: tiketPostoji } = await supabase
+        // PROVERA STRANOG KLJUČA: Da li ovaj barcode postoji u 'tiketi'?
+        const { data: provera } = await supabase
             .from('tiketi')
             .select('barcode')
             .eq('barcode', cistBarcode)
             .maybeSingle();
 
-        if (!tiketPostoji) {
-            console.error(`❌ Greška: Barcode [${cistBarcode}] ne postoji u tabeli 'tiketi'. Upis rezultata odbijen.`);
+        if (!provera) {
+            console.error(`❌ Foreign Key Error: Barcode [${cistBarcode}] ne postoji u tabeli tiketi.`);
             return;
         }
 
-        const podaciZaTurnir = {
+        // UPIS REZULTATA U TABELU 'turnir'
+        const podaciZaUpis = {
             barcode: cistBarcode,
             aparat_id: resData.aparat_id || 'APARAT_1',
             pogodaka: parseInt(resData.pogodaka) || 0,
@@ -125,17 +130,20 @@ mqttClient.on('message', async (topic, message) => {
             aktivna_sedmica: 1
         };
 
-        const { error: insertErr } = await supabase.from('turnir').insert([podaciZaTurnir]);
+        const { error: insertErr } = await supabase.from('turnir').insert([podaciZaUpis]);
         
-        if (insertErr) console.error("Baza odbila upis u turnir:", insertErr.message);
-        else console.log(`🏆 Rezultat uspešno upisan za: ${cistBarcode}`);
+        if (insertErr) {
+            console.error("Baza odbila upis rezultata:", insertErr.message);
+        } else {
+            console.log(`🏆 Rezultat uspešno snimljen za barcode: ${cistBarcode}`);
+        }
 
     } catch (e) {
-        console.error("Loš format MQTT poruke:", e.message);
+        console.error("Greška pri obradi MQTT poruke (Loš JSON?):", e.message);
     }
 });
 
-// --- RANG LISTA ---
+// --- RANG LISTA API ---
 app.get('/api/rang-lista', async (req, res) => {
     try {
         const ponedeljak = getStartOfCurrentWeek();
@@ -153,15 +161,22 @@ app.get('/api/rang-lista', async (req, res) => {
             .order('finalni_skor', { ascending: false })
             .limit(50);
         
-        res.json((rez || []).map(r => {
+        const leaderboard = (rez || []).map(r => {
             const t = tiketi.find(x => x.barcode === r.barcode);
             return { 
                 prikaz_imena: t?.email ? t.email.split('@')[0] + "@..." : "Igrač", 
                 finalni_skor: r.finalni_skor 
             };
-        }));
-    } catch (err) { res.status(500).json({ error: err.message }); }
+        });
+
+        res.json(leaderboard);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
+// START SERVERA
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`VOLTA Arena Server pokrenut.`));
+app.listen(PORT, () => {
+    console.log(`🚀 VOLTA Server radi na portu ${PORT}`);
+});
