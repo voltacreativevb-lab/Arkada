@@ -22,6 +22,16 @@ const mqttClient = mqtt.connect('mqtts://8444eb8746d2443a864e05dee69c84bc.s1.eu.
     rejectUnauthorized: false
 });
 
+// Funkcija za dobijanje početka trenutne sedmice (Ponedeljak 00:00)
+function getStartOfCurrentWeek() {
+    const d = new Date();
+    const day = d.getDay(); 
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); 
+    const monday = new Date(d.setDate(diff));
+    monday.setHours(0, 0, 0, 0);
+    return monday.toISOString();
+}
+
 function getSerbianDate() {
     const now = new Date();
     now.setHours(now.getHours() + 1);
@@ -32,7 +42,7 @@ function getSerbianDate() {
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/leaderboard.html', (req, res) => res.sendFile(path.join(__dirname, 'leaderboard.html')));
 
-// --- RUTA ZA AKTIVACIJU APARATA (START IGRE) ---
+// --- RUTA ZA AKTIVACIJU APARATA ---
 app.post('/skeniraj', async (req, res) => {
     const { email, tiketId, aparatId } = req.body;
     const aId = aparatId || 'APARAT_1';
@@ -51,7 +61,7 @@ app.post('/skeniraj', async (req, res) => {
         const { error: insertError } = await supabase
             .from('tiketi')
             .insert([{ 
-                email: email, 
+                email: email.trim().toLowerCase(), 
                 barcode: tiketId, 
                 arena_id: aId,
                 vreme_prijave: getSerbianDate()
@@ -67,14 +77,17 @@ app.post('/skeniraj', async (req, res) => {
     }
 });
 
-// --- RANG LISTA (TOP 50) ---
+// --- RANG LISTA (TOP 50 - RESET SVAKOG PONEDELJKA) ---
 app.get('/api/rang-lista', async (req, res) => {
     try {
+        const startOfWeek = getStartOfCurrentWeek();
+
         const { data, error } = await supabase
             .from('turnir')
-            .select(`finalni_skor, tiketi ( email )`)
+            .select(`finalni_skor, created_at, tiketi ( email )`)
+            .gte('created_at', startOfWeek) // Samo rezultati od ovog ponedeljka
             .order('finalni_skor', { ascending: false })
-            .limit(50); // Povećano na 50
+            .limit(50);
         
         if (error) throw error;
         res.json(data.map(d => ({ 
@@ -84,28 +97,35 @@ app.get('/api/rang-lista', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// --- PRETRAGA PO EMAILU (ISTORIJA I RANG) ---
+// --- PRETRAGA PO EMAILU (SA FIXOM ZA NALAŽENJE) ---
 app.get('/api/pronadji-me', async (req, res) => {
-    const email = req.query.email;
-    if (!email) return res.status(400).json({ error: "Email nedostaje" });
+    const inputEmail = req.query.email ? req.query.email.trim().toLowerCase() : null;
+    if (!inputEmail) return res.status(400).json({ error: "Email nedostaje" });
 
     try {
-        // 1. Izračunavanje globalnog ranga (uzimamo sve rezultate)
+        const startOfWeek = getStartOfCurrentWeek();
+
+        // 1. Globalni rang za ovu sedmicu
         const { data: svi, error: errSvi } = await supabase
             .from('turnir')
             .select(`finalni_skor, tiketi!inner(email)`)
+            .gte('created_at', startOfWeek)
             .order('finalni_skor', { ascending: false });
 
         if (errSvi) throw errSvi;
 
-        const najboljiIndex = svi.findIndex(d => d.tiketi?.email === email);
-        if (najboljiIndex === -1) return res.json({ pronadjen: false });
+        const najboljiIndex = svi.findIndex(d => d.tiketi?.email.toLowerCase() === inputEmail);
+        
+        if (najboljiIndex === -1) {
+            return res.json({ pronadjen: false, message: "Nema rezultata za ovu sedmicu." });
+        }
 
-        // 2. Izvlačenje istorije igara hronološki (najnovije prvo)
+        // 2. Istorija igara za ovu sedmicu
         const { data: istorija, error: errIst } = await supabase
             .from('turnir')
             .select(`finalni_skor, pogodaka, created_at, tiketi!inner(email)`)
-            .eq('tiketi.email', email)
+            .eq('tiketi.email', inputEmail)
+            .gte('created_at', startOfWeek)
             .order('created_at', { ascending: false });
 
         if (errIst) throw errIst;
@@ -118,7 +138,7 @@ app.get('/api/pronadji-me', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// --- MQTT LOGIKA (PRIJEM REZULTATA) ---
+// --- MQTT LOGIKA ---
 mqttClient.on('connect', () => {
     console.log("MQTT Online!");
     mqttClient.subscribe('arene/rezultati');
