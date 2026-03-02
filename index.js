@@ -34,14 +34,14 @@ function getStartOfCurrentWeek() {
 
 function getSerbianDate() {
     const now = new Date();
-    now.setHours(now.getHours() + 1);
+    now.setHours(now.getHours() + 1); // Srbija UTC+1
     return now.toISOString();
 }
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/leaderboard.html', (req, res) => res.sendFile(path.join(__dirname, 'leaderboard.html')));
 
-// --- SKENIRANJE ---
+// --- SKENIRANJE (SA SINHRONIZACIJOM) ---
 app.post('/skeniraj', async (req, res) => {
     const { email, tiketId, aparatId } = req.body;
     const aId = aparatId || 'APARAT_1';
@@ -53,24 +53,28 @@ app.post('/skeniraj', async (req, res) => {
             email: email.trim().toLowerCase(), 
             barcode: tiketId, 
             arena_id: aId,
-            vreme_prijave: getSerbianDate()
+            vreme_prijave: getSerbianDate(),
+            aktivna_sedmica: 1
         }]);
 
-        mqttClient.publish(`arene/${aId}/komanda`, `START:${tiketId}`);
-        res.json({ success: true });
+        // SINHRONIZACIJA: Šaljemo delay od 2000ms (2 sekunde)
+        // Aparat treba da primi: START:barcode:2000 i da sačeka 2 sekunde pre prve diode
+        const startDelay = 2000; 
+        mqttClient.publish(`arene/${aId}/komanda`, `START:${tiketId}:${startDelay}`);
+        
+        // Vraćamo startDelay frontendu da bi i telefon sačekao pre starta tajmera
+        res.json({ success: true, startDelay: startDelay });
     } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
 
-// --- RANG LISTA (RESET RADI AUTOMATSKI) ---
+// --- RANG LISTA ---
 app.get('/api/rang-lista', async (req, res) => {
     try {
         const ponedeljak = getStartOfCurrentWeek();
-        // Uzmi samo barkodove od ponedeljka
         const { data: tiketi } = await supabase.from('tiketi').select('barcode, email').gte('vreme_prijave', ponedeljak);
         
         if (!tiketi || tiketi.length === 0) return res.json([]);
 
-        // Uzmi rezultate za te barkodove
         const { data: rez } = await supabase
             .from('turnir')
             .select('finalni_skor, barcode')
@@ -78,24 +82,22 @@ app.get('/api/rang-lista', async (req, res) => {
             .order('finalni_skor', { ascending: false })
             .limit(50);
         
-        const finalna = (rez || []).map(r => {
+        res.json((rez || []).map(r => {
             const t = tiketi.find(x => x.barcode === r.barcode);
             return { 
                 prikaz_imena: t?.email ? t.email.split('@')[0] + "@" : "Gost@", 
                 finalni_skor: r.finalni_skor 
             };
-        });
-        res.json(finalna);
+        }));
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// --- PRETRAGA (CELA ISTORIJA) ---
+// --- PRETRAGA (CEŠLJANJE CELE BAZE - POPRAVLJENO) ---
 app.get('/api/pronadji-me', async (req, res) => {
     const inputEmail = req.query.email ? req.query.email.trim().toLowerCase() : null;
     if (!inputEmail) return res.status(400).json({ error: "Email nedostaje" });
 
     try {
-        // 1. Prvo tražimo sve barkodove za taj email u tabeli tiketi
         const { data: mojiTiketi, error: errT } = await supabase
             .from('tiketi')
             .select('barcode, vreme_prijave')
@@ -103,47 +105,46 @@ app.get('/api/pronadji-me', async (req, res) => {
 
         if (errT || !mojiTiketi || mojiTiketi.length === 0) return res.json({ pronadjen: false });
 
-        const mojiBarcodovi = mojiTiketi.map(t => t.barcode);
+        // Dodajemo .trim() za svaki slučaj da razmaci ne kvare pretragu
+        const mojiBarcodovi = mojiTiketi.map(t => t.barcode.trim());
 
-        // 2. Tražimo rezultate u turnir tabeli za te barkodove
         const { data: istorija } = await supabase
             .from('turnir')
-            .select('finalni_skor, pogodaka, promasaji, vreme_igre, barcode')
+            .select('finalni_skor, pogodaka, promasaja, vreme_igre, barcode')
             .in('barcode', mojiBarcodovi)
             .order('id', { ascending: false });
 
-        // 3. Rangiranje samo za ovu sedmicu
         const ponedeljak = getStartOfCurrentWeek();
         const { data: ovonedeljniTiketi } = await supabase.from('tiketi').select('barcode').gte('vreme_prijave', ponedeljak);
         let mojRang = "N/A";
         
         if (ovonedeljniTiketi && ovonedeljniTiketi.length > 0) {
-            const { data: top } = await supabase.from('turnir').select('barcode, finalni_skor').in('barcode', ovonedeljniTiketi.map(x=>x.barcode)).order('finalni_skor', { ascending: false });
+            const { data: top } = await supabase.from('turnir').select('barcode, finalni_skor').in('barcode', ovonedeljniTiketi.map(x=>x.barcode.trim())).order('finalni_skor', { ascending: false });
             if (top) {
-                const idx = top.findIndex(r => mojiBarcodovi.includes(r.barcode));
+                const idx = top.findIndex(r => mojiBarcodovi.includes(r.barcode.trim()));
                 if (idx !== -1) mojRang = idx + 1;
             }
         }
 
-        // 4. Pakovanje sa formatiranim datumom
-        const finalnaIstorija = (istorija || []).map(ist => {
-            const t = mojiTiketi.find(x => x.barcode === ist.barcode);
-            const d = new Date(t.vreme_prijave);
-            return {
-                ...ist,
-                datum_prikaz: d.toLocaleDateString('sr-RS') + " " + d.toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })
-            };
-        });
-
         res.json({
             pronadjen: true,
             najbolja_pozicija: mojRang,
-            istorija: finalnaIstorija
+            istorija: (istorija || []).map(ist => {
+                const t = mojiTiketi.find(x => x.barcode.trim() === ist.barcode.trim());
+                const d = new Date(t.vreme_prijave);
+                return {
+                    finalni_skor: ist.finalni_skor,
+                    pogodaka: ist.pogodaka,
+                    promasaja: ist.promasaja, 
+                    vreme_igre: ist.vreme_igre,
+                    datum_prikaz: d.toLocaleDateString('sr-RS') + " " + d.toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })
+                };
+            })
         });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// --- MQTT PRIJEM ---
+// --- MQTT PRIJEM REZULTATA ---
 mqttClient.on('connect', () => {
     mqttClient.subscribe('arene/rezultati');
     console.log("MQTT Online!");
@@ -152,17 +153,26 @@ mqttClient.on('connect', () => {
 mqttClient.on('message', async (topic, message) => {
     try {
         const resData = JSON.parse(message.toString());
-        await supabase.from('turnir').insert([{
+        console.log("Stigao JSON sa aparata:", resData);
+
+        const podaciZaBazu = {
             barcode: resData.barcode,
             aparat_id: resData.aparat_id,
-            pogodaka: resData.pogodaka || 0,
-            promasaji: resData.promasaji || 0,
-            vreme_igre: resData.vreme_igre || 0,
-            finalni_skor: resData.finalni_skor
-        }]);
-        console.log("Rezultat snimljen.");
-    } catch (e) { console.error("Greška pri upisu:", e); }
+            pogodaka: resData.pogodaka ?? resData.pogoci ?? 0,
+            // Ovde uvek gađamo kolonu "promasaja" kako je u tvom Supabase-u
+            promasaja: resData.promasaja ?? resData.promasaji ?? resData.misses ?? 0, 
+            vreme_igre: resData.vreme_igre ?? 0,
+            finalni_skor: resData.finalni_skor ?? 0,
+            datum: getSerbianDate(),
+            aktivna_sedmica: 1
+        };
+
+        const { error } = await supabase.from('turnir').insert([podaciZaBazu]);
+        if (error) console.error("Baza odbila upis:", error.message);
+        else console.log("Rezultat snimljen uspešno!");
+
+    } catch (e) { console.error("MQTT Error:", e); }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server pokrenut na portu ${PORT}`));
+app.listen(PORT, () => console.log(`VOLTA Server Online.`));
