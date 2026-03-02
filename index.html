@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="google" content="notranslate">
+    <meta name="format-detection" content="telephone=no">
     <title>Volta Arena | Prijava</title>
     <style>
         :root {
@@ -27,7 +29,7 @@
             padding: 30px; border-radius: 24px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.7);
             border: 2px solid #222; text-align: center;
-            transition: border-color 0.5s ease;
+            transition: all 0.5s ease;
         }
 
         .logo {
@@ -65,7 +67,7 @@
         .btn-start:disabled { opacity: 0.4; cursor: not-allowed; }
 
         #status-area {
-            margin-top: 10px; min-height: 200px;
+            margin-top: 10px; min-height: 250px;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
 
@@ -83,16 +85,24 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        .info-box {
-            margin-top: 25px; padding: 15px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 14px; border: 1px solid #222;
+        /* Loader za sabiranje */
+        .loader {
+            border: 5px solid #222;
+            border-top: 5px solid var(--neon-green);
+            border-radius: 50%;
+            width: 50px; height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
         }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .info-box p { margin: 0; font-size: 0.8rem; color: #666; line-height: 1.4; }
-        .highlight { color: var(--neon-green); }
-        
         .hidden { display: none !important; }
+
+        .mesto-broj {
+            font-size: 9rem; font-weight: 900; color: var(--neon-green);
+            line-height: 1; margin: 10px 0;
+            text-shadow: 0 0 40px rgba(0, 255, 136, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -103,20 +113,16 @@
 
     <div id="form-ui">
         <div class="input-group">
-            <label>E-mail za rang listu</label>
-            <input type="email" id="email" placeholder="tvoj@mail.com" autocomplete="email">
+            <label>Identifikacija za rang listu</label>
+            <input type="email" id="email" placeholder="tvoj@mail.com" autocomplete="off">
         </div>
 
         <div class="input-group">
-            <label>Broj računa (PFR)</label>
-            <input type="text" id="pfr" placeholder="Unesi broj sa računa" inputmode="numeric">
+            <label>Kod sa potvrde</label>
+            <input type="text" id="pfr_kod" name="user_id_entry" placeholder="Unesi broj ovde" inputmode="numeric" autocomplete="off">
         </div>
 
         <button class="btn-start" id="startBtn" onclick="autorizujIgru()">POKRENI IGRU</button>
-        
-        <div class="info-box">
-            <p>Unesi broj računa i pripremi se. <br><span class="highlight">Odbrojavanje traje 10s</span>.</p>
-        </div>
     </div>
 
     <div id="status-area" class="hidden">
@@ -136,13 +142,11 @@
 
     async function autorizujIgru() {
         const email = document.getElementById('email').value.trim();
-        const pfr = document.getElementById('pfr').value.trim();
+        const pfr = document.getElementById('pfr_kod').value.trim();
         const btn = document.getElementById('startBtn');
-        const formUi = document.getElementById('form-ui');
-        const statusArea = document.getElementById('status-area');
 
         if (!email.includes('@')) { alert("Unesite ispravan email."); return; }
-        if (pfr.length < 4) { alert("Unesite ispravan PFR broj."); return; }
+        if (pfr.length < 3) { alert("Unesite ispravan kod."); return; }
 
         localStorage.setItem('volta_user_email', email);
         btn.disabled = true;
@@ -158,12 +162,12 @@
             const data = await response.json();
 
             if (data.success) {
-                formUi.classList.add('hidden');
+                document.getElementById('form-ui').classList.add('hidden');
                 document.getElementById('sub-title').classList.add('hidden');
-                statusArea.classList.remove('hidden');
+                document.getElementById('status-area').classList.remove('hidden');
                 
-                // Pokrećemo tvoju funkciju od 10 sekundi
-                startPhoneTimer();
+                // Pokrećemo proces sa bar kodom kao parametrom
+                startPhoneTimer(pfr);
             } else {
                 alert(data.message);
                 btn.disabled = false;
@@ -175,45 +179,76 @@
         }
     }
 
-    // --- TVOJA SREĐENA FUNKCIJA OD 10 SEKUNDI ---
-    function startPhoneTimer() {
-        const countdownDisplay = document.getElementById('countdown-display');
+    function startPhoneTimer(barcode) {
+        const display = document.getElementById('countdown-display');
         const statusText = document.getElementById('status-text');
-        const container = document.getElementById('main-card');
-        
         let count = 10; 
-        statusText.innerText = "PRIPREMA ZA START";
-        container.style.borderColor = "var(--neon-green)";
+
+        statusText.innerText = "POČINJEMO ZA:";
 
         const interval = setInterval(() => {
             if (count > 0) {
-                // Prikazujemo broj
-                countdownDisplay.innerHTML = `<span class="countdown-num">${count}</span>`;
-                
-                // Zvučni efekat (opciono, većina browsera traži interakciju)
-                // if (count <= 3) { /* ovde bi mogao zvuk */ }
-
+                display.innerHTML = `<span class="countdown-num">${count}</span>`;
                 if (count <= 3) {
                     statusText.innerText = "SPREMI SE!!!";
                     statusText.style.color = "var(--neon-green)";
                 }
-                
                 count--;
             } else {
                 clearInterval(interval);
-                countdownDisplay.innerHTML = `<span class="countdown-num" style="font-size: 4rem; animation: none;">KRENI!</span>`;
-                statusText.innerText = "IGRA JE U TOKU 🎮";
-                statusText.style.color = "var(--neon-green)";
+                display.innerHTML = `<span class="countdown-num" style="font-size: 2.5rem; animation: none;">IGRA U TOKU 🎮</span>`;
+                statusText.innerText = "SREĆNO!";
                 
-                if ("vibrate" in navigator) navigator.vibrate([100, 50, 100]);
-                
+                if ("vibrate" in navigator) navigator.vibrate([200, 100, 200]);
+
+                // Čekamo 35 sekundi da se igra završi na aparatu
                 setTimeout(() => {
-                    countdownDisplay.innerHTML = `<div style="font-size: 1.1rem; margin-top: 20px; color: #777; line-height: 1.5;">
-                        Srećno! <br> Rezultat će biti poslat na rang listu.
-                    </div>`;
-                }, 3000);
+                    prikaziSabiranje(barcode);
+                }, 35000);
             }
         }, 1000);
+    }
+
+    function prikaziSabiranje(barcode) {
+        const display = document.getElementById('countdown-display');
+        const statusText = document.getElementById('status-text');
+        
+        statusText.innerText = "ZAVRŠENO!";
+        statusText.style.color = "#888";
+        display.innerHTML = `
+            <div class="loader"></div>
+            <p style="font-size: 1.2rem; color: var(--neon-green); font-weight: bold;">SABIRAMO BODOVE...</p>
+        `;
+
+        // Proveravamo server svake 2 sekunde da li je upisao rezultat
+        const proveraInterval = setInterval(async () => {
+            try {
+                const res = await fetch(`/proveri-rezultat?barcode=${barcode}`);
+                const data = await res.json();
+
+                if (data.pronadjen) {
+                    clearInterval(proveraInterval);
+                    prikaziKonacnoMesto(data.mesto, data.skor);
+                }
+            } catch (e) {
+                console.error("Greška pri proveri rezultata.");
+            }
+        }, 2000);
+    }
+
+    function prikaziKonacnoMesto(mesto, skor) {
+        const container = document.getElementById('main-card');
+        container.style.borderColor = "var(--neon-green)";
+        
+        container.innerHTML = `
+            <div class="logo">VOLTA</div>
+            <h2 style="color: #888; margin-bottom: 10px;">BRAVO!</h2>
+            <p style="font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;">Osvojio si</p>
+            <div class="mesto-broj">${mesto}.</div>
+            <p style="font-size: 1.3rem; font-weight: 700; margin-top: -10px;">MESTO</p>
+            <p style="color: #666; margin-top: 15px;">Tvoj skor: <span style="color:white">${skor}</span></p>
+            <button class="btn-start" onclick="window.location.href='/leaderboard.html'" style="margin-top: 20px;">RANG LISTA</button>
+        `;
     }
 </script>
 
