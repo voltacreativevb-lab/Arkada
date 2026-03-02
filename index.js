@@ -22,7 +22,7 @@ const mqttClient = mqtt.connect('mqtts://8444eb8746d2443a864e05dee69c84bc.s1.eu.
     rejectUnauthorized: false
 });
 
-// POMOĆNE FUNKCIJE
+// POMOĆNE FUNKCIJE ZA VREME
 function getSerbianDate() {
     const now = new Date();
     now.setHours(now.getHours() + 1); 
@@ -42,7 +42,7 @@ function getStartOfCurrentWeek() {
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/leaderboard.html', (req, res) => res.sendFile(path.join(__dirname, 'leaderboard.html')));
 
-// --- RUTA ZA SKENIRANJE I START IGRE ---
+// --- RUTA ZA SKENIRANJE I START ---
 app.post('/skeniraj', async (req, res) => {
     const { email, tiketId, aparatId } = req.body;
     const aId = aparatId || 'APARAT_1';
@@ -74,37 +74,36 @@ app.post('/skeniraj', async (req, res) => {
     }
 });
 
-// --- NOVA RUTA: PROVJERA REZULTATA I RANGIRANJE ---
-// Ovu rutu telefon poziva dok piše "SABIRAMO..."
+// --- POPRAVLJENA RUTA ZA PROVERU REZULTATA ---
 app.get('/proveri-rezultat', async (req, res) => {
     const { barcode } = req.query;
     if (!barcode) return res.status(400).json({ success: false });
 
     try {
-        // 1. Tražimo rezultat u tabeli turnir
+        const ponedeljak = getStartOfCurrentWeek();
+
+        // 1. Uzimamo najnoviji rezultat za ovaj barcode
         const { data: rezultat, error } = await supabase
             .from('turnir')
             .select('finalni_skor')
             .eq('barcode', barcode)
+            .order('datum', { ascending: false })
+            .limit(1)
             .maybeSingle();
 
         if (error) throw error;
+        if (!rezultat) return res.json({ pronadjen: false });
 
-        // Ako rezultat još nije stigao
-        if (!rezultat) {
-            return res.json({ pronadjen: false });
-        }
-
-        // 2. Ako je rezultat stigao, računamo mjesto na rang listi
-        // Gledamo koliko igrača ima VIŠE bodova od trenutnog
+        // 2. Brojimo samo rezultate iz tekuće sedmice koji su bolji od trenutnog
+        // Ovo osigurava da je rang identičan onom na leaderboard-u
         const { count, error: countErr } = await supabase
             .from('turnir')
             .select('*', { count: 'exact', head: true })
+            .gte('datum', ponedeljak)
             .gt('finalni_skor', rezultat.finalni_skor);
 
         if (countErr) throw countErr;
 
-        // Mesto = broj ljudi iznad + 1
         res.json({ 
             pronadjen: true, 
             skor: rezultat.finalni_skor, 
@@ -112,7 +111,7 @@ app.get('/proveri-rezultat', async (req, res) => {
         });
 
     } catch (err) {
-        console.error("Greška pri proveri rezultata:", err.message);
+        console.error("Greška pri rangiranju:", err.message);
         res.status(500).json({ error: "Greška na serveru" });
     }
 });
@@ -145,31 +144,37 @@ mqttClient.on('message', async (topic, message) => {
         };
 
         await supabase.from('turnir').insert([podaciZaUpis]);
-        console.log(`🏆 Rezultat snimljen: ${cistBarcode}`);
+        console.log(`🏆 Rezultat snimljen za: ${cistBarcode}`);
     } catch (e) {
         console.error("MQTT Error:", e.message);
     }
 });
 
-// --- RANG LISTA API ---
+// --- RANG LISTA API (SINHRONIZOVANA) ---
 app.get('/api/rang-lista', async (req, res) => {
     try {
         const ponedeljak = getStartOfCurrentWeek();
-        const { data: tiketi } = await supabase.from('tiketi').select('barcode, email').gte('vreme_prijave', ponedeljak);
-        if (!tiketi || tiketi.length === 0) return res.json([]);
-
-        const { data: rez } = await supabase
+        
+        // Uzimamo unikatan najbolji rezultat za svakog igrača u ovoj sedmici
+        // (da bismo izbegli da jedan igrač zauzme svih 5 mesta sa različitim pokušajima)
+        const { data: rez, error } = await supabase
             .from('turnir')
-            .select('finalni_skor, barcode')
-            .in('barcode', tiketi.map(t => t.barcode))
+            .select('finalni_skor, barcode, tiketi(email)')
+            .gte('datum', ponedeljak)
             .order('finalni_skor', { ascending: false })
             .limit(50);
         
-        res.json((rez || []).map(r => {
-            const t = tiketi.find(x => x.barcode === r.barcode);
-            return { prikaz_imena: t?.email ? t.email.split('@')[0] + "@..." : "Igrač", finalni_skor: r.finalni_skor };
+        if (error) throw error;
+
+        const leaderboard = (rez || []).map(r => ({
+            prikaz_imena: r.tiketi?.email ? r.tiketi.email.split('@')[0] + "@..." : "Igrač",
+            finalni_skor: r.finalni_skor
         }));
-    } catch (err) { res.status(500).json({ error: err.message }); }
+
+        res.json(leaderboard);
+    } catch (err) { 
+        res.status(500).json({ error: err.message }); 
+    }
 });
 
 const PORT = process.env.PORT || 3000;
