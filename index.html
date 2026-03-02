@@ -18,97 +18,110 @@
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh;
+            overflow: hidden;
         }
 
         .container {
             width: 90%; max-width: 400px;
             background: var(--card-bg);
-            padding: 30px; border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 1px solid #222; text-align: center;
+            padding: 30px; border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+            border: 2px solid #222; text-align: center;
+            transition: border-color 0.5s ease;
         }
 
         .logo {
-            font-size: 2.8rem; font-weight: 800;
+            font-size: 3rem; font-weight: 900;
             color: var(--neon-green); margin-bottom: 5px;
-            letter-spacing: -1px;
-            text-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+            letter-spacing: -2px;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
         }
 
-        h2 { font-size: 1rem; margin-bottom: 25px; color: #aaa; font-weight: 400; text-transform: uppercase; letter-spacing: 1px; }
+        h2 { font-size: 0.9rem; margin-bottom: 30px; color: #888; font-weight: 500; text-transform: uppercase; letter-spacing: 2px; }
 
         .input-group { margin-bottom: 20px; text-align: left; }
 
         label {
-            display: block; margin-bottom: 8px; font-size: 0.8rem;
-            color: var(--neon-green); font-weight: bold; text-transform: uppercase;
+            display: block; margin-bottom: 8px; font-size: 0.75rem;
+            color: var(--neon-green); font-weight: 700; text-transform: uppercase;
         }
 
         input {
-            width: 100%; padding: 15px; border-radius: 12px;
-            border: 2px solid #333; background: #000; color: #fff;
-            font-size: 1rem; box-sizing: border-box; transition: all 0.3s;
+            width: 100%; padding: 16px; border-radius: 14px;
+            border: 2px solid #282828; background: #000; color: #fff;
+            font-size: 1.1rem; box-sizing: border-box; transition: all 0.2s;
         }
 
-        input:focus { outline: none; border-color: var(--neon-green); box-shadow: 0 0 10px rgba(0, 255, 136, 0.2); }
+        input:focus { outline: none; border-color: var(--neon-green); background: #050505; }
 
         .btn-start {
-            width: 100%; padding: 18px; background: var(--neon-green);
-            color: #000; border: none; border-radius: 12px;
-            font-size: 1.2rem; font-weight: 900; cursor: pointer;
+            width: 100%; padding: 20px; background: var(--neon-green);
+            color: #000; border: none; border-radius: 14px;
+            font-size: 1.3rem; font-weight: 900; cursor: pointer;
             margin-top: 10px; text-transform: uppercase;
-            transition: transform 0.1s, background 0.3s;
+            transition: all 0.2s;
         }
 
-        .btn-start:active { transform: scale(0.96); }
+        .btn-start:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        #status {
-            margin-top: 20px; font-size: 1.2rem; font-weight: bold;
-            min-height: 30px; line-height: 1.4;
+        #status-area {
+            margin-top: 10px; min-height: 200px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
 
         .countdown-num {
-            font-size: 4rem; color: var(--neon-green);
-            display: block; margin-top: 15px;
-            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            font-size: 6rem; color: var(--neon-green);
+            font-weight: 900;
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.6);
+            display: block;
+            animation: bounceIn 0.5s ease;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
         }
 
         .info-box {
-            margin-top: 30px; padding: 15px;
-            background: rgba(0, 255, 136, 0.05);
-            border-radius: 12px; border: 1px dashed #333;
+            margin-top: 25px; padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 14px; border: 1px solid #222;
         }
 
-        .info-box p { margin: 0; font-size: 0.85rem; color: #888; line-height: 1.5; }
-        .highlight { color: var(--neon-green); font-weight: bold; }
+        .info-box p { margin: 0; font-size: 0.8rem; color: #666; line-height: 1.4; }
+        .highlight { color: var(--neon-green); }
         
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<div class="container" id="main-content">
+<div class="container" id="main-card">
     <div class="logo">VOLTA</div>
-    <h2 id="sub-title">Prijava za turnir</h2>
+    <h2 id="sub-title">Arena Challenge</h2>
 
     <div id="form-ui">
         <div class="input-group">
-            <label>E-mail adresa</label>
-            <input type="email" id="email" placeholder="vas@mail.com" required>
+            <label>E-mail za rang listu</label>
+            <input type="email" id="email" placeholder="tvoj@mail.com" autocomplete="email">
         </div>
 
         <div class="input-group">
-            <label>PFR Broj (zadnje cifre iz 3. reda)</label>
-            <input type="text" id="pfr" placeholder="Npr. 123456" inputmode="numeric">
+            <label>Broj računa (PFR)</label>
+            <input type="text" id="pfr" placeholder="Unesi broj sa računa" inputmode="numeric">
         </div>
 
-        <button class="btn-start" id="startBtn" onclick="pokreniAparat()">POKRENI APARAT</button>
+        <button class="btn-start" id="startBtn" onclick="autorizujIgru()">POKRENI IGRU</button>
+        
+        <div class="info-box">
+            <p>Unesi broj računa i pripremi se. <br><span class="highlight">Odbrojavanje traje 10s</span>.</p>
+        </div>
     </div>
 
-    <div id="status"></div>
-
-    <div class="info-box" id="info-box">
-        <p>⚠️ Račun obavezno <span class="highlight">sačuvajte kao dokaz</span> radi preuzimanja nagrade ukoliko osvojite turnir!</p>
+    <div id="status-area" class="hidden">
+        <div id="status-text" style="font-size: 1.2rem; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;"></div>
+        <div id="countdown-display"></div>
     </div>
 </div>
 
@@ -116,73 +129,89 @@
     const urlParams = new URLSearchParams(window.location.search);
     const aparatId = urlParams.get('aparat') || "APARAT_1";
 
-    // Automatski popuni email ako je igrač već igrao na ovom telefonu
     window.onload = () => {
-        const savedEmail = localStorage.getItem('volta_email');
+        const savedEmail = localStorage.getItem('volta_user_email');
         if (savedEmail) document.getElementById('email').value = savedEmail;
     };
 
-    function pokreniAparat() {
+    async function autorizujIgru() {
         const email = document.getElementById('email').value.trim();
         const pfr = document.getElementById('pfr').value.trim();
-        const statusDiv = document.getElementById('status');
         const btn = document.getElementById('startBtn');
+        const formUi = document.getElementById('form-ui');
+        const statusArea = document.getElementById('status-area');
 
-        if (!email.includes('@')) {
-            alert("Unesite ispravan email.");
-            return;
-        }
-        if (pfr.length < 4) {
-            alert("Unesite poslednje cifre PFR broja (minimum 4 cifre).");
-            return;
-        }
+        if (!email.includes('@')) { alert("Unesite ispravan email."); return; }
+        if (pfr.length < 4) { alert("Unesite ispravan PFR broj."); return; }
 
-        // Sačuvaj email za sledeći put
-        localStorage.setItem('volta_email', email);
-
+        localStorage.setItem('volta_user_email', email);
         btn.disabled = true;
-        btn.style.opacity = "0.5";
-        statusDiv.innerHTML = "⏳ Proveravam račun...";
+        btn.innerText = "POVEZIVANJE...";
 
-        fetch('/skeniraj', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, tiketId: pfr, aparatId })
-        })
-        .then(r => r.json())
-        .then(res => {
-            if (res.success) {
-                pokreniOdbrojavanje();
+        try {
+            const response = await fetch('/skeniraj', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, tiketId: pfr, aparatId })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                formUi.classList.add('hidden');
+                document.getElementById('sub-title').classList.add('hidden');
+                statusArea.classList.remove('hidden');
+                
+                // Pokrećemo tvoju funkciju od 10 sekundi
+                startPhoneTimer();
             } else {
-                statusDiv.innerHTML = "❌ " + (res.message || "Greška!");
-                statusDiv.style.color = "#ff4444";
+                alert(data.message);
                 btn.disabled = false;
-                btn.style.opacity = "1";
+                btn.innerText = "POKRENI IGRU";
             }
-        })
-        .catch(() => {
-            statusDiv.innerHTML = "❌ Greška na serveru.";
+        } catch (err) {
+            alert("Greška na serveru.");
             btn.disabled = false;
-            btn.style.opacity = "1";
-        });
+        }
     }
 
-    function pokreniOdbrojavanje() {
-        let sekunde = 10;
-        const statusDiv = document.getElementById('status');
+    // --- TVOJA SREĐENA FUNKCIJA OD 10 SEKUNDI ---
+    function startPhoneTimer() {
+        const countdownDisplay = document.getElementById('countdown-display');
+        const statusText = document.getElementById('status-text');
+        const container = document.getElementById('main-card');
         
-        // Sakrij elemente forme da se fokusira na odbrojavanje
-        document.getElementById('form-ui').classList.add('hidden');
-        document.getElementById('info-box').classList.add('hidden');
-        document.getElementById('sub-title').classList.add('hidden');
-        
-        const interval = setInterval(() => {
-            statusDiv.innerHTML = `Vaša igra počinje za:<br><span class="countdown-num">${sekunde}</span><br>Srećno! 🎮`;
-            sekunde--;
+        let count = 10; 
+        statusText.innerText = "PRIPREMA ZA START";
+        container.style.borderColor = "var(--neon-green)";
 
-            if (sekunde < 0) {
+        const interval = setInterval(() => {
+            if (count > 0) {
+                // Prikazujemo broj
+                countdownDisplay.innerHTML = `<span class="countdown-num">${count}</span>`;
+                
+                // Zvučni efekat (opciono, većina browsera traži interakciju)
+                // if (count <= 3) { /* ovde bi mogao zvuk */ }
+
+                if (count <= 3) {
+                    statusText.innerText = "SPREMI SE!!!";
+                    statusText.style.color = "var(--neon-green)";
+                }
+                
+                count--;
+            } else {
                 clearInterval(interval);
-                statusDiv.innerHTML = "<span class='countdown-num' style='font-size: 3rem;'>KRENI!</span>";
+                countdownDisplay.innerHTML = `<span class="countdown-num" style="font-size: 4rem; animation: none;">KRENI!</span>`;
+                statusText.innerText = "IGRA JE U TOKU 🎮";
+                statusText.style.color = "var(--neon-green)";
+                
+                if ("vibrate" in navigator) navigator.vibrate([100, 50, 100]);
+                
+                setTimeout(() => {
+                    countdownDisplay.innerHTML = `<div style="font-size: 1.1rem; margin-top: 20px; color: #777; line-height: 1.5;">
+                        Srećno! <br> Rezultat će biti poslat na rang listu.
+                    </div>`;
+                }, 3000);
             }
         }, 1000);
     }
