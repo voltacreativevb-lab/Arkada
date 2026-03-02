@@ -2,15 +2,17 @@
 <html lang="sr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VOLTA | ARENA LEADERBOARD</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VOLTA | ARENA RANG LISTA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --neon-cyan: #00f2ff;
             --neon-magenta: #bc13fe;
             --bg-dark: #05050a;
-            --glass-bg: rgba(255, 255, 255, 0.03);
+            --gold: #ffd700;
+            --silver: #e0e0e0;
+            --bronze: #cd7f32;
         }
 
         body {
@@ -18,195 +20,182 @@
             color: #fff;
             font-family: 'Rajdhani', sans-serif;
             margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
-            background-image: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #05050a 100%);
-        }
-
-        body::before {
-            content: "";
-            position: absolute;
-            width: 100%;
-            height: 2px;
-            background: rgba(0, 242, 255, 0.1);
-            top: 0;
-            animation: scan 8s linear infinite;
-        }
-
-        @keyframes scan {
-            0% { top: -10%; }
-            100% { top: 110%; }
+            padding: 0;
+            background-image: radial-gradient(circle at 50% 0%, #1a1a2e 0%, #05050a 100%);
+            background-attachment: fixed;
         }
 
         .container {
-            width: 90%;
-            max-width: 800px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px 15px 80px 15px; /* Padding dole zbog palca */
+            box-sizing: border-box;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0 30px 0;
         }
 
         h1 {
             font-family: 'Orbitron', sans-serif;
-            font-size: 2.5rem;
+            font-size: 1.8rem;
             margin: 0;
-            letter-spacing: 8px;
+            letter-spacing: 4px;
             background: linear-gradient(to right, var(--neon-cyan), var(--neon-magenta));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-transform: uppercase;
         }
 
-        .lokacija-tag {
-            font-size: 0.9rem;
-            letter-spacing: 3px;
-            color: var(--neon-cyan);
-            opacity: 0.7;
-            margin-bottom: 30px;
-            text-transform: uppercase;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 10px;
-        }
-
-        th {
-            text-align: left;
-            padding: 10px 20px;
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.4);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        tr {
-            transition: transform 0.3s ease;
-        }
-
-        td {
-            padding: 15px 20px;
-            background: rgba(255, 255, 255, 0.02);
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        td:first-child { border-radius: 10px 0 0 10px; border-left: 1px solid rgba(255, 255, 255, 0.05); }
-        td:last-child { border-radius: 0 10px 10px 0; border-right: 1px solid rgba(255, 255, 255, 0.05); }
-
-        .rank { font-weight: bold; color: var(--neon-cyan); width: 50px; }
-        .player-name { font-family: 'Orbitron', sans-serif; letter-spacing: 1px; font-size: 1.1rem; }
-        .score { text-align: right; font-size: 1.5rem; color: var(--neon-magenta); font-weight: bold; }
-
-        tr:first-child td {
-            background: rgba(0, 242, 255, 0.05);
-            border-color: rgba(0, 242, 255, 0.2);
-            color: #fff;
-        }
-
-        .footer {
-            margin-top: 40px;
+        .refresh-info {
             font-size: 0.7rem;
-            letter-spacing: 4px;
-            color: rgba(255, 255, 255, 0.2);
+            color: var(--neon-cyan);
+            opacity: 0.5;
+            letter-spacing: 2px;
+            margin-top: 5px;
             text-transform: uppercase;
         }
 
-        .volta-brand {
-            color: var(--neon-cyan);
-            font-weight: bold;
-            text-decoration: none;
-            transition: 0.3s;
+        /* Stilovi tabele */
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        .status-dot {
-            display: inline-block;
-            width: 6px;
-            height: 6px;
+        .player-card {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.2s;
+        }
+
+        .player-card:active {
+            transform: scale(0.98); /* Vizuelni feedback na dodir */
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .rank {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            font-weight: bold;
+            width: 45px;
+            text-align: center;
+        }
+
+        .name-section {
+            flex-grow: 1;
+            padding-left: 10px;
+        }
+
+        .player-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            display: block;
+        }
+
+        .score-section {
+            text-align: right;
+        }
+
+        .score-val {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            color: var(--neon-magenta);
+            font-weight: bold;
+        }
+
+        /* Top 3 Specijalni stilovi */
+        .top-1 { border-left: 4px solid var(--gold); background: rgba(255, 215, 0, 0.05); }
+        .top-1 .rank { color: var(--gold); font-size: 1.5rem; }
+        
+        .top-2 { border-left: 4px solid var(--silver); }
+        .top-2 .rank { color: var(--silver); }
+
+        .top-3 { border-left: 4px solid var(--bronze); }
+        .top-3 .rank { color: var(--bronze); }
+
+        .other-ranks .rank { color: var(--neon-cyan); opacity: 0.6; }
+
+        /* Dugme za osvežavanje */
+        .fab {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 50px;
+            height: 50px;
             background: var(--neon-cyan);
             border-radius: 50%;
-            margin-right: 10px;
-            box-shadow: 0 0 10px var(--neon-cyan);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.3; }
-            100% { opacity: 1; }
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 15px var(--neon-cyan);
+            border: none;
+            z-index: 100;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Rang lista</h1>
-    <div class="lokacija-tag" id="lokal-ime">SYSTEM OFFLINE</div>
-
-    <table>
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Player</th>
-                <th style="text-align: right;">Score</th>
-            </tr>
-        </thead>
-        <tbody id="lista-telo">
-            </tbody>
-    </table>
-
-    <div class="footer">
-        <span class="status-dot"></span> 
-        Live data feed | Powered by <a href="#" class="volta-brand">Volta Creative</a>
+    <div class="header">
+        <h1>TOP 50 ARENA</h1>
+        <div class="refresh-info">Povuci nadole za osvežavanje</div>
     </div>
+
+    <div id="lista-telo" class="leaderboard-list">
+        </div>
 </div>
 
-<script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const aparat = urlParams.get('aparat') || 'Global Network';
-    document.getElementById('lokal-ime').innerText = "Location: " + aparat;
+<button class="fab" onclick="fetchRankings()">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+</button>
 
+<script>
     async function fetchRankings() {
         try {
-            // Pozivamo API koji vraća formatirane podatke (prikaz_imena i finalni_skor)
-            const response = await fetch(`/api/rang-lista?aparat=${encodeURIComponent(aparat)}`);
+            const response = await fetch('/api/rang-lista');
             const data = await response.json();
             
             let html = "";
-            if (data && data.length > 0) {
-                data.forEach((igrac, index) => {
-                    // Koristimo prikaz_imena (npr. petar.petrovic@) i finalni_skor iz tvog novog index.js
-                    html += `
-                        <tr>
-                            <td class="rank">${index + 1}</td>
-                            <td class="player-name">${igrac.prikaz_imena}</td>
-                            <td class="score">${igrac.finalni_skor}</td>
-                        </tr>
-                    `;
-                });
-            } else {
-                html = "<tr><td colspan='3' style='text-align:center; opacity:0.5; padding:40px;'>NO DATA IN CURRENT SESSION</td></tr>";
-            }
+            data.forEach((igrac, index) => {
+                let topClass = "";
+                if(index === 0) topClass = "top-1";
+                else if(index === 1) topClass = "top-2";
+                else if(index === 2) topClass = "top-3";
+                else topClass = "other-ranks";
+
+                html += `
+                    <div class="player-card ${topClass}">
+                        <div class="rank">${index + 1}</div>
+                        <div class="name-section">
+                            <span class="player-name">${igrac.prikaz_imena}</span>
+                        </div>
+                        <div class="score-section">
+                            <span class="score-val">${igrac.finalni_skor}</span>
+                        </div>
+                    </div>
+                `;
+            });
             
-            document.getElementById('lista-telo').innerHTML = html;
+            document.getElementById('lista-telo').innerHTML = html || "<p style='text-align:center'>Nema rezultata.</p>";
         } catch (err) {
-            console.error("API Error:", err);
-            document.getElementById('lista-telo').innerHTML = "<tr><td colspan='3' style='text-align:center; color:red;'>API CONNECTION ERROR</td></tr>";
+            console.error("Greška:", err);
         }
     }
 
-    // Prvo učitavanje
+    // Učitaj odmah
     fetchRankings();
-    // Osvežavanje na svakih 20 sekundi
-    setInterval(fetchRankings, 20000);
+    
+    // Automatsko osvežavanje svakih 60 sekundi (manje agresivno za mob)
+    setInterval(fetchRankings, 60000);
 </script>
 
 </body>
