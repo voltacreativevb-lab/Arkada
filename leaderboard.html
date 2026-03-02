@@ -29,13 +29,13 @@
             width: 100%;
             max-width: 600px;
             margin: 0 auto;
-            padding: 20px 15px 80px 15px; /* Padding dole zbog palca */
+            padding: 20px 15px 80px 15px;
             box-sizing: border-box;
         }
 
         .header {
             text-align: center;
-            padding: 20px 0 30px 0;
+            padding: 10px 0 20px 0;
         }
 
         h1 {
@@ -49,21 +49,63 @@
             text-transform: uppercase;
         }
 
-        .refresh-info {
-            font-size: 0.7rem;
-            color: var(--neon-cyan);
-            opacity: 0.5;
-            letter-spacing: 2px;
-            margin-top: 5px;
-            text-transform: uppercase;
+        /* --- STIL ZA PRETRAGU --- */
+        .search-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--neon-cyan);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
         }
 
-        /* Stilovi tabele */
-        .leaderboard-list {
+        .search-box {
             display: flex;
-            flex-direction: column;
             gap: 10px;
         }
+
+        .search-input {
+            flex-grow: 1;
+            background: #000;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Rajdhani';
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .search-input:focus { border-color: var(--neon-cyan); }
+
+        .search-btn {
+            background: var(--neon-cyan);
+            border: none;
+            padding: 0 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-family: 'Orbitron';
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        #searchResult {
+            margin-top: 15px;
+            display: none;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 15px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.9rem;
+        }
+
+        /* --- STIL LISTE --- */
+        .leaderboard-list { display: flex; flex-direction: column; gap: 10px; }
 
         .player-card {
             display: flex;
@@ -76,69 +118,25 @@
             transition: transform 0.2s;
         }
 
-        .player-card:active {
-            transform: scale(0.98); /* Vizuelni feedback na dodir */
-            background: rgba(255, 255, 255, 0.08);
-        }
+        .rank { font-family: 'Orbitron', sans-serif; font-size: 1.2rem; font-weight: bold; width: 45px; text-align: center; }
+        .name-section { flex-grow: 1; padding-left: 10px; }
+        .player-name { font-size: 1.1rem; font-weight: 600; display: block; }
+        .score-section { text-align: right; }
+        .score-val { font-family: 'Orbitron', sans-serif; font-size: 1.4rem; color: var(--neon-magenta); font-weight: bold; }
 
-        .rank {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.2rem;
-            font-weight: bold;
-            width: 45px;
-            text-align: center;
-        }
-
-        .name-section {
-            flex-grow: 1;
-            padding-left: 10px;
-        }
-
-        .player-name {
-            font-size: 1.1rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            display: block;
-        }
-
-        .score-section {
-            text-align: right;
-        }
-
-        .score-val {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.4rem;
-            color: var(--neon-magenta);
-            font-weight: bold;
-        }
-
-        /* Top 3 Specijalni stilovi */
         .top-1 { border-left: 4px solid var(--gold); background: rgba(255, 215, 0, 0.05); }
-        .top-1 .rank { color: var(--gold); font-size: 1.5rem; }
-        
+        .top-1 .rank { color: var(--gold); }
         .top-2 { border-left: 4px solid var(--silver); }
         .top-2 .rank { color: var(--silver); }
-
         .top-3 { border-left: 4px solid var(--bronze); }
         .top-3 .rank { color: var(--bronze); }
-
         .other-ranks .rank { color: var(--neon-cyan); opacity: 0.6; }
 
-        /* Dugme za osvežavanje */
         .fab {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            width: 50px;
-            height: 50px;
-            background: var(--neon-cyan);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 0 15px var(--neon-cyan);
-            border: none;
-            z-index: 100;
+            position: fixed; bottom: 25px; right: 25px; width: 50px; height: 50px;
+            background: var(--neon-cyan); border-radius: 50%; display: flex;
+            justify-content: center; align-items: center; box-shadow: 0 0 15px var(--neon-cyan);
+            border: none; z-index: 100;
         }
     </style>
 </head>
@@ -147,7 +145,14 @@
 <div class="container">
     <div class="header">
         <h1>TOP 50 ARENA</h1>
-        <div class="refresh-info">Povuci nadole za osvežavanje</div>
+    </div>
+
+    <div class="search-container">
+        <div class="search-box">
+            <input type="email" id="searchEmail" class="search-input" placeholder="Tvoj email za istoriju...">
+            <button onclick="pretraziIgraca()" class="search-btn">TRAŽI</button>
+        </div>
+        <div id="searchResult"></div>
     </div>
 
     <div id="lista-telo" class="leaderboard-list">
@@ -159,42 +164,61 @@
 </button>
 
 <script>
+    // 1. GLOBALNA RANG LISTA (TOP 50)
     async function fetchRankings() {
         try {
             const response = await fetch('/api/rang-lista');
             const data = await response.json();
-            
             let html = "";
             data.forEach((igrac, index) => {
-                let topClass = "";
-                if(index === 0) topClass = "top-1";
-                else if(index === 1) topClass = "top-2";
-                else if(index === 2) topClass = "top-3";
-                else topClass = "other-ranks";
-
+                let topClass = index === 0 ? "top-1" : index === 1 ? "top-2" : index === 2 ? "top-3" : "other-ranks";
                 html += `
                     <div class="player-card ${topClass}">
                         <div class="rank">${index + 1}</div>
-                        <div class="name-section">
-                            <span class="player-name">${igrac.prikaz_imena}</span>
-                        </div>
-                        <div class="score-section">
-                            <span class="score-val">${igrac.finalni_skor}</span>
-                        </div>
-                    </div>
-                `;
+                        <div class="name-section"><span class="player-name">${igrac.prikaz_imena}</span></div>
+                        <div class="score-section"><span class="score-val">${igrac.finalni_skor}</span></div>
+                    </div>`;
             });
-            
             document.getElementById('lista-telo').innerHTML = html || "<p style='text-align:center'>Nema rezultata.</p>";
-        } catch (err) {
-            console.error("Greška:", err);
-        }
+        } catch (err) { console.error(err); }
     }
 
-    // Učitaj odmah
+    // 2. PRETRAGA POJEDINAČNOG IGRAČA I ISTORIJA
+    async function pretraziIgraca() {
+        const email = document.getElementById('searchEmail').value.trim();
+        const resDiv = document.getElementById('searchResult');
+        if (!email) return;
+
+        resDiv.style.display = "block";
+        resDiv.innerHTML = "<p style='text-align:center; font-size:0.8rem;'>Pretražujem...</p>";
+
+        try {
+            const response = await fetch(`/api/pronadji-me?email=${encodeURIComponent(email)}`);
+            const data = await response.json();
+
+            if (data.pronadjen) {
+                let istorijaHtml = data.istorija.map(r => {
+                    const d = new Date(r.created_at);
+                    const datum = d.toLocaleDateString('sr-RS') + " " + d.toLocaleTimeString('sr-RS', {hour:'2-digit', minute:'2-digit'});
+                    return `<div class="history-item"><span style="opacity:0.6">${datum}</span><span style="color:var(--neon-cyan); font-weight:bold">${r.finalni_skor}</span></div>`;
+                }).join('');
+
+                resDiv.innerHTML = `
+                    <div style="text-align:center; margin-bottom:15px;">
+                        <div style="font-size:0.7rem; opacity:0.6; letter-spacing:1px;">NAJBOLJI RANG:</div>
+                        <div style="font-family:'Orbitron'; color:var(--neon-magenta); font-size:1.8rem;">#${data.najbolja_pozicija}</div>
+                    </div>
+                    <div style="max-height:180px; overflow-y:auto; padding-right:5px;">
+                        <div style="font-size:0.6rem; opacity:0.4; margin-bottom:5px; text-transform:uppercase;">Istorija igara (najnovije prvo):</div>
+                        ${istorijaHtml}
+                    </div>`;
+            } else {
+                resDiv.innerHTML = "<p style='text-align:center; color:red; font-size:0.8rem;'>Email nije pronađen.</p>";
+            }
+        } catch (err) { resDiv.innerHTML = "Greška u konekciji."; }
+    }
+
     fetchRankings();
-    
-    // Automatsko osvežavanje svakih 60 sekundi (manje agresivno za mob)
     setInterval(fetchRankings, 60000);
 </script>
 
