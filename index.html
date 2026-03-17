@@ -11,68 +11,197 @@
             --neon-green: #00ff88;
             --dark-bg: #0a0a0a;
             --card-bg: #161616;
+            --muted: #888;
+            --danger: #ff5f5f;
         }
 
+        * { box-sizing: border-box; }
+
         body {
-            margin: 0; padding: 0;
+            margin: 0;
+            padding: 0;
             background-color: var(--dark-bg);
             color: white;
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            display: flex; justify-content: center; align-items: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             min-height: 100vh;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         .container {
-            width: 90%; max-width: 400px;
+            width: 90%;
+            max-width: 430px;
             background: var(--card-bg);
-            padding: 30px; border-radius: 24px;
+            padding: 30px;
+            border-radius: 24px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.7);
-            border: 2px solid #222; text-align: center;
+            border: 2px solid #222;
+            text-align: center;
             transition: all 0.5s ease;
         }
 
         .logo {
-            font-size: 3rem; font-weight: 900;
-            color: var(--neon-green); margin-bottom: 5px;
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--neon-green);
+            margin-bottom: 5px;
             letter-spacing: -2px;
             text-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
         }
 
-        h2 { font-size: 0.9rem; margin-bottom: 30px; color: #888; font-weight: 500; text-transform: uppercase; letter-spacing: 2px; }
+        h2 {
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+            color: var(--muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
 
-        .input-group { margin-bottom: 20px; text-align: left; }
+        .helper-box {
+            background: #101010;
+            border: 1px solid #242424;
+            border-radius: 16px;
+            padding: 14px;
+            text-align: left;
+            margin-bottom: 18px;
+        }
+
+        .helper-box p {
+            margin: 0 0 8px 0;
+            color: #bbb;
+            font-size: 0.9rem;
+            line-height: 1.45;
+        }
+
+        .helper-box p:last-child { margin-bottom: 0; }
+
+        .helper-box strong {
+            color: white;
+        }
+
+        .mini-links {
+            display: grid;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .mini-btn {
+            display: block;
+            width: 100%;
+            text-decoration: none;
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: #0b0b0b;
+            color: white;
+            border: 1px solid #2b2b2b;
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .mini-note {
+            font-size: 0.8rem;
+            color: #7f7f7f;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+            text-align: left;
+        }
 
         label {
-            display: block; margin-bottom: 8px; font-size: 0.75rem;
-            color: var(--neon-green); font-weight: 700; text-transform: uppercase;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.75rem;
+            color: var(--neon-green);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         input {
-            width: 100%; padding: 16px; border-radius: 14px;
-            border: 2px solid #282828; background: #000; color: #fff;
-            font-size: 1.1rem; box-sizing: border-box; transition: all 0.2s;
-        }
-
-        input:focus { outline: none; border-color: var(--neon-green); background: #050505; }
-
-        .btn-start {
-            width: 100%; padding: 20px; background: var(--neon-green);
-            color: #000; border: none; border-radius: 14px;
-            font-size: 1.3rem; font-weight: 900; cursor: pointer;
-            margin-top: 10px; text-transform: uppercase;
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            border: 2px solid #282828;
+            background: #000;
+            color: #fff;
+            font-size: 1rem;
             transition: all 0.2s;
         }
 
-        .btn-start:disabled { opacity: 0.4; cursor: not-allowed; }
+        input:focus {
+            outline: none;
+            border-color: var(--neon-green);
+            background: #050505;
+        }
+
+        #purs_link {
+            font-size: 0.95rem;
+        }
+
+        .actions {
+            display: grid;
+            gap: 10px;
+        }
+
+        .btn-start,
+        .btn-secondary {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 14px;
+            font-size: 1.05rem;
+            font-weight: 900;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.2s;
+        }
+
+        .btn-start {
+            background: var(--neon-green);
+            color: #000;
+        }
+
+        .btn-start:disabled,
+        .btn-secondary:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #242424;
+            color: #fff;
+            border: 1px solid #323232;
+        }
+
+        .inline-status {
+            margin-top: 12px;
+            min-height: 20px;
+            font-size: 0.88rem;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        .inline-status.error { color: var(--danger); }
+        .inline-status.ok { color: var(--neon-green); }
 
         #status-area {
-            margin-top: 10px; min-height: 250px;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            margin-top: 10px;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
         .countdown-num {
-            font-size: 6rem; color: var(--neon-green);
+            font-size: 6rem;
+            color: var(--neon-green);
             font-weight: 900;
             text-shadow: 0 0 30px rgba(0, 255, 136, 0.6);
             display: block;
@@ -85,23 +214,48 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* Loader za sabiranje */
         .loader {
             border: 5px solid #222;
             border-top: 5px solid var(--neon-green);
             border-radius: 50%;
-            width: 50px; height: 50px;
+            width: 50px;
+            height: 50px;
             animation: spin 1s linear infinite;
             margin: 20px auto;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
         .hidden { display: none !important; }
 
         .mesto-broj {
-            font-size: 9rem; font-weight: 900; color: var(--neon-green);
-            line-height: 1; margin: 10px 0;
+            font-size: 9rem;
+            font-weight: 900;
+            color: var(--neon-green);
+            line-height: 1;
+            margin: 10px 0;
             text-shadow: 0 0 40px rgba(0, 255, 136, 0.5);
+        }
+
+        .privacy-note {
+            margin-top: 16px;
+            font-size: 0.78rem;
+            color: #6f6f6f;
+            line-height: 1.45;
+        }
+
+        @media (max-width: 420px) {
+            .container {
+                width: 94%;
+                padding: 22px;
+            }
+
+            .logo { font-size: 2.5rem; }
+            .countdown-num { font-size: 5rem; }
+            .mesto-broj { font-size: 7rem; }
         }
     </style>
 </head>
@@ -112,17 +266,54 @@
     <h2 id="sub-title">Arena Challenge</h2>
 
     <div id="form-ui">
+        <div class="helper-box">
+            <p><strong>Kako da učestvuješ:</strong></p>
+            <p>1. Skeniraj QR kod sa fiskalnog računa.</p>
+            <p>2. Kopiraj link koji se pojavi.</p>
+            <p>3. Nalepi link ispod i pokreni igru.</p>
+
+            <div class="mini-links">
+                <a class="mini-btn" href="https://play.google.com/store/search?q=qr%20scanner&c=apps" target="_blank" rel="noopener noreferrer">
+                    Android – instaliraj QR skener
+                </a>
+                <a class="mini-btn" href="https://apps.apple.com/us/search?term=qr%20scanner" target="_blank" rel="noopener noreferrer">
+                    iPhone – App Store
+                </a>
+            </div>
+
+            <div class="mini-note">
+                Ako već imaš bilo koji QR skener ili koristiš iPhone kameru, slobodno koristi to i samo nalepi link ovde.
+            </div>
+        </div>
+
         <div class="input-group">
             <label>Identifikacija za rang listu</label>
-            <input type="email" id="email" placeholder="tvoj@mail.com" autocomplete="off">
+            <input type="email" id="email" placeholder="tvoj@mail.com" autocomplete="off" inputmode="email">
         </div>
 
         <div class="input-group">
-            <label>Kod sa potvrde</label>
-            <input type="text" id="pfr_kod" name="user_id_entry" placeholder="Unesi broj ovde" inputmode="numeric" autocomplete="off">
+            <label>Link sa fiskalnog računa</label>
+            <input
+                type="text"
+                id="purs_link"
+                name="verification_link"
+                placeholder="Nalepi https://suf.purs.gov.rs/v/?vl=..."
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+            >
         </div>
 
-        <button class="btn-start" id="startBtn" onclick="autorizujIgru()">POKRENI IGRU</button>
+        <div class="actions">
+            <button type="button" class="btn-secondary" id="pasteBtn">NALEPI LINK</button>
+            <button class="btn-start" id="startBtn" onclick="autorizujIgru()">POKRENI IGRU</button>
+        </div>
+
+        <div id="inline-status" class="inline-status"></div>
+
+        <div class="privacy-note">
+            Email koristimo za rang listu i evidenciju igrača, a link sa računa isključivo za verifikaciju učešća.
+        </div>
     </div>
 
     <div id="status-area" class="hidden">
@@ -140,23 +331,71 @@
         if (savedEmail) document.getElementById('email').value = savedEmail;
     };
 
+    function setInlineStatus(message, type = '') {
+        const el = document.getElementById('inline-status');
+        el.className = 'inline-status';
+        if (type) el.classList.add(type);
+        el.textContent = message || '';
+    }
+
+    function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function isValidPursLink(link) {
+        try {
+            const url = new URL(link);
+            return (
+                url.protocol === "https:" &&
+                url.hostname === "suf.purs.gov.rs" &&
+                url.pathname === "/v/" &&
+                url.searchParams.has("vl")
+            );
+        } catch {
+            return false;
+        }
+    }
+
+    document.getElementById('pasteBtn').addEventListener('click', async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            document.getElementById('purs_link').value = text.trim();
+            setInlineStatus("Link je nalepljen iz clipboard-a.", "ok");
+        } catch (e) {
+            setInlineStatus("Telefon ne dozvoljava čitanje clipboard-a. Nalepi ručno.", "error");
+        }
+    });
+
     async function autorizujIgru() {
         const email = document.getElementById('email').value.trim();
-        const pfr = document.getElementById('pfr_kod').value.trim();
+        const pursLink = document.getElementById('purs_link').value.trim();
         const btn = document.getElementById('startBtn');
 
-        if (!email.includes('@')) { alert("Unesite ispravan email."); return; }
-        if (pfr.length < 3) { alert("Unesite ispravan kod."); return; }
+        setInlineStatus('');
+
+        if (!isValidEmail(email)) {
+            setInlineStatus("Unesite ispravan email.", "error");
+            return;
+        }
+
+        if (!isValidPursLink(pursLink)) {
+            setInlineStatus("Nalepite ispravan link sa fiskalnog računa.", "error");
+            return;
+        }
 
         localStorage.setItem('volta_user_email', email);
         btn.disabled = true;
-        btn.innerText = "POVEZIVANJE...";
+        btn.innerText = "PROVERA...";
 
         try {
             const response = await fetch('/skeniraj', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, tiketId: pfr, aparatId })
+                body: JSON.stringify({
+                    email,
+                    verificationUrl: pursLink,
+                    aparatId
+                })
             });
 
             const data = await response.json();
@@ -165,26 +404,27 @@
                 document.getElementById('form-ui').classList.add('hidden');
                 document.getElementById('sub-title').classList.add('hidden');
                 document.getElementById('status-area').classList.remove('hidden');
-                
-                // Pokrećemo proces sa bar kodom kao parametrom
-                startPhoneTimer(pfr);
+
+                startPhoneTimer(data.gameId);
             } else {
-                alert(data.message);
+                setInlineStatus(data.message || "Račun nije prihvaćen.", "error");
                 btn.disabled = false;
                 btn.innerText = "POKRENI IGRU";
             }
         } catch (err) {
-            alert("Greška na serveru.");
+            setInlineStatus("Greška na serveru.", "error");
             btn.disabled = false;
+            btn.innerText = "POKRENI IGRU";
         }
     }
 
-    function startPhoneTimer(barcode) {
+    function startPhoneTimer(gameId) {
         const display = document.getElementById('countdown-display');
         const statusText = document.getElementById('status-text');
-        let count = 10; 
+        let count = 10;
 
         statusText.innerText = "POČINJEMO ZA:";
+        statusText.style.color = "#888";
 
         const interval = setInterval(() => {
             if (count > 0) {
@@ -198,21 +438,20 @@
                 clearInterval(interval);
                 display.innerHTML = `<span class="countdown-num" style="font-size: 2.5rem; animation: none;">IGRA U TOKU 🎮</span>`;
                 statusText.innerText = "SREĆNO!";
-                
+
                 if ("vibrate" in navigator) navigator.vibrate([200, 100, 200]);
 
-                // Čekamo 35 sekundi da se igra završi na aparatu
                 setTimeout(() => {
-                    prikaziSabiranje(barcode);
+                    prikaziSabiranje(gameId);
                 }, 35000);
             }
         }, 1000);
     }
 
-    function prikaziSabiranje(barcode) {
+    function prikaziSabiranje(gameId) {
         const display = document.getElementById('countdown-display');
         const statusText = document.getElementById('status-text');
-        
+
         statusText.innerText = "ZAVRŠENO!";
         statusText.style.color = "#888";
         display.innerHTML = `
@@ -220,10 +459,9 @@
             <p style="font-size: 1.2rem; color: var(--neon-green); font-weight: bold;">SABIRAMO BODOVE...</p>
         `;
 
-        // Proveravamo server svake 2 sekunde da li je upisao rezultat
         const proveraInterval = setInterval(async () => {
             try {
-                const res = await fetch(`/proveri-rezultat?barcode=${barcode}`);
+                const res = await fetch(`/proveri-rezultat?gameId=${encodeURIComponent(gameId)}`);
                 const data = await res.json();
 
                 if (data.pronadjen) {
@@ -239,7 +477,7 @@
     function prikaziKonacnoMesto(mesto, skor) {
         const container = document.getElementById('main-card');
         container.style.borderColor = "var(--neon-green)";
-        
+
         container.innerHTML = `
             <div class="logo">VOLTA</div>
             <h2 style="color: #888; margin-bottom: 10px;">BRAVO!</h2>
