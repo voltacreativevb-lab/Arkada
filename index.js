@@ -4,6 +4,7 @@ const mqtt = require('mqtt');
 const cors = require('cors');
 const path = require('path');
 const crypto = require('node:crypto');
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 const app = express();
 app.use(cors());
