@@ -3,492 +3,249 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="google" content="notranslate">
-    <meta name="format-detection" content="telephone=no">
-    <title>Volta Arena | Prijava</title>
+    <title>VOLTA Pro Kontrola</title>
+    <!-- Učitavamo zvanični Supabase JS klijent sa interneta -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --neon-green: #00ff88;
-            --dark-bg: #0a0a0a;
-            --card-bg: #161616;
-            --muted: #888;
-            --danger: #ff5f5f;
+            --bg-dark: #070708;
+            --card-bg: #121214;
+            --card-border: #1f1f23;
+            --accent-orange: #ff5722;
+            --accent-green: #00e676;
+            --text-main: #ffffff;
+            --text-muted: #62626a;
         }
 
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--dark-bg);
-            color: white;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow-x: hidden;
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: var(--bg-dark); 
+            color: var(--text-main); 
+            margin: 0; padding: 20px;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 90vh;
         }
 
-        .container {
-            width: 90%;
-            max-width: 430px;
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 24px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
-            border: 2px solid #222;
-            text-align: center;
-            transition: all 0.5s ease;
+        .container { 
+            width: 100%; max-width: 380px; 
+            background: var(--card-bg); 
+            border: 1px solid var(--card-border); 
+            padding: 30px 20px; border-radius: 24px; 
+            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
         }
 
-        .logo {
-            font-size: 3rem;
-            font-weight: 900;
-            color: var(--neon-green);
-            margin-bottom: 5px;
-            letter-spacing: -2px;
-            text-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
-        }
+        h1 { font-size: 1.9rem; font-weight: 900; letter-spacing: -0.5px; margin: 0 0 5px 0; text-transform: uppercase; }
+        .subtitle { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }
 
-        h2 {
-            font-size: 0.9rem;
-            margin-bottom: 24px;
-            color: var(--muted);
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
+        /* INPUT POLJA ZA LOGIN */
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group label { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px; font-weight: 700; }
+        .input-field { width: 100%; padding: 14px; background: #18181c; border: 1px solid var(--card-border); border-radius: 12px; color: white; font-size: 1rem; box-sizing: border-box; }
+        .input-field:focus { outline: none; border-color: var(--accent-orange); }
 
-        .helper-box {
-            background: #101010;
-            border: 1px solid #242424;
-            border-radius: 16px;
-            padding: 14px;
-            text-align: left;
-            margin-bottom: 18px;
-        }
+        /* DIGMAD */
+        .btn { display: block; width: 100%; padding: 16px; border: none; border-radius: 14px; font-weight: 700; font-size: 1rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s ease; }
+        .btn:active { transform: scale(0.98); }
+        .btn-orange { background: var(--accent-orange); color: white; box-shadow: 0 6px 20px rgba(255, 87, 34, 0.3); }
+        .btn-orange:disabled { background: #33221c; color: var(--text-muted); box-shadow: none; cursor: not-allowed; }
 
-        .helper-box p {
-            margin: 0 0 8px 0;
-            color: #bbb;
-            font-size: 0.9rem;
-            line-height: 1.45;
-        }
+        /* KARTICE ZA SELEKCIJU 3 IGRE */
+        .games-grid { display: flex; flex-direction: column; gap: 12px; margin: 25px 0; }
+        .game-card { background: #18181c; border: 1px solid var(--card-border); padding: 16px; border-radius: 14px; text-align: left; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: space-between; }
+        .game-card.active { border-color: var(--accent-orange); background: rgba(255, 87, 34, 0.04); }
+        .game-info h3 { margin: 0; font-size: 1.05rem; font-weight: 700; }
+        .game-info p { margin: 4px 0 0 0; font-size: 0.8rem; color: var(--text-muted); }
+        .badge { font-size: 0.7rem; font-weight: 900; padding: 4px 8px; background: #26262b; border-radius: 6px; color: #aaa; }
+        .game-card.active .badge { background: var(--accent-orange); color: white; }
 
-        .helper-box p:last-child { margin-bottom: 0; }
+        /* STATUSNA BAR-A */
+        .status-box { background: #18181c; border: 1px solid var(--card-border); padding: 12px; border-radius: 12px; font-size: 0.85rem; margin-top: 20px; color: #aaa; }
+        .status-dot { inline-size: 8px; block-size: 8px; background-color: var(--text-muted); border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .status-dot.online { background-color: var(--accent-green); box-shadow: 0 0 8px var(--accent-green); }
 
-        .helper-box strong {
-            color: white;
-        }
-
-        .mini-links {
-            display: grid;
-            gap: 8px;
-            margin-top: 12px;
-        }
-
-        .mini-btn {
-            display: block;
-            width: 100%;
-            text-decoration: none;
-            padding: 12px 14px;
-            border-radius: 12px;
-            background: #0b0b0b;
-            color: white;
-            border: 1px solid #2b2b2b;
-            font-size: 0.95rem;
-            font-weight: 700;
-        }
-
-        .mini-note {
-            font-size: 0.8rem;
-            color: #7f7f7f;
-            margin-top: 8px;
-            line-height: 1.4;
-        }
-
-        .input-group {
-            margin-bottom: 18px;
-            text-align: left;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 0.75rem;
-            color: var(--neon-green);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        input {
-            width: 100%;
-            padding: 16px;
-            border-radius: 14px;
-            border: 2px solid #282828;
-            background: #000;
-            color: #fff;
-            font-size: 1rem;
-            transition: all 0.2s;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: var(--neon-green);
-            background: #050505;
-        }
-
-        #purs_link {
-            font-size: 0.95rem;
-        }
-
-        .actions {
-            display: grid;
-            gap: 10px;
-        }
-
-        .btn-start,
-        .btn-secondary {
-            width: 100%;
-            padding: 18px;
-            border: none;
-            border-radius: 14px;
-            font-size: 1.05rem;
-            font-weight: 900;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: all 0.2s;
-        }
-
-        .btn-start {
-            background: var(--neon-green);
-            color: #000;
-        }
-
-        .btn-start:disabled,
-        .btn-secondary:disabled {
-            opacity: 0.45;
-            cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            background: #242424;
-            color: #fff;
-            border: 1px solid #323232;
-        }
-
-        .inline-status {
-            margin-top: 12px;
-            min-height: 20px;
-            font-size: 0.88rem;
-            color: var(--muted);
-            line-height: 1.4;
-        }
-
-        .inline-status.error { color: var(--danger); }
-        .inline-status.ok { color: var(--neon-green); }
-
-        #status-area {
-            margin-top: 10px;
-            min-height: 250px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .countdown-num {
-            font-size: 6rem;
-            color: var(--neon-green);
-            font-weight: 900;
-            text-shadow: 0 0 30px rgba(0, 255, 136, 0.6);
-            display: block;
-            animation: bounceIn 0.5s ease;
-        }
-
-        @keyframes bounceIn {
-            0% { transform: scale(0.3); opacity: 0; }
-            70% { transform: scale(1.1); }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .loader {
-            border: 5px solid #222;
-            border-top: 5px solid var(--neon-green);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .hidden { display: none !important; }
-
-        .mesto-broj {
-            font-size: 9rem;
-            font-weight: 900;
-            color: var(--neon-green);
-            line-height: 1;
-            margin: 10px 0;
-            text-shadow: 0 0 40px rgba(0, 255, 136, 0.5);
-        }
-
-        .privacy-note {
-            margin-top: 16px;
-            font-size: 0.78rem;
-            color: #6f6f6f;
-            line-height: 1.45;
-        }
-
-        @media (max-width: 420px) {
-            .container {
-                width: 94%;
-                padding: 22px;
-            }
-
-            .logo { font-size: 2.5rem; }
-            .countdown-num { font-size: 5rem; }
-            .mesto-broj { font-size: 7rem; }
-        }
+        /* SAKRIVANJE JEDNOG OD EKRANA */
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-<div class="container" id="main-card">
-    <div class="logo">VOLTA</div>
-    <h2 id="sub-title">Arena Challenge</h2>
+<div class="container">
+    <h1>VOLTA SYSTEM</h1>
+    <div class="subtitle">Aparat: VOLTA_001</div>
 
-    <div id="form-ui">
-        <div class="helper-box">
-            <p><strong>Kako da učestvuješ:</strong></p>
-            <p>1. Skeniraj QR kod sa fiskalnog računa.</p>
-            <p>2. Kopiraj link koji se pojavi.</p>
-            <p>3. Nalepi link ispod i pokreni igru.</p>
-
-            <div class="mini-links">
-                <a class="mini-btn" href="https://play.google.com/store/search?q=qr%20scanner&c=apps" target="_blank" rel="noopener noreferrer">
-                    Android – instaliraj QR skener
-                </a>
-                <a class="mini-btn" href="https://apps.apple.com/us/search?term=qr%20scanner" target="_blank" rel="noopener noreferrer">
-                    iPhone – App Store
-                </a>
-            </div>
-
-            <div class="mini-note">
-                Ako već imaš bilo koji QR skener ili koristiš iPhone kameru, slobodno koristi to i samo nalepi link ovde.
-            </div>
-        </div>
-
+    <!-- 1. EKRAN FORMA ZA LOGIN (Prikazuje se prva) -->
+    <div id="login-screen">
         <div class="input-group">
-            <label>Identifikacija za rang listu</label>
-            <input type="email" id="email" placeholder="tvoj@mail.com" autocomplete="off" inputmode="email">
+            <label>E-mail Adresa</label>
+            <input type="email" id="email" class="input-field" placeholder="ime@gmail.com">
         </div>
-
         <div class="input-group">
-            <label>Link sa fiskalnog računa</label>
-            <input
-                type="text"
-                id="purs_link"
-                name="verification_link"
-                placeholder="Nalepi https://suf.purs.gov.rs/v/?vl=..."
-                autocomplete="off"
-                autocapitalize="off"
-                spellcheck="false"
-            >
+            <label>Šifra</label>
+            <input type="password" id="password" class="input-field" placeholder="••••••••">
         </div>
-
-        <div class="actions">
-            <button type="button" class="btn-secondary" id="pasteBtn">NALEPI LINK</button>
-            <button class="btn-start" id="startBtn" onclick="autorizujIgru()">POKRENI IGRU</button>
-        </div>
-
-        <div id="inline-status" class="inline-status"></div>
-
-        <div class="privacy-note">
-            Email koristimo za rang listu i evidenciju igrača, a link sa računa isključivo za verifikaciju učešća.
-        </div>
+        <button class="btn btn-orange" onclick="ulogujSe()" style="margin-top: 20px;">🚪 PRIJAVI SE</button>
     </div>
 
-    <div id="status-area" class="hidden">
-        <div id="status-text" style="font-size: 1.2rem; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;"></div>
-        <div id="countdown-display"></div>
+    <!-- 2. EKRAN KONTROLNA TABLA (Otključava se nakon logina) -->
+    <div id="dashboard-screen" class="hidden">
+        <div class="games-grid">
+            <!-- IGRA A -->
+            <div class="game-card active" id="card-A" onclick="izaberiIgru('A')">
+                <div class="game-info">
+                    <h3>⚡ REFLEX TEST</h3>
+                    <p>Udari svetleći senzor što brže možeš</p>
+                </div>
+                <div class="badge">IGRA A</div>
+            </div>
+            <!-- IGRA B -->
+            <div class="game-card" id="card-B" onclick="izaberiIgru('B')">
+                <div class="game-info">
+                    <h3>🔥 SPEED CHALLENGE</h3>
+                    <p>Koliko udaraca možeš da spakuješ u 30s?</p>
+                </div>
+                <div class="badge">IGRA B</div>
+            </div>
+            <!-- IGRA C -->
+            <div class="game-card" id="card-C" onclick="izaberiIgru('C')">
+                <div class="game-info">
+                    <h3>💪 ENDURANCE MODE</h3>
+                    <p>Igraj bez greške dok ritam ubrzava</p>
+                </div>
+                <div class="badge">IGRA C</div>
+            </div>
+        </div>
+
+        <button class="btn btn-orange" id="startBtn" onclick="pokreniAparat()">🚀 POKRENI APARAT</button>
+        
+        <div class="status-box">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">Status aparata: Učitavanje...</span>
+        </div>
     </div>
 </div>
 
 <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const aparatId = urlParams.get('aparat') || "APARAT_1";
+    // 🔔 UNESI SVOJE SUPABASE PODATKE OVDE!
+    const SUPABASE_URL = "https://tvoj-projekat.supabase.co";
+    const SUPABASE_ANON_KEY = "tvoj_javni_anon_key_ovde...";
+    
+    // Inicijalizacija Supabase klijenta
+    const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    window.onload = () => {
-        const savedEmail = localStorage.getItem('volta_user_email');
-        if (savedEmail) document.getElementById('email').value = savedEmail;
+    let trenutnoIzabranaIgra = 'A';
+    let trenutniAparat = 'VOLTA_001';
+    let ulogovaniKorisnikId = null;
+
+    // Provera da li je korisnik već ulogovan od ranije
+    window.onload = async () => {
+        const session = supabase.auth.session; // Automatski vuče token ako postoji
+        if (session) {
+            autorizujKorisnika(session.user.id);
+        }
     };
 
-    function setInlineStatus(message, type = '') {
-        const el = document.getElementById('inline-status');
-        el.className = 'inline-status';
-        if (type) el.classList.add(type);
-        el.textContent = message || '';
-    }
+    // FUNKCIJA ZA LOGIN
+    async function ulogujSe() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
 
-    function isValidEmail(email) {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    }
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password,
+        });
 
-    function isValidPursLink(link) {
-        try {
-            const url = new URL(link);
-            return (
-                url.protocol === "https:" &&
-                url.hostname === "suf.purs.gov.rs" &&
-                url.pathname === "/v/" &&
-                url.searchParams.has("vl")
-            );
-        } catch {
-            return false;
+        if (error) {
+            alert("Greška pri prijavi: " + error.message);
+        } else {
+            autorizujKorisnika(data.user.id);
         }
     }
 
-    document.getElementById('pasteBtn').addEventListener('click', async () => {
-        try {
-            const text = await navigator.clipboard.readText();
-            document.getElementById('purs_link').value = text.trim();
-            setInlineStatus("Link je nalepljen iz clipboard-a.", "ok");
-        } catch (e) {
-            setInlineStatus("Telefon ne dozvoljava čitanje clipboard-a. Nalepi ručno.", "error");
-        }
-    });
+    function autorizujKorisnika(userId) {
+        ulogovaniKorisnikId = userId;
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('dashboard-screen').classList.remove('hidden');
+        pratiStatusAparataUživo();
+    }
 
-    async function autorizujIgru() {
-        const email = document.getElementById('email').value.trim();
-        const pursLink = document.getElementById('purs_link').value.trim();
-        const btn = document.getElementById('startBtn');
+    // IZBOR IZMEĐU 3 IGRE U INTERFEJSU
+    function izaberiIgru(oznaka) {
+        trenutnoIzabranaIgra = oznaka;
+        document.querySelectorAll('.game-card').forEach(card => card.classList.remove('active'));
+        document.getElementById('card-' + oznaka).classList.add('active');
+    }
 
-        setInlineStatus('');
+    // 🚀 GLAVNA INTERNET KOMANDA: Šaljemo signal aparatu preko Supabase-a
+    async function pokreniAparat() {
+        const startBtn = document.getElementById('startBtn');
+        startBtn.disabled = true;
+        startBtn.innerText = "SLANJE SIGNALA...";
 
-        if (!isValidEmail(email)) {
-            setInlineStatus("Unesite ispravan email.", "error");
-            return;
-        }
+        const { error } = await supabase
+            .from('aparati_status')
+            .update({ 
+                status: 'POKRENI_IGRU', 
+                trenutni_korisnik: ulogovaniKorisnikId,
+                izabrana_igra: trenutnoIzabranaIgra
+            })
+            .eq('aparat_id', trenutniAparat);
 
-        if (!isValidPursLink(pursLink)) {
-            setInlineStatus("Nalepite ispravan link sa fiskalnog računa.", "error");
-            return;
-        }
-
-        localStorage.setItem('volta_user_email', email);
-        btn.disabled = true;
-        btn.innerText = "PROVERA...";
-
-        try {
-            const response = await fetch('/skeniraj', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email,
-                    verificationUrl: pursLink,
-                    aparatId
-                })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                document.getElementById('form-ui').classList.add('hidden');
-                document.getElementById('sub-title').classList.add('hidden');
-                document.getElementById('status-area').classList.remove('hidden');
-
-                startPhoneTimer(data.gameId);
-            } else {
-                setInlineStatus(data.message || "Račun nije prihvaćen.", "error");
-                btn.disabled = false;
-                btn.innerText = "POKRENI IGRU";
-            }
-        } catch (err) {
-            setInlineStatus("Greška na serveru.", "error");
-            btn.disabled = false;
-            btn.innerText = "POKRENI IGRU";
+        if (error) {
+            alert("Greška na mreži: " + error.message);
+            startBtn.disabled = false;
+            startBtn.innerText = "🚀 POKRENI APARAT";
         }
     }
 
-    function startPhoneTimer(gameId) {
-        const display = document.getElementById('countdown-display');
-        const statusText = document.getElementById('status-text');
-        let count = 10;
+    // 🔄 REALTIME OSLUŠKIVANJE STATUS APARATA
+    // Telefon prati šta aparat javlja bazi, i menja izgled ekrana u skladu sa tim
+    function pratiStatusAparataUživo() {
+        const statusText = document.getElementById('statusText');
+        const statusDot = document.getElementById('statusDot');
+        const startBtn = document.getElementById('startBtn');
 
-        statusText.innerText = "POČINJEMO ZA:";
-        statusText.style.color = "#888";
-
-        const interval = setInterval(() => {
-            if (count > 0) {
-                display.innerHTML = `<span class="countdown-num">${count}</span>`;
-                if (count <= 3) {
-                    statusText.innerText = "SPREMI SE!!!";
-                    statusText.style.color = "var(--neon-green)";
+        // Supabase Realtime pretplata na izmene u tabeli aparati_status
+        supabase
+            .channel('status_promene')
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'aparati_status', filter: `aparat_id=eq.${trenutniAparat}` }, payload => {
+                const noviStatus = payload.new.status;
+                
+                if (noviStatus === 'SLOBODAN') {
+                    statusText.innerText = "Status aparata: Slobodan za igru";
+                    statusDot.className = "status-dot online";
+                    startBtn.disabled = false;
+                    startBtn.innerText = "🚀 POKRENI APARAT";
+                } else if (noviStatus === 'POKRENI_IGRU') {
+                    statusText.innerText = "Status aparata: Pokretanje hardvera...";
+                    statusDot.className = "status-dot";
+                    startBtn.disabled = true;
+                } else if (noviStatus === 'IGRA_U_TOKU') {
+                    statusText.innerText = "Status aparata: IGRA U TOKU! 🎯";
+                    statusDot.className = "status-dot";
+                    startBtn.disabled = true;
+                    startBtn.innerText = "IGRAŠ...";
                 }
-                count--;
+            })
+            .subscribe();
+
+        // Prvo (ručno) učitavanje statusa čim se uđe na ekran
+        osveziStatusNaStartu();
+    }
+
+    async function osveziStatusNaStartu() {
+        const { data } = await supabase.from('aparati_status').select('status').eq('aparat_id', trenutniAparat).single();
+        if (data) {
+            const statusText = document.getElementById('statusText');
+            const statusDot = document.getElementById('statusDot');
+            if(data.status === 'SLOBODAN') {
+                statusText.innerText = "Status aparata: Slobodan za igru";
+                statusDot.className = "status-dot online";
             } else {
-                clearInterval(interval);
-                display.innerHTML = `<span class="countdown-num" style="font-size: 2.5rem; animation: none;">IGRA U TOKU 🎮</span>`;
-                statusText.innerText = "SREĆNO!";
-
-                if ("vibrate" in navigator) navigator.vibrate([200, 100, 200]);
-
-                setTimeout(() => {
-                    prikaziSabiranje(gameId);
-                }, 35000);
+                statusText.innerText = "Status aparata: Zauzet (" + data.status + ")";
+                document.getElementById('startBtn').disabled = true;
             }
-        }, 1000);
-    }
-
-    function prikaziSabiranje(gameId) {
-        const display = document.getElementById('countdown-display');
-        const statusText = document.getElementById('status-text');
-
-        statusText.innerText = "ZAVRŠENO!";
-        statusText.style.color = "#888";
-        display.innerHTML = `
-            <div class="loader"></div>
-            <p style="font-size: 1.2rem; color: var(--neon-green); font-weight: bold;">SABIRAMO BODOVE...</p>
-        `;
-
-        const proveraInterval = setInterval(async () => {
-            try {
-                const res = await fetch(`/proveri-rezultat?gameId=${encodeURIComponent(gameId)}`);
-                const data = await res.json();
-
-                if (data.pronadjen) {
-                    clearInterval(proveraInterval);
-                    prikaziKonacnoMesto(data.mesto, data.skor);
-                }
-            } catch (e) {
-                console.error("Greška pri proveri rezultata.");
-            }
-        }, 2000);
-    }
-
-    function prikaziKonacnoMesto(mesto, skor) {
-        const container = document.getElementById('main-card');
-        container.style.borderColor = "var(--neon-green)";
-
-        container.innerHTML = `
-            <div class="logo">VOLTA</div>
-            <h2 style="color: #888; margin-bottom: 10px;">BRAVO!</h2>
-            <p style="font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;">Osvojio si</p>
-            <div class="mesto-broj">${mesto}.</div>
-            <p style="font-size: 1.3rem; font-weight: 700; margin-top: -10px;">MESTO</p>
-            <p style="color: #666; margin-top: 15px;">Tvoj skor: <span style="color:white">${skor}</span></p>
-            <button class="btn-start" onclick="window.location.href='/leaderboard.html'" style="margin-top: 20px;">RANG LISTA</button>
-        `;
+        }
     }
 </script>
-
 </body>
 </html>
