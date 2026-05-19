@@ -2,270 +2,285 @@
 <html lang="sr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Volta Arena | Ulaz</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volta Pro Kontrola</title>
     <style>
-        :root { --neon-green: #00ff88; --dark-bg: #0a0a0a; --card-bg: #161616; --muted: #777; --danger: #ff4a4a; }
-        * { box-sizing: border-box; }
-        body { margin: 0; background: var(--dark-bg); color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { width: 90%; max-width: 400px; background: var(--card-bg); padding: 30px; border-radius: 24px; border: 2px solid #222; text-align: center; }
-        .logo { font-size: 3rem; font-weight: 900; color: var(--neon-green); margin-bottom: 5px; letter-spacing: -2px; text-shadow: 0 0 20px rgba(0, 255, 136, 0.4); }
-        h2 { font-size: 0.85rem; margin-bottom: 25px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; }
-        
-        /* Tabovi za zamenu Prijava / Registracija */
-        .tabs { display: flex; gap: 10px; margin-bottom: 25px; background: #000; padding: 5px; border-radius: 12px; border: 1px solid #222; }
-        .tab-btn { flex: 1; padding: 10px; background: none; border: none; color: var(--muted); font-weight: 700; font-size: 0.85rem; cursor: pointer; border-radius: 8px; text-transform: uppercase; transition: 0.2s; }
-        .tab-btn.active { background: #111; color: var(--neon-green); border: 1px solid #222; }
+        :root {
+            --bg-color: #0d0e12;
+            --card-bg: #161820;
+            --accent-color: #00e5ff;
+            --text-color: #ffffff;
+            --text-muted: #8fa0dd;
+        }
 
-        .input-group { margin-bottom: 20px; text-align: left; }
-        label { display: block; margin-bottom: 6px; font-size: 0.75rem; color: var(--neon-green); font-weight: 700; text-transform: uppercase; }
-        input { width: 100%; padding: 14px; border-radius: 12px; border: 2px solid #282828; background: #000; color: #fff; font-size: 1.1rem; }
-        input:focus { outline: none; border-color: var(--neon-green); }
-        input.pin-input { letter-spacing: 8px; font-size: 1.3rem; text-align: center; }
-        
-        .btn-start { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 1.05rem; font-weight: 900; cursor: pointer; text-transform: uppercase; background: var(--neon-green); color: #000; margin-top: 10px; }
-        .btn-start:disabled { opacity: 0.3; cursor: not-allowed; }
-        
-        /* Grid za igre */
-        .games-grid { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
-        .game-card { background: #0b0b0b; border: 1px solid #222; padding: 14px; border-radius: 12px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .game-card.active { border-color: var(--neon-green); background: rgba(0, 255, 136, 0.03); }
-        .game-title { font-weight: 700; margin: 0; }
-        .game-desc { font-size: 0.75rem; color: var(--muted); margin: 2px 0 0 0; }
-        .badge { font-size: 0.7rem; font-weight: 900; padding: 3px 6px; background: #222; border-radius: 4px; color: #888; }
-        .game-card.active .badge { background: var(--neon-green); color: #000; }
-        
-        .status-text { margin-top: 15px; font-size: 0.85rem; color: var(--muted); }
-        .hidden { display: none !important; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 450px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #ffffff, var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .status-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #262936;
+            text-align: center;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+
+        .status-slobodan { background-color: rgba(0, 230, 118, 0.15); color: #00e676; }
+        .status-toku { background-color: rgba(255, 145, 0, 0.15); color: #ff9100; }
+        .status-cekaj { background-color: rgba(0, 229, 255, 0.15); color: var(--accent-color); }
+
+        .game-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .game-card {
+            background-color: var(--card-bg);
+            border: 2px solid #262936;
+            border-radius: 16px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .game-card.active {
+            border-color: var(--accent-color);
+            background-gradient: linear-gradient(145deg, #161820, #1d2b36);
+        }
+
+        .game-card h3 {
+            margin: 0 0 6px 0;
+            font-size: 18px;
+        }
+
+        .game-card p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .btn-action {
+            background: linear-gradient(90deg, #00b0ff, #00e5ff);
+            color: #000000;
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.1s ease;
+            margin-top: 10px;
+        }
+
+        .btn-action:active {
+            transform: scale(0.98);
+        }
+
+        .btn-action:disabled {
+            background: #262936;
+            color: #525875;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .score-display {
+            font-size: 48px;
+            font-weight: 900;
+            color: var(--accent-color);
+            margin: 15px 0 5px 0;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="logo">VOLTA</div>
-    <h2 id="glavni-naslov">Autorizacija Igrača</h2>
+    <div class="header">
+        <h1>VOLTA PRO</h1>
+    </div>
 
-    <!-- EKRAN 1: PRIJAVA / REGISTRACIJA -->
-    <div id="auth-ui">
-        <div class="tabs">
-            <button class="tab-btn active" id="btn-tab-login" onclick="promeniTab('login')">Prijava</button>
-            <button class="tab-btn" id="btn-tab-register" onclick="promeniTab('register')">Registracija</button>
-        </div>
-
-        <!-- Forma za Prijavu -->
-        <div id="form-login">
-            <div class="input-group">
-                <label>Email</label>
-                <input type="email" id="login-email" placeholder="tvoj@email.com">
-            </div>
-            <div class="input-group">
-                <label>Unesi 4-cifreni PIN</label>
-                <input type="password" id="login-pin" class="pin-input" maxlength="4" inputmode="numeric" placeholder="••••">
-            </div>
-            <button class="btn-start" onclick="proveriPin()">POTVRDI PIN i UĐI</button>
-        </div>
-
-        <!-- Forma za Registraciju -->
-        <div id="form-register" class="hidden">
-            <div class="input-group">
-                <label>Tvoj Nadimak / Ime</label>
-                <input type="text" id="reg-name" placeholder="Npr. Zver, Munja...">
-            </div>
-            <div class="input-group">
-                <label>Email</label>
-                <input type="email" id="reg-email" placeholder="tvoj@email.com">
-            </div>
-            <div class="input-group">
-                <label>Izaberi 4-cifreni PIN</label>
-                <input type="password" id="reg-pin" class="pin-input" maxlength="4" inputmode="numeric" placeholder="••••">
-            </div>
-            <button class="btn-start" onclick="registrujIgraca()">KREIRAJ NALOG</button>
+    <!-- STATUS APARATA I ZADNJI REZULTAT -->
+    <div class="status-card">
+        <span style="color: var(--text-muted); font-size: 14px;">Status Aparata:</span><br>
+        <div id="aparatStatusBadge" class="status-badge status-slobodan">Učitavanje...</div>
+        
+        <div id="rezultatKontejner" style="display: none; margin-top: 15px;">
+            <div style="font-size: 13px; color: var(--text-muted);">Poslednji rezultat:</div>
+            <div id="krajnjiSkor" class="score-display">0</div>
+            <div style="font-size: 12px; color: #00e676;">Bodovi uspešno sačuvani!</div>
         </div>
     </div>
 
-    <!-- EKRAN 2: UPRAVLJANJE APARATOM -->
-    <div id="dashboard-ui" class="hidden">
-        <div class="games-grid">
-            <div class="game-card active" id="card-A" onclick="izaberiIgru('A')">
-                <div><p class="game-title">⚡ REFLEX TEST</p><p class="game-desc">Udari svetleći taster što brže</p></div>
-                <div class="badge">A</div>
-            </div>
-            <div class="game-card" id="card-B" onclick="izaberiIgru('B')">
-                <div><p class="game-title">🔥 SPEED CHALLENGE</p><p class="game-desc">Maksimum udaraca za 30 sekundi</p></div>
-                <div class="badge">B</div>
-            </div>
-            <div class="game-card" id="card-C" onclick="izaberiIgru('C')">
-                <div><p class="game-title">💪 ENDURANCE MODE</p><p class="game-desc">Prati ritam koji ubrzava</p></div>
-                <div class="badge">C</div>
-            </div>
+    <!-- SELEKTOR IGRE (INDEKSI "A" I "B" USKLAĐENI SA ESP32) -->
+    <div class="game-selector" id="gameSelectorSekcija">
+        <div class="game-card active" onclick="izaberiIgru('A', this)">
+            <h3>Igra A: Apex Pulse</h3>
+            <p>Testiraj reflekse na lažnim manevrima! Plavi paneli menjaju poziciju i nivo u žutu boju neposredno pre udarca.</p>
         </div>
-        <button class="btn-start" id="startBtn" onclick="pokreniAparat()">🚀 POKRENI APARAT</button>
-        <p class="status-text" id="statusTxt">Status: Povezan</p>
+
+        <div class="game-card" onclick="izaberiIgru('B', this)">
+            <h3>Igra B: Grid Lock</h3>
+            <p>Odbrani zid! Ugasi crvene panele pre nego što se svih 6 modula aktivira i kompletno zaključa sistem.</p>
+        </div>
+
+        <button id="btnPokreni" class="btn-action" onclick="pokreniTrening()">Pokreni Trening</button>
     </div>
 </div>
 
 <script>
-    // 1. FUNKCIJA ZA TABOVE JE NA SAMOM VRHU - Izvršava se odmah bez obzira na sve
-    function promeniTab(tip) {
-        console.log("Tab kliknut, tip:", tip);
-        const btnLogin = document.getElementById('btn-tab-login');
-        const btnRegister = document.getElementById('btn-tab-register');
-        const formLogin = document.getElementById('form-login');
-        const formRegister = document.getElementById('form-register');
-
-        if (tip === 'login') {
-            btnLogin.classList.add('active');
-            btnRegister.classList.remove('active');
-            formLogin.classList.remove('hidden');
-            formRegister.classList.add('hidden');
-        } else {
-            btnRegister.classList.add('active');
-            btnLogin.classList.remove('active');
-            formRegister.classList.remove('hidden');
-            formLogin.classList.add('hidden');
-        }
-    }
-
-    // 2. INICIJALIZACIJA BAZE SE DEŠAVA ISPOD
+    // =========================================================================
+    // SUPABASE KONFIGURACIJA
+    // =========================================================================
     const SUPABASE_URL = "https://wdnndorxgdzhlytqkyvh.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indkbm5kb3J4Z2R6aGx5dHFreXZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNzIzMDQsImV4cCI6MjA4Nzc0ODMwNH0.O5PxSn58e0m8uy9zXSraGs9FfxCzUgVcxKF-8SqNgbU";
-    
-    let supabaseKlijent = null;
-    
-    // Provera da li je biblioteka uspešno učitana sa mreže
-    try {
-        if (typeof supabase !== 'undefined') {
-            supabaseKlijent = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            console.log("Supabase je uspešno startovan.");
-        } else {
-            console.error("Greška: Supabase biblioteka nije učitana sa interneta!");
-        }
-    } catch(e) {
-        console.error("Pukla inicijalizacija baze:", e);
-    }
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indkbm5kb3J4Z2R6aGx5dHFreXZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNzIzMDQsImV4cCI6MjA4Nzc0ODMwNH0.O5PxSn58e0m8uy9zXSraGs9FfxCzUgVcxKF-8SqNgbU"; 
+    const APARAT_ID = "VOLTA_001";
+    const KORISNIK_EMAIL = "test.igrac@gmail.com"; // Ovo posle vučeš iz auth-a
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const aparatId = urlParams.get('aparat') || "VOLTA_001";
+    let selektovanaIgra = "A"; // Default je Apex Pulse
+    let trenutniStatusAparata = "";
 
-    let izabranaIgra = 'A';
-    let korisnikEmail = '';
-
-    window.onload = () => {
-        const pamtiEmail = localStorage.getItem('volta_memorisan_email');
-        if(pamtiEmail) document.getElementById('login-email').value = pamtiEmail;
+    // Zaglavlja za direktne REST API pozive bazi
+    const headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json"
     };
 
-    // 🔐 PRIJAVA SA POSTOJEĆIM PIN-om
-    async function proveriPin() {
-        if(!supabaseKlijent) { alert("Sistem nije povezan sa bazom!"); return; }
-        const email = document.getElementById('login-email').value.trim().toLowerCase();
-        const pin = document.getElementById('login-pin').value.trim();
-
-        if(!email || pin.length !== 4) { alert("Unesi kompletan email i 4 broja PIN-a!"); return; }
-
-        try {
-            const { data, error } = await supabaseKlijent
-                .from('korisnici_pin')
-                .select('email')
-                .eq('email', email)
-                .eq('pin', pin);
-
-            if (error) { alert("Greška na bazi: " + error.message); return; }
-
-            if (!data || data.length === 0) {
-                alert("Netačan PIN ili Email! Proveri podatke ili se registruj na susednom tabu.");
-            } else {
-                pustiIgracaNaDashboard(email);
-            }
-        } catch (err) {
-            alert("Sistemska greška: " + err.message);
-        }
-    }
-
-    // 📝 REGISTRACIJA NOVOG IGRAČA
-    async function registrujIgraca() {
-        if(!supabaseKlijent) { alert("Sistem nije povezan sa bazom!"); return; }
-        const ime = document.getElementById('reg-name').value.trim();
-        const email = document.getElementById('reg-email').value.trim().toLowerCase();
-        const pin = document.getElementById('reg-pin').value.trim();
-
-        if(!ime || !email || pin.length !== 4) { alert("Popuni sva polja! PIN mora imati tačno 4 cifre."); return; }
-
-        try {
-            const { error } = await supabaseKlijent
-                .from('korisnici_pin')
-                .insert([{ email: email, pin: pin, ime_igraca: ime }]);
-
-            if (error) {
-                if(error.message.includes("primary key") || error.message.includes("already exists")) {
-                    alert("Ovaj email je već registrovan! Idi na tab 'Prijava'.");
-                } else {
-                    alert("Greška pri registraciji: " + error.message);
-                }
-                return;
-            }
-
-            alert("Nalog uspešno kreiran! Dobrodošao u Volta Arenu.");
-            pustiIgracaNaDashboard(email);
-
-        } catch(err) {
-            alert("Sistemska greška: " + err.message);
-        }
-    }
-
-    function pustiIgracaNaDashboard(email) {
-        korisnikEmail = email;
-        localStorage.setItem('volta_memorisan_email', email);
+    // =========================================================================
+    // LOGIKA APLIKACIJE
+    // =========================================================================
+    function izaberiIgru(kodIgre, element) {
+        if (trenutniStatusAparata !== "SLOBODAN") return;
         
-        document.getElementById('auth-ui').classList.add('hidden');
-        document.getElementById('dashboard-ui').classList.remove('hidden');
-        document.getElementById('glavni-naslov').innerText = "Izbor Igre";
-        slusajAparatUzivo();
+        selektovanaIgra = kodIgre;
+        
+        // Sredi vizuelni stil kartica
+        document.querySelectorAll('.game-card').forEach(card => card.classList.remove('active'));
+        element.classList.add('active');
     }
 
-    function izaberiIgru(kod) {
-        izabranaIgra = kod;
-        document.querySelectorAll('.game-card').forEach(c => c.classList.remove('active'));
-        document.getElementById('card-' + kod).classList.add('active');
+    async function pratiStatusAparata() {
+        try {
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/aparati_status?aparat_id=eq.${APARAT_ID}&select=status,poslednji_skor`, {
+                method: "GET",
+                headers: headers
+            });
+            
+            const data = await response.json();
+            if (data && data.length > 0) {
+                const status = data[0].status;
+                const skor = data[0].poslednji_skor;
+                trenutniStatusAparata = status;
+
+                 osveziUI(status, skor);
+            }
+        } catch (error) {
+            console.error("Greška pri sinhronizaciji:", error);
+        }
     }
 
-    async function pokreniAparat() {
-        if(!supabaseKlijent) return;
-        document.getElementById('startBtn').disabled = true;
-        await supabaseKlijent
-            .from('aparati_status')
-            .update({ 
-                status: 'POKRENI_IGRU', 
-                trenutni_korisnik_email: korisnikEmail, 
-                izabrana_igra: izabranaIgra 
-            })
-            .eq('aparat_id', aparatId);
+    function osveziUI(status, skor) {
+        const badge = document.getElementById("aparatStatusBadge");
+        const btn = document.getElementById("btnPokreni");
+        const rezKontejner = document.getElementById("rezultatKontejner");
+
+        badge.className = "status-badge";
+
+        if (status === "SLOBODAN") {
+            badge.innerText = "Slobodan";
+            badge.classList.add("status-slobodan");
+            btn.disabled = false;
+            btn.innerText = "Pokreni Trening";
+            
+            if (skor !== null && skor !== undefined) {
+                document.getElementById("krajnjiSkor").innerText = skor;
+                rezKontejner.style.display = "block";
+            }
+        } else if (status === "POKRENI_IGRU") {
+            badge.innerText = "Slanje komande...";
+            badge.classList.add("status-cekaj");
+            btn.disabled = true;
+            btn.innerText = "Priprema hardvera...";
+        } else if (status === "IGRA_U_TOKU") {
+            badge.innerText = "Trening u toku";
+            badge.classList.add("status-toku");
+            btn.disabled = true;
+            btn.innerText = "Udaraj panele!";
+            rezKontejner.style.display = "none"; // Sakrij stari skor dok igra traje
+        }
     }
 
-    function slusajAparatUzivo() {
-        if(!supabaseKlijent) return;
-        supabaseKlijent
-            .channel('aparat_promene')
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'aparati_status', filter: `aparat_id=eq.${aparatId}` }, payload => {
-                const s = payload.new.status;
-                const txt = document.getElementById('statusTxt');
-                const btn = document.getElementById('startBtn');
+    async function pokreniTrening() {
+        if (trenutniStatusAparata !== "SLOBODAN") return;
 
-                if(s === 'SLOBODAN') {
-                    txt.innerText = "Status: SLOBODAN";
-                    btn.disabled = false;
-                    btn.innerText = "🚀 POKRENI APARAT";
-                } else if(s === 'POKRENI_IGRU') {
-                    txt.innerText = "Slanje signala hardveru...";
-                } else if(s === 'IGRA_U_TOKU') {
-                    txt.innerText = "IGRA JE U TOKU! 🎮";
-                    btn.disabled = true;
-                    btn.innerText = "IGRA SE...";
-                }
-            })
-            .subscribe();
+        osveziUI("POKRENI_IGRU", null);
+
+        try {
+            // Šaljemo komandu za pokretanje igre na ESP32 kroz bazu
+            await fetch(`${SUPABASE_URL}/rest/v1/aparati_status?aparat_id=eq.${APARAT_ID}`, {
+                method: "PATCH",
+                headers: headers,
+                body: JSON.stringify({
+                    status: "POKRENI_IGRU",
+                    izabrana_igra: selektovanaIgra,
+                    trenutni_korisnik_email: KORISNIK_EMAIL,
+                    poslednji_skor: null // Brišemo stari skor pre starta
+                })
+            });
+        } catch (error) {
+            console.error("Greška pri slanju komande:", error);
+            osveziUI("SLOBODAN", null);
+        }
     }
+
+    // Pokreni osluškivanje baze na svake 2 sekunde
+    setInterval(pratiStatusAparata, 2000);
+    pratiStatusAparata(); // Prvo izvršavanje odmah pri učitavanju
 </script>
+
 </body>
 </html>
