@@ -106,23 +106,9 @@
 </div>
 
 <script>
-    // Ključevi su podešeni i očišćeni od rest/v1 nastavka za ispravan rad biblioteke
-    const SUPABASE_URL = "https://wdnndorxgdzhlytqkyvh.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_secret_LdQSh7JU6Rz1KDgk6KtT2Q_LsYXYS8f";
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const aparatId = urlParams.get('aparat') || "VOLTA_001";
-
-    let izabranaIgra = 'A';
-    let korisnikEmail = '';
-
-    window.onload = () => {
-        const pamtiEmail = localStorage.getItem('volta_memorisan_email');
-        if(pamtiEmail) document.getElementById('login-email').value = pamtiEmail;
-    };
-
+    // 1. FUNKCIJA ZA TABOVE JE NA SAMOM VRHU - Izvršava se odmah bez obzira na sve
     function promeniTab(tip) {
+        console.log("Tab kliknut, tip:", tip);
         const btnLogin = document.getElementById('btn-tab-login');
         const btnRegister = document.getElementById('btn-tab-register');
         const formLogin = document.getElementById('form-login');
@@ -141,15 +127,45 @@
         }
     }
 
+    // 2. INICIJALIZACIJA BAZE SE DEŠAVA ISPOD
+    const SUPABASE_URL = "https://wdnndorxgdzhlytqkyvh.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_secret_LdQSh7JU6Rz1KDgk6KtT2Q_LsYXYS8f";
+    
+    let supabaseKlijent = null;
+    
+    // Provera da li je biblioteka uspešno učitana sa mreže
+    try {
+        if (typeof supabase !== 'undefined') {
+            supabaseKlijent = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log("Supabase je uspešno startovan.");
+        } else {
+            console.error("Greška: Supabase biblioteka nije učitana sa interneta!");
+        }
+    } catch(e) {
+        console.error("Pukla inicijalizacija baze:", e);
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const aparatId = urlParams.get('aparat') || "VOLTA_001";
+
+    let izabranaIgra = 'A';
+    let korisnikEmail = '';
+
+    window.onload = () => {
+        const pamtiEmail = localStorage.getItem('volta_memorisan_email');
+        if(pamtiEmail) document.getElementById('login-email').value = pamtiEmail;
+    };
+
     // 🔐 PRIJAVA SA POSTOJEĆIM PIN-om
     async function proveriPin() {
+        if(!supabaseKlijent) { alert("Sistem nije povezan sa bazom!"); return; }
         const email = document.getElementById('login-email').value.trim().toLowerCase();
         const pin = document.getElementById('login-pin').value.trim();
 
         if(!email || pin.length !== 4) { alert("Unesi kompletan email i 4 broja PIN-a!"); return; }
 
         try {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseKlijent
                 .from('korisnici_pin')
                 .select('email')
                 .eq('email', email)
@@ -169,6 +185,7 @@
 
     // 📝 REGISTRACIJA NOVOG IGRAČA
     async function registrujIgraca() {
+        if(!supabaseKlijent) { alert("Sistem nije povezan sa bazom!"); return; }
         const ime = document.getElementById('reg-name').value.trim();
         const email = document.getElementById('reg-email').value.trim().toLowerCase();
         const pin = document.getElementById('reg-pin').value.trim();
@@ -176,7 +193,7 @@
         if(!ime || !email || pin.length !== 4) { alert("Popuni sva polja! PIN mora imati tačno 4 cifre."); return; }
 
         try {
-            const { error } = await supabase
+            const { error } = await supabaseKlijent
                 .from('korisnici_pin')
                 .insert([{ email: email, pin: pin, ime_igraca: ime }]);
 
@@ -214,8 +231,9 @@
     }
 
     async function pokreniAparat() {
+        if(!supabaseKlijent) return;
         document.getElementById('startBtn').disabled = true;
-        await supabase
+        await supabaseKlijent
             .from('aparati_status')
             .update({ 
                 status: 'POKRENI_IGRU', 
@@ -226,7 +244,8 @@
     }
 
     function slusajAparatUzivo() {
-        supabase
+        if(!supabaseKlijent) return;
+        supabaseKlijent
             .channel('aparat_promene')
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'aparati_status', filter: `aparat_id=eq.${aparatId}` }, payload => {
                 const s = payload.new.status;
