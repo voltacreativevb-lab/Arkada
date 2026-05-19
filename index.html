@@ -106,7 +106,8 @@
 </div>
 
 <script>
-    const SUPABASE_URL = "https://wdnndorxgdzhlytqkyvh.supabase.co/rest/v1/";
+    // Ključevi su podešeni i očišćeni od rest/v1 nastavka za ispravan rad biblioteke
+    const SUPABASE_URL = "https://wdnndorxgdzhlytqkyvh.supabase.co";
     const SUPABASE_ANON_KEY = "sb_secret_LdQSh7JU6Rz1KDgk6KtT2Q_LsYXYS8f";
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -122,16 +123,21 @@
     };
 
     function promeniTab(tip) {
-        if(tip === 'login') {
-            document.getElementById('btn-tab-login').classList.add('active');
-            document.getElementById('btn-tab-register').classList.remove('active');
-            document.getElementById('form-login').classList.remove('hidden');
-            document.getElementById('form-register').classList.add('hidden');
+        const btnLogin = document.getElementById('btn-tab-login');
+        const btnRegister = document.getElementById('btn-tab-register');
+        const formLogin = document.getElementById('form-login');
+        const formRegister = document.getElementById('form-register');
+
+        if (tip === 'login') {
+            btnLogin.classList.add('active');
+            btnRegister.classList.remove('active');
+            formLogin.classList.remove('hidden');
+            formRegister.classList.add('hidden');
         } else {
-            document.getElementById('btn-tab-login').classList.remove('active');
-            document.getElementById('btn-tab-register').classList.add('active');
-            document.getElementById('form-login').classList.add('hidden');
-            document.getElementById('form-register').classList.remove('hidden');
+            btnRegister.classList.add('active');
+            btnLogin.classList.remove('active');
+            formRegister.classList.remove('hidden');
+            formLogin.classList.add('hidden');
         }
     }
 
@@ -170,7 +176,6 @@
         if(!ime || !email || pin.length !== 4) { alert("Popuni sva polja! PIN mora imati tačno 4 cifre."); return; }
 
         try {
-            // Upisujemo novog igrača u bazu
             const { error } = await supabase
                 .from('korisnici_pin')
                 .insert([{ email: email, pin: pin, ime_igraca: ime }]);
