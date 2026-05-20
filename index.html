@@ -3,89 +3,740 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Volta Pro BLE Kontrola</title>
+    <title>Volta Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg-color: #0d0e12; --card-bg: #161820; --accent-color: #00e5ff; --text-color: #ffffff; }
-        body { font-family: sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { max-width: 450px; width: 100%; display: flex; flex-direction: column; gap: 20px; }
-        .header { text-align: center; padding: 20px 0; }
-        .status-card { background-color: var(--card-bg); border-radius: 16px; padding: 20px; border: 1px solid #262936; text-align: center; }
-        .game-card { background-color: var(--card-bg); border: 2px solid #262936; border-radius: 16px; padding: 20px; cursor: pointer; transition: 0.2s; }
-        .game-card.active { border-color: var(--accent-color); }
-        .btn-action { background: linear-gradient(90deg, #00b0ff, #00e5ff); color: #000; border: none; border-radius: 12px; padding: 16px; width: 100%; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        .score-display { font-size: 48px; font-weight: 900; color: var(--accent-color); margin: 15px 0 5px 0; }
+        :root {
+            --bg: #0a0b0f;
+            --card: #13151c;
+            --card2: #1a1d27;
+            --accent: #00e5ff;
+            --accent2: #00b0ff;
+            --green: #00e676;
+            --red: #ff4060;
+            --muted: #6b7db3;
+            --border: #22263a;
+            --text: #eef0ff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px 48px;
+            background-image:
+                radial-gradient(ellipse 60% 40% at 50% -10%, rgba(0,229,255,0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 30% at 80% 100%, rgba(0,176,255,0.05) 0%, transparent 60%);
+        }
+
+        .container {
+            max-width: 440px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            text-align: center;
+            padding: 24px 0 8px;
+        }
+
+        .header h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 30px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            background: linear-gradient(100deg, #fff 30%, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            font-size: 12px;
+            color: var(--muted);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        /* ── CARDS ── */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 22px 20px;
+        }
+
+        /* ── AUTH SECTION ── */
+        #authSekcija .tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+
+        #authSekcija .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 9px;
+            background: transparent;
+            color: var(--muted);
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        #authSekcija .tab-btn.active {
+            background: var(--card2);
+            color: var(--accent);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-wrap label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .input-wrap input {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 13px 16px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-wrap input:focus {
+            border-color: var(--accent);
+        }
+
+        .input-wrap input::placeholder { color: var(--muted); }
+
+        /* ── BUTTONS ── */
+        .btn {
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+            padding: 15px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--accent2), var(--accent));
+            color: #000;
+        }
+
+        .btn-secondary {
+            background: var(--card2);
+            color: var(--muted);
+            border: 1px solid var(--border);
+        }
+
+        .btn-danger {
+            background: rgba(255,64,96,0.1);
+            color: var(--red);
+            border: 1px solid rgba(255,64,96,0.25);
+        }
+
+        .btn-connect {
+            background: #22263a;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-connect.connected {
+            background: rgba(0,230,118,0.1);
+            color: var(--green);
+            border-color: rgba(0,230,118,0.3);
+        }
+
+        /* ── AUTH ERROR ── */
+        .auth-error {
+            background: rgba(255,64,96,0.1);
+            border: 1px solid rgba(255,64,96,0.3);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: var(--red);
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        /* ── USER BAR ── */
+        #korisnikBar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            display: none;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent2), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 14px;
+            color: #000;
+            flex-shrink: 0;
+        }
+
+        .user-email {
+            font-size: 13px;
+            color: var(--muted);
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* ── STATUS ROW ── */
+        .status-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 14px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--muted);
+            flex-shrink: 0;
+            margin-right: 8px;
+        }
+
+        .status-dot.green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+        .status-dot.cyan { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+        .status-dot.orange { background: #ff9100; box-shadow: 0 0 6px #ff9100; }
+
+        #statusTekst {
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        /* ── SCORE ── */
+        #rezultatKontejner {
+            display: none;
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .score-label {
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .score-display {
+            font-family: 'Orbitron', monospace;
+            font-size: 52px;
+            font-weight: 900;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .score-saved {
+            font-size: 12px;
+            color: var(--green);
+            margin-top: 6px;
+        }
+
+        /* ── GAME CARDS ── */
+        #gameSekcija { display: none; }
+
+        .game-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .game-card {
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            padding: 16px 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0,229,255,0.05), transparent);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .game-card.active {
+            border-color: var(--accent);
+        }
+
+        .game-card.active::before { opacity: 1; }
+
+        .game-card h3 {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .game-card p {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .game-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .badge-a { background: rgba(0,229,255,0.15); color: var(--accent); }
+        .badge-b { background: rgba(255,64,96,0.15); color: var(--red); }
+
+        /* ── DIVIDER ── */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 4px 0;
+            color: var(--muted);
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ── LOADER ── */
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(0,229,255,0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── SECTION TITLE ── */
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 14px;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header"><h1>VOLTA PRO</h1></div>
 
-    <div class="status-card">
-        <button id="btnConnect" onclick="povezi()" class="btn-action" style="background:#444; color:#fff">🔗 POVEŽI UREĐAJ</button>
-        <div id="statusTekst" style="margin-top:10px; color:#8fa0dd;">Status: Disconnected</div>
-        
-        <div id="rezultatKontejner" style="display: none;">
+    <!-- HEADER -->
+    <div class="header">
+        <h1>VOLTA PRO</h1>
+        <p>Combat Training System</p>
+    </div>
+
+    <!-- ══════════════ AUTH SEKCIJA ══════════════ -->
+    <div class="card" id="authSekcija">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="prikaziTab('login')">Prijava</button>
+            <button class="tab-btn" onclick="prikaziTab('register')">Registracija</button>
+        </div>
+
+        <div id="authGreska" class="auth-error"></div>
+
+        <!-- LOGIN FORMA -->
+        <div id="loginForma">
+            <div class="input-group">
+                <div class="input-wrap">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" placeholder="tvoj@email.com" autocomplete="email">
+                </div>
+                <div class="input-wrap">
+                    <label>Lozinka</label>
+                    <input type="password" id="loginLozinka" placeholder="••••••••" autocomplete="current-password">
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="prijaviSe()">Prijavi se</button>
+        </div>
+
+        <!-- REGISTER FORMA -->
+        <div id="registerForma" style="display:none;">
+            <div class="input-group">
+                <div class="input-wrap">
+                    <label>Ime (nadimak)</label>
+                    <input type="text" id="regIme" placeholder="MojNadimak">
+                </div>
+                <div class="input-wrap">
+                    <label>Email</label>
+                    <input type="email" id="regEmail" placeholder="tvoj@email.com" autocomplete="email">
+                </div>
+                <div class="input-wrap">
+                    <label>Lozinka</label>
+                    <input type="password" id="regLozinka" placeholder="Min. 6 karaktera" autocomplete="new-password">
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="registrujSe()">Kreiraj nalog</button>
+        </div>
+    </div>
+
+    <!-- ══════════════ KORISNIK BAR ══════════════ -->
+    <div class="card" id="korisnikBar">
+        <div class="user-info">
+            <div class="avatar" id="avatarInicijal">?</div>
+            <div>
+                <div id="korisnikIme" style="font-weight:700; font-size:14px;">—</div>
+                <div class="user-email" id="korisnikEmail">—</div>
+            </div>
+        </div>
+        <button class="btn btn-danger" style="width:auto; padding:10px 16px;" onclick="odjaviSe()">Odjavi se</button>
+    </div>
+
+    <!-- ══════════════ BLE KONTROLA ══════════════ -->
+    <div class="card" id="bleSekcija" style="display:none;">
+        <div class="section-title">Bluetooth Veza</div>
+        <button id="btnConnect" class="btn btn-connect" onclick="povezi()">🔗 &nbsp;Poveži Uređaj</button>
+        <div class="status-row">
+            <div id="statusTekst">
+                <span class="status-dot" id="statusDot"></span>
+                Nije povezano
+            </div>
+        </div>
+
+        <!-- REZULTAT -->
+        <div id="rezultatKontejner">
+            <div class="score-label">Poslednji Rezultat</div>
             <div class="score-display" id="krajnjiSkor">0</div>
-            <div id="detaljiRezultata" style="color: #00e676;">Partija završena!</div>
+            <div class="score-saved" id="savedMsg"></div>
         </div>
     </div>
 
-    <div class="game-selector">
-        <div class="game-card active" onclick="izaberiIgru('A', this)">
-            <h3>Igra A: Apex Pulse</h3>
+    <!-- ══════════════ GAME SELEKTOR ══════════════ -->
+    <div class="card" id="gameSekcija">
+        <div class="section-title">Izaberi Trening</div>
+        <div class="game-grid">
+            <div class="game-card active" onclick="izaberiIgru('A', this)">
+                <span class="game-badge badge-a">Igra A</span>
+                <h3>Apex Pulse</h3>
+                <p>Testiraj reflekse na lažnim manevrima! Plavi paneli menjaju poziciju pre udarca.</p>
+            </div>
+            <div class="game-card" onclick="izaberiIgru('B', this)">
+                <span class="game-badge badge-b">Igra B</span>
+                <h3>Grid Lock</h3>
+                <p>Odbrani zid! Ugasi crvene panele pre nego što se svih 6 modula zaključa.</p>
+            </div>
         </div>
-        <div class="game-card" onclick="izaberiIgru('B', this)">
-            <h3>Igra B: Grid Lock</h3>
-        </div>
-        <button id="btnPokreni" class="btn-action" onclick="pokreniIgru()" disabled>POKRENI IGRU</button>
+        <button id="btnPokreni" class="btn btn-primary" onclick="pokreniIgru()" disabled>Pokreni Trening</button>
     </div>
+
 </div>
 
+<!-- ══════════════════════════════════════════════════════════
+     SUPABASE JS SDK
+═══════════════════════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-    let karakteristika;
-    let selektovanaIgra = 'A';
-    const SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-    const CHAR_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+// ═══════════════════════════════════════════════════════════
+// KONFIGURACIJA
+// ═══════════════════════════════════════════════════════════
+const SUPABASE_URL = "https://wdnndorxgdzhlytqkyvh.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indkbm5kb3J4Z2R6aGx5dHFreXZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNzIzMDQsImV4cCI6MjA4Nzc0ODMwNH0.O5PxSn58e0m8uy9zXSraGs9FfxCzUgVcxKF-8SqNgbU";
 
-    async function povezi() {
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+const CHAR_UUID    = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+
+let karakteristika = null;
+let selektovanaIgra = 'A';
+let trenutniKorisnik = null;
+
+// ═══════════════════════════════════════════════════════════
+// AUTH — TABOVI
+// ═══════════════════════════════════════════════════════════
+function prikaziTab(tab) {
+    document.getElementById('loginForma').style.display   = tab === 'login'    ? '' : 'none';
+    document.getElementById('registerForma').style.display = tab === 'register' ? '' : 'none';
+    document.querySelectorAll('.tab-btn').forEach((b, i) => {
+        b.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
+    });
+    prikaziGresku('');
+}
+
+function prikaziGresku(msg) {
+    const el = document.getElementById('authGreska');
+    el.innerText = msg;
+    el.style.display = msg ? 'block' : 'none';
+}
+
+// ═══════════════════════════════════════════════════════════
+// AUTH — PRIJAVA
+// ═══════════════════════════════════════════════════════════
+async function prijaviSe() {
+    const email    = document.getElementById('loginEmail').value.trim();
+    const lozinka  = document.getElementById('loginLozinka').value;
+    if (!email || !lozinka) { prikaziGresku('Popuni sve podatke.'); return; }
+
+    prikaziGresku('');
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: lozinka });
+    if (error) { prikaziGresku(prevediGresku(error.message)); return; }
+    posleLogin(data.user);
+}
+
+// ═══════════════════════════════════════════════════════════
+// AUTH — REGISTRACIJA
+// ═══════════════════════════════════════════════════════════
+async function registrujSe() {
+    const ime      = document.getElementById('regIme').value.trim();
+    const email    = document.getElementById('regEmail').value.trim();
+    const lozinka  = document.getElementById('regLozinka').value;
+    if (!ime || !email || !lozinka) { prikaziGresku('Popuni sva polja.'); return; }
+    if (lozinka.length < 6) { prikaziGresku('Lozinka mora imati min. 6 karaktera.'); return; }
+
+    prikaziGresku('');
+    const { data, error } = await sb.auth.signUp({
+        email,
+        password: lozinka,
+        options: { data: { display_name: ime } }
+    });
+
+    if (error) { prikaziGresku(prevediGresku(error.message)); return; }
+
+    // Supabase može odmah prijaviti ili zahtevati email potvrdu
+    if (data.user && data.session) {
+        posleLogin(data.user);
+    } else {
+        prikaziGresku('✅ Nalog kreiran! Proveri email za potvrdu, pa se prijavi.');
+        prikaziTab('login');
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+// AUTH — ODJAVA
+// ═══════════════════════════════════════════════════════════
+async function odjaviSe() {
+    await sb.auth.signOut();
+    trenutniKorisnik = null;
+    prikaziLoggedOut();
+}
+
+// ═══════════════════════════════════════════════════════════
+// UI STANJA
+// ═══════════════════════════════════════════════════════════
+function posleLogin(user) {
+    trenutniKorisnik = user;
+    const ime = user.user_metadata?.display_name || user.email.split('@')[0];
+    document.getElementById('korisnikIme').innerText  = ime;
+    document.getElementById('korisnikEmail').innerText = user.email;
+    document.getElementById('avatarInicijal').innerText = ime.charAt(0).toUpperCase();
+
+    document.getElementById('authSekcija').style.display    = 'none';
+    document.getElementById('korisnikBar').style.display    = 'flex';
+    document.getElementById('bleSekcija').style.display     = '';
+    document.getElementById('gameSekcija').style.display    = '';
+}
+
+function prikaziLoggedOut() {
+    document.getElementById('authSekcija').style.display    = '';
+    document.getElementById('korisnikBar').style.display    = 'none';
+    document.getElementById('bleSekcija').style.display     = 'none';
+    document.getElementById('gameSekcija').style.display    = 'none';
+    document.getElementById('rezultatKontejner').style.display = 'none';
+    document.getElementById('btnPokreni').disabled = true;
+    karakteristika = null;
+    const btnC = document.getElementById('btnConnect');
+    btnC.innerText = '🔗  Poveži Uređaj';
+    btnC.classList.remove('connected');
+    setStatus('Nije povezano', '');
+}
+
+// ═══════════════════════════════════════════════════════════
+// BLE
+// ═══════════════════════════════════════════════════════════
+async function povezi() {
+    try {
+        const device = await navigator.bluetooth.requestDevice({
+            filters: [{ name: 'Vilenjak_Igra' }],
+            optionalServices: [SERVICE_UUID]
+        });
+        const server  = await device.gatt.connect();
+        const service = await server.getPrimaryService(SERVICE_UUID);
+        karakteristika = await service.getCharacteristic(CHAR_UUID);
+
+        const btnC = document.getElementById('btnConnect');
+        btnC.innerText = '✅  Povezano';
+        btnC.classList.add('connected');
+        setStatus('Spreman za trening', 'green');
+        document.getElementById('btnPokreni').disabled = false;
+
+        await karakteristika.startNotifications();
+        karakteristika.addEventListener('characteristicvaluechanged', onBleData);
+
+        device.addEventListener('gattserverdisconnected', () => {
+            karakteristika = null;
+            document.getElementById('btnPokreni').disabled = true;
+            btnC.innerText = '🔗  Poveži Uređaj';
+            btnC.classList.remove('connected');
+            setStatus('Uređaj isključen', '');
+        });
+    } catch (e) {
+        alert('BLE greška: ' + e);
+    }
+}
+
+async function onBleData(event) {
+    const vrednost = new TextDecoder().decode(event.target.value).trim();
+    const skor = parseInt(vrednost, 10);
+
+    document.getElementById('krajnjiSkor').innerText = isNaN(skor) ? vrednost : skor;
+    document.getElementById('rezultatKontejner').style.display = 'block';
+    setStatus('Igra završena!', 'cyan');
+
+    // Sačuvaj rezultat u Supabase
+    if (trenutniKorisnik && !isNaN(skor)) {
+        const savedMsg = document.getElementById('savedMsg');
+        savedMsg.innerText = '';
         try {
-            const device = await navigator.bluetooth.requestDevice({
-                filters: [{ name: 'Vilenjak_Igra' }],
-                optionalServices: [SERVICE_UUID]
+            const { error } = await sb.from('rezultati').insert({
+                korisnik_id: trenutniKorisnik.id,
+                email: trenutniKorisnik.email,
+                igra: selektovanaIgra,
+                skor: skor
             });
-            const server = await device.gatt.connect();
-            const service = await server.getPrimaryService(SERVICE_UUID);
-            karakteristika = await service.getCharacteristic(CHAR_UUID);
-            
-            document.getElementById("btnConnect").innerText = "✅ POVEZANO";
-            document.getElementById("btnConnect").style.background = "#00e676";
-            document.getElementById("statusTekst").innerText = "Status: Spreman";
-            document.getElementById("btnPokreni").disabled = false;
+            savedMsg.innerText = error ? '⚠️ Greška pri čuvanju.' : '✅ Rezultat sačuvan!';
+        } catch {
+            savedMsg.innerText = '⚠️ Greška pri čuvanju.';
+        }
+    }
+}
 
-            // Slušanje rezultata sa ESP32
-            await karakteristika.startNotifications();
-            karakteristika.addEventListener('characteristicvaluechanged', (event) => {
-                let vrednost = new TextDecoder().decode(event.target.value);
-                document.getElementById("krajnjiSkor").innerText = vrednost;
-                document.getElementById("rezultatKontejner").style.display = "block";
-                document.getElementById("statusTekst").innerText = "Status: Igra završena!";
-            });
-        } catch (e) { alert("Greška: " + e); }
+function izaberiIgru(kod, el) {
+    selektovanaIgra = kod;
+    document.querySelectorAll('.game-card').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+}
+
+async function pokreniIgru() {
+    if (!karakteristika) return;
+    await karakteristika.writeValue(new TextEncoder().encode(selektovanaIgra));
+    document.getElementById('rezultatKontejner').style.display = 'none';
+    setStatus('Igra u toku...', 'orange');
+}
+
+// ═══════════════════════════════════════════════════════════
+// POMOĆNE FUNKCIJE
+// ═══════════════════════════════════════════════════════════
+function setStatus(tekst, boja) {
+    document.getElementById('statusTekst').innerHTML =
+        `<span class="status-dot ${boja}" id="statusDot"></span>${tekst}`;
+}
+
+function prevediGresku(msg) {
+    if (msg.includes('Invalid login')) return 'Pogrešan email ili lozinka.';
+    if (msg.includes('already registered')) return 'Email je već registrovan.';
+    if (msg.includes('Password should')) return 'Lozinka mora imati min. 6 karaktera.';
+    if (msg.includes('Invalid email')) return 'Unesi ispravnu email adresu.';
+    return msg;
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT — provjeri da li je korisnik već ulogovan
+// ═══════════════════════════════════════════════════════════
+(async () => {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session?.user) {
+        posleLogin(session.user);
     }
 
-    function izaberiIgru(kod, el) {
-        selektovanaIgra = kod;
-        document.querySelectorAll('.game-card').forEach(c => c.classList.remove('active'));
-        el.classList.add('active');
-    }
-
-    async function pokreniIgru() {
-        if (!karakteristika) return;
-        await karakteristika.writeValue(new TextEncoder().encode(selektovanaIgra));
-        document.getElementById("statusTekst").innerText = "Status: Igra u toku...";
-        document.getElementById("rezultatKontejner").style.display = "none";
-    }
+    sb.auth.onAuthStateChange((_event, session) => {
+        if (session?.user) posleLogin(session.user);
+        else prikaziLoggedOut();
+    });
+})();
 </script>
 
 </body>
