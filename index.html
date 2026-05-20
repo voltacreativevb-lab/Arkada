@@ -43,7 +43,6 @@
             gap: 18px;
         }
 
-        /* ── HEADER ── */
         .header {
             text-align: center;
             padding: 24px 0 8px;
@@ -67,7 +66,6 @@
             margin-top: 4px;
         }
 
-        /* ── CARDS ── */
         .card {
             background: var(--card);
             border: 1px solid var(--border);
@@ -75,7 +73,6 @@
             padding: 22px 20px;
         }
 
-        /* ── AUTH SECTION ── */
         #authSekcija .tabs {
             display: flex;
             gap: 4px;
@@ -113,10 +110,6 @@
             margin-bottom: 16px;
         }
 
-        .input-wrap {
-            position: relative;
-        }
-
         .input-wrap label {
             display: block;
             font-size: 11px;
@@ -140,13 +133,9 @@
             transition: border-color 0.2s;
         }
 
-        .input-wrap input:focus {
-            border-color: var(--accent);
-        }
-
+        .input-wrap input:focus { border-color: var(--accent); }
         .input-wrap input::placeholder { color: var(--muted); }
 
-        /* ── BUTTONS ── */
         .btn {
             width: 100%;
             border: none;
@@ -169,12 +158,6 @@
             color: #000;
         }
 
-        .btn-secondary {
-            background: var(--card2);
-            color: var(--muted);
-            border: 1px solid var(--border);
-        }
-
         .btn-danger {
             background: rgba(255,64,96,0.1);
             color: var(--red);
@@ -193,7 +176,6 @@
             border-color: rgba(0,230,118,0.3);
         }
 
-        /* ── AUTH ERROR ── */
         .auth-error {
             background: rgba(255,64,96,0.1);
             border: 1px solid rgba(255,64,96,0.3);
@@ -205,7 +187,6 @@
             display: none;
         }
 
-        /* ── USER BAR ── */
         #korisnikBar {
             display: flex;
             align-items: center;
@@ -242,7 +223,6 @@
             white-space: nowrap;
         }
 
-        /* ── STATUS ROW ── */
         .status-row {
             display: flex;
             align-items: center;
@@ -259,9 +239,9 @@
             margin-right: 8px;
         }
 
-        .status-dot.green { background: var(--green); box-shadow: 0 0 6px var(--green); }
-        .status-dot.cyan { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
-        .status-dot.orange { background: #ff9100; box-shadow: 0 0 6px #ff9100; }
+        .status-dot.green  { background: var(--green);  box-shadow: 0 0 6px var(--green); }
+        .status-dot.cyan   { background: var(--accent);  box-shadow: 0 0 6px var(--accent); }
+        .status-dot.orange { background: #ff9100;        box-shadow: 0 0 6px #ff9100; }
 
         #statusTekst {
             display: flex;
@@ -270,7 +250,6 @@
             color: var(--muted);
         }
 
-        /* ── SCORE ── */
         #rezultatKontejner {
             display: none;
             margin-top: 18px;
@@ -301,7 +280,6 @@
             margin-top: 6px;
         }
 
-        /* ── GAME CARDS ── */
         #gameSekcija { display: none; }
 
         .game-grid {
@@ -331,10 +309,7 @@
             transition: opacity 0.2s;
         }
 
-        .game-card.active {
-            border-color: var(--accent);
-        }
-
+        .game-card.active { border-color: var(--accent); }
         .game-card.active::before { opacity: 1; }
 
         .game-card h3 {
@@ -361,7 +336,7 @@
         }
 
         .badge-a { background: rgba(0,229,255,0.15); color: var(--accent); }
-        .badge-b { background: rgba(255,64,96,0.15); color: var(--red); }
+        .badge-b { background: rgba(255,64,96,0.15);  color: var(--red); }
 
         .game-card.locked {
             opacity: 0.4;
@@ -383,41 +358,6 @@
             vertical-align: middle;
         }
 
-        /* ── DIVIDER ── */
-        .divider {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 4px 0;
-            color: var(--muted);
-            font-size: 11px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
-
-        /* ── LOADER ── */
-        .spinner {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid rgba(0,229,255,0.2);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-            vertical-align: middle;
-            margin-right: 6px;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ── SECTION TITLE ── */
         .section-title {
             font-size: 11px;
             font-weight: 700;
@@ -438,7 +378,7 @@
         <p>Combat Training System</p>
     </div>
 
-    <!-- ══════════════ AUTH SEKCIJA ══════════════ -->
+    <!-- AUTH -->
     <div class="card" id="authSekcija">
         <div class="tabs">
             <button class="tab-btn active" onclick="prikaziTab('login')">Prijava</button>
@@ -447,7 +387,6 @@
 
         <div id="authGreska" class="auth-error"></div>
 
-        <!-- LOGIN FORMA -->
         <div id="loginForma">
             <div class="input-group">
                 <div class="input-wrap">
@@ -462,7 +401,6 @@
             <button class="btn btn-primary" onclick="prijaviSe()">Prijavi se</button>
         </div>
 
-        <!-- REGISTER FORMA -->
         <div id="registerForma" style="display:none;">
             <div class="input-group">
                 <div class="input-wrap">
@@ -482,7 +420,7 @@
         </div>
     </div>
 
-    <!-- ══════════════ KORISNIK BAR ══════════════ -->
+    <!-- KORISNIK BAR -->
     <div class="card" id="korisnikBar">
         <div class="user-info">
             <div class="avatar" id="avatarInicijal">?</div>
@@ -494,7 +432,7 @@
         <button class="btn btn-danger" style="width:auto; padding:10px 16px;" onclick="odjaviSe()">Odjavi se</button>
     </div>
 
-    <!-- ══════════════ BLE KONTROLA ══════════════ -->
+    <!-- BLE -->
     <div class="card" id="bleSekcija" style="display:none;">
         <div class="section-title">Bluetooth Veza</div>
         <button id="btnConnect" class="btn btn-connect" onclick="povezi()">🔗 &nbsp;Poveži Uređaj</button>
@@ -504,8 +442,6 @@
                 Nije povezano
             </div>
         </div>
-
-        <!-- REZULTAT -->
         <div id="rezultatKontejner">
             <div class="score-label">Poslednji Rezultat</div>
             <div class="score-display" id="krajnjiSkor">0</div>
@@ -513,7 +449,7 @@
         </div>
     </div>
 
-    <!-- ══════════════ GAME SELEKTOR ══════════════ -->
+    <!-- GAME SELEKTOR -->
     <div class="card" id="gameSekcija">
         <div class="section-title">Izaberi Trening</div>
         <div class="game-grid">
@@ -533,15 +469,9 @@
 
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     SUPABASE JS SDK
-═══════════════════════════════════════════════════════════ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-// ═══════════════════════════════════════════════════════════
-// KONFIGURACIJA
-// ═══════════════════════════════════════════════════════════
 const SUPABASE_URL = "https://wdnndorxgdzhlytqkyvh.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indkbm5kb3J4Z2R6aGx5dHFreXZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNzIzMDQsImV4cCI6MjA4Nzc0ODMwNH0.O5PxSn58e0m8uy9zXSraGs9FfxCzUgVcxKF-8SqNgbU";
 
@@ -551,15 +481,13 @@ const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 const SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
 const CHAR_UUID    = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
 
-let karakteristika = null;
-let selektovanaIgra = 'A';
-let trenutniKorisnik = null;
+let karakteristika    = null;
+let selektovanaIgra   = 'A';
+let trenutniKorisnik  = null;
 
-// ═══════════════════════════════════════════════════════════
-// AUTH — TABOVI
-// ═══════════════════════════════════════════════════════════
+// ── TABOVI ──
 function prikaziTab(tab) {
-    document.getElementById('loginForma').style.display   = tab === 'login'    ? '' : 'none';
+    document.getElementById('loginForma').style.display    = tab === 'login'    ? '' : 'none';
     document.getElementById('registerForma').style.display = tab === 'register' ? '' : 'none';
     document.querySelectorAll('.tab-btn').forEach((b, i) => {
         b.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
@@ -573,40 +501,30 @@ function prikaziGresku(msg) {
     el.style.display = msg ? 'block' : 'none';
 }
 
-// ═══════════════════════════════════════════════════════════
-// AUTH — PRIJAVA
-// ═══════════════════════════════════════════════════════════
+// ── AUTH ──
 async function prijaviSe() {
-    const email    = document.getElementById('loginEmail').value.trim();
-    const lozinka  = document.getElementById('loginLozinka').value;
+    const email   = document.getElementById('loginEmail').value.trim();
+    const lozinka = document.getElementById('loginLozinka').value;
     if (!email || !lozinka) { prikaziGresku('Popuni sve podatke.'); return; }
-
     prikaziGresku('');
     const { data, error } = await sb.auth.signInWithPassword({ email, password: lozinka });
     if (error) { prikaziGresku(prevediGresku(error.message)); return; }
     posleLogin(data.user);
 }
 
-// ═══════════════════════════════════════════════════════════
-// AUTH — REGISTRACIJA
-// ═══════════════════════════════════════════════════════════
 async function registrujSe() {
-    const ime      = document.getElementById('regIme').value.trim();
-    const email    = document.getElementById('regEmail').value.trim();
-    const lozinka  = document.getElementById('regLozinka').value;
+    const ime     = document.getElementById('regIme').value.trim();
+    const email   = document.getElementById('regEmail').value.trim();
+    const lozinka = document.getElementById('regLozinka').value;
     if (!ime || !email || !lozinka) { prikaziGresku('Popuni sva polja.'); return; }
     if (lozinka.length < 6) { prikaziGresku('Lozinka mora imati min. 6 karaktera.'); return; }
-
     prikaziGresku('');
     const { data, error } = await sb.auth.signUp({
         email,
         password: lozinka,
         options: { data: { display_name: ime } }
     });
-
     if (error) { prikaziGresku(prevediGresku(error.message)); return; }
-
-    // Supabase može odmah prijaviti ili zahtevati email potvrdu
     if (data.user && data.session) {
         posleLogin(data.user);
     } else {
@@ -615,29 +533,23 @@ async function registrujSe() {
     }
 }
 
-// ═══════════════════════════════════════════════════════════
-// AUTH — ODJAVA
-// ═══════════════════════════════════════════════════════════
 async function odjaviSe() {
     await sb.auth.signOut();
     trenutniKorisnik = null;
     prikaziLoggedOut();
 }
 
-// ═══════════════════════════════════════════════════════════
-// UI STANJA
-// ═══════════════════════════════════════════════════════════
+// ── UI STANJA ──
 function posleLogin(user) {
     trenutniKorisnik = user;
     const ime = user.user_metadata?.display_name || user.email.split('@')[0];
-    document.getElementById('korisnikIme').innerText  = ime;
+    document.getElementById('korisnikIme').innerText   = ime;
     document.getElementById('korisnikEmail').innerText = user.email;
     document.getElementById('avatarInicijal').innerText = ime.charAt(0).toUpperCase();
-
-    document.getElementById('authSekcija').style.display    = 'none';
-    document.getElementById('korisnikBar').style.display    = 'flex';
-    document.getElementById('bleSekcija').style.display     = '';
-    document.getElementById('gameSekcija').style.display    = '';
+    document.getElementById('authSekcija').style.display = 'none';
+    document.getElementById('korisnikBar').style.display = 'flex';
+    document.getElementById('bleSekcija').style.display  = '';
+    document.getElementById('gameSekcija').style.display = '';
 }
 
 function prikaziLoggedOut() {
@@ -654,13 +566,11 @@ function prikaziLoggedOut() {
     setStatus('Nije povezano', '');
 }
 
-// ═══════════════════════════════════════════════════════════
-// BLE
-// ═══════════════════════════════════════════════════════════
+// ── BLE ──
 async function povezi() {
     try {
         const device = await navigator.bluetooth.requestDevice({
-            filters: [{ name: 'Vilenjak_Igra' }],
+            filters: [{ name: 'VOLTA PRO' }],      // ← promenjeno ime
             optionalServices: [SERVICE_UUID]
         });
         const server  = await device.gatt.connect();
@@ -691,12 +601,10 @@ async function povezi() {
 async function onBleData(event) {
     const vrednost = new TextDecoder().decode(event.target.value).trim();
     const skor = parseInt(vrednost, 10);
-
     document.getElementById('krajnjiSkor').innerText = isNaN(skor) ? vrednost : skor;
     document.getElementById('rezultatKontejner').style.display = 'block';
     setStatus('Igra završena!', 'cyan');
 
-    // Sačuvaj rezultat u Supabase
     if (trenutniKorisnik && !isNaN(skor)) {
         const savedMsg = document.getElementById('savedMsg');
         savedMsg.innerText = '';
@@ -715,7 +623,6 @@ async function onBleData(event) {
 }
 
 function izaberiIgru(kod, el) {
-    // Za sad samo Igra A dostupna
     if (kod !== 'A') return;
     selektovanaIgra = kod;
     document.querySelectorAll('.game-card:not(.locked)').forEach(c => c.classList.remove('active'));
@@ -729,30 +636,24 @@ async function pokreniIgru() {
     setStatus('Igra u toku...', 'orange');
 }
 
-// ═══════════════════════════════════════════════════════════
-// POMOĆNE FUNKCIJE
-// ═══════════════════════════════════════════════════════════
+// ── POMOĆNE ──
 function setStatus(tekst, boja) {
     document.getElementById('statusTekst').innerHTML =
         `<span class="status-dot ${boja}" id="statusDot"></span>${tekst}`;
 }
 
 function prevediGresku(msg) {
-    if (msg.includes('Invalid login')) return 'Pogrešan email ili lozinka.';
+    if (msg.includes('Invalid login'))     return 'Pogrešan email ili lozinka.';
     if (msg.includes('already registered')) return 'Email je već registrovan.';
-    if (msg.includes('Password should')) return 'Lozinka mora imati min. 6 karaktera.';
-    if (msg.includes('Invalid email')) return 'Unesi ispravnu email adresu.';
+    if (msg.includes('Password should'))   return 'Lozinka mora imati min. 6 karaktera.';
+    if (msg.includes('Invalid email'))     return 'Unesi ispravnu email adresu.';
     return msg;
 }
 
-// ═══════════════════════════════════════════════════════════
-// INIT — provjeri da li je korisnik već ulogovan
-// ═══════════════════════════════════════════════════════════
+// ── INIT ──
 (async () => {
     const { data: { session } } = await sb.auth.getSession();
-    if (session?.user) {
-        posleLogin(session.user);
-    }
+    if (session?.user) posleLogin(session.user);
 
     sb.auth.onAuthStateChange((_event, session) => {
         if (session?.user) posleLogin(session.user);
