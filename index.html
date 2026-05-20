@@ -226,11 +226,49 @@ body{
   aspect-ratio:1;border-radius:8px;background:var(--card2);
   border:1px solid var(--border);transition:background .12s,transform .1s,box-shadow .12s
 }
-.panel.hit {background:var(--green);box-shadow:0 0 14px var(--green);transform:scale(1.08)}
-.panel.miss{background:var(--red);  box-shadow:0 0 14px var(--red);  transform:scale(1.05)}
+.panel.hit    {background:var(--green);  box-shadow:0 0 14px var(--green);  transform:scale(1.08)}
+.panel.miss   {background:var(--red);    box-shadow:0 0 14px var(--red);    transform:scale(1.05)}
 .panel.active-a{background:var(--accent);box-shadow:0 0 16px var(--accent)}
 .panel.active-b{background:var(--red);   box-shadow:0 0 16px var(--red)}
-.panel.timeout{background:var(--orange); box-shadow:0 0 12px var(--orange)}
+.panel.timeout {background:var(--orange);box-shadow:0 0 12px var(--orange)}
+/* Red Alert panel states */
+.panel.infected{
+  background:var(--red);
+  box-shadow:0 0 18px rgba(255,61,90,.9), 0 0 40px rgba(255,0,0,.4);
+  animation:infectPulse 0.6s ease-in-out infinite alternate
+}
+.panel.extinguished{
+  background:var(--green);
+  box-shadow:0 0 18px var(--green);
+  transform:scale(1.12)
+}
+@keyframes infectPulse{
+  from{box-shadow:0 0 10px rgba(255,61,90,.7),0 0 24px rgba(255,0,0,.3)}
+  to  {box-shadow:0 0 24px rgba(255,61,90,1), 0 0 52px rgba(255,0,0,.6)}
+}
+/* Red Alert — infect counter badge */
+.alert-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;max-width:340px;margin-bottom:12px;
+  padding:8px 14px;border-radius:10px;
+  background:rgba(255,61,90,.08);border:1px solid rgba(255,61,90,.25)
+}
+.alert-bar-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--red)}
+.alert-bar-val{
+  font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--red);
+  display:flex;align-items:center;gap:6px
+}
+.fire-icon{font-size:18px}
+/* flicker red on screen for Red Alert */
+@keyframes alertFlicker{
+  0%  {opacity:.18}
+  20% {opacity:.04}
+  40% {opacity:.22}
+  60% {opacity:.06}
+  80% {opacity:.20}
+  100%{opacity:0}
+}
+.alert-flicker{animation:alertFlicker .5s ease-out forwards}
 
 /* level badge on HUD */
 .hud-level{
@@ -330,6 +368,11 @@ body{
         <h3>Grid Lock</h3>
         <p>Polje se pali crvenom i bledi ka narandzastoj. Pogodi ga na vreme — +1. Promaši ili istekne — −1.</p>
       </div>
+      <div class="gc" id="gcC" onclick="pickGame('C',this)" style="border-color:rgba(255,61,90,.35)">
+        <span class="badge" style="background:rgba(255,61,90,.18);color:var(--red)">Igra C</span>
+        <h3 style="color:var(--red)">🔴 Red Alert <span style="font-size:11px;font-weight:600;letter-spacing:1px;color:var(--muted);vertical-align:middle">SURVIVAL</span></h3>
+        <p>Infekcija se širi! Gasi crvena polja pre nego što sva 6 pocrvene — tada gubiš. Nema tajmera — samo survival.</p>
+      </div>
     </div>
 
     <button id="btnStart" class="btn btn-p" onclick="startGame()" disabled>⚡ &nbsp;Pokreni trening</button>
@@ -346,8 +389,8 @@ body{
   <div class="hud-game-name" id="hudGameName">APEX PULSE</div>
   <div class="hud-level" id="hudLevelBadge">NIVO 1 — BEGINNER</div>
 
-  <!-- Timer ring -->
-  <div class="timer-wrap">
+  <!-- Timer ring — hidden in Red Alert survival mode -->
+  <div class="timer-wrap" id="timerWrap">
     <svg id="timerRing" width="120" height="120" viewBox="0 0 120 120">
       <circle cx="60" cy="60" r="54" fill="none" stroke="#1e2235" stroke-width="7"/>
       <circle id="timerArc" cx="60" cy="60" r="54" fill="none"
@@ -357,6 +400,16 @@ body{
     <div class="timer-inner">
       <div id="timerSec">45</div>
       <div id="timerLbl">sec</div>
+    </div>
+  </div>
+
+  <!-- Red Alert: infection bar (shown only for game C) -->
+  <div class="alert-bar" id="alertBar" style="display:none">
+    <div class="alert-bar-label">Polja u plamenu</div>
+    <div class="alert-bar-val">
+      <span class="fire-icon">🔥</span>
+      <span id="alertInfected">0</span>
+      <span style="font-size:14px;color:var(--muted)">/6</span>
     </div>
   </div>
 
@@ -403,21 +456,24 @@ const SVC_UUID  = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
 const CHAR_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
 
 const LEVEL_NAMES = ['Beginner','Medium','Pro','Master','Apex'];
-const GAME_NAMES  = { A:'APEX PULSE', B:'GRID LOCK' };
+const GAME_NAMES  = { A:'APEX PULSE', B:'GRID LOCK', C:'RED ALERT' };
 const GAME_DUR    = 45000;
 
-let bleChar  = null;
-let selGame  = 'A';
-let selLevel = 1;
-let user     = null;
+let bleChar   = null;
+let selGame   = 'A';
+let selLevel  = 1;
+let user      = null;
 
 // HUD state
-let hudActive   = false;
-let hudSkor     = 0;
-let hudHits     = 0;
-let hudMisses   = 0;
-let hudStart    = 0;
-let timerHandle = null;
+let hudActive    = false;
+let hudSkor      = 0;
+let hudHits      = 0;
+let hudMisses    = 0;
+let hudStart     = 0;
+let timerHandle  = null;
+let isAlertMode  = false;
+// Red Alert: track infected panels on phone side too
+let alertPanelState = [false,false,false,false,false,false]; // true=infected
 
 // ═══════════════ AUTH UI ════════════════
 function showTab(t) {
@@ -549,11 +605,12 @@ function sendBLE(msg) {
 
 // ═══════════════ BLE PARSING ════════════════
 // Formats from ESP32:
-//   START:A / START:B
-//   H:skor:pog:pro   (hit)
-//   M:skor:pog:pro   (miss)
-//   T:skor:pog:pro   (timeout)
-//   DONE:skor:pog:pro
+//   START:A / START:B / START:C
+//   H:skor:hit:miss[:infected]  — hit
+//   M:skor:hit:miss[:infected]  — miss
+//   T:skor:hit:miss             — timeout (Grid Lock)
+//   I:skor:hit:miss:infected    — infect spread (Red Alert)
+//   DONE:skor:hit:miss
 function onBLE(ev) {
   const raw=new TextDecoder().decode(ev.target.value).trim();
   const parts=raw.split(':');
@@ -567,9 +624,9 @@ function onBLE(ev) {
     stopHUD(false,parseInt(s),parseInt(h),parseInt(m));
     return;
   }
-  if(parts[0]==='H'||parts[0]==='M'||parts[0]==='T') {
-    const [type,s,h,m]=parts;
-    updateHUD(type, parseInt(s), parseInt(h), parseInt(m));
+  if(parts[0]==='H'||parts[0]==='M'||parts[0]==='T'||parts[0]==='I') {
+    const [type,s,h,m,inf]=parts;
+    updateHUD(type, parseInt(s), parseInt(h), parseInt(m), inf!==undefined?parseInt(inf):null);
     return;
   }
 }
@@ -590,23 +647,42 @@ function startHUD(gameCode) {
   hudActive=true;
   hudSkor=0; hudHits=0; hudMisses=0;
   hudStart=Date.now();
+  isAlertMode=(gameCode==='C');
+  alertPanelState=[false,false,false,false,false,false];
 
-  // fill labels
   document.getElementById('hudGameName').innerText=GAME_NAMES[gameCode]||gameCode;
   document.getElementById('hudLevelBadge').innerText='NIVO '+selLevel+' — '+LEVEL_NAMES[selLevel-1].toUpperCase();
 
-  // reset panels
+  // Red Alert: hide timer ring, show infect bar; set ominous red tint on HUD name
+  const timerWrap=document.getElementById('timerWrap');
+  const alertBar =document.getElementById('alertBar');
+  const hudName  =document.getElementById('hudGameName');
+  if(isAlertMode){
+    timerWrap.style.display='none';
+    alertBar.style.display='flex';
+    document.getElementById('alertInfected').innerText='0';
+    hudName.style.color='var(--red)';
+    hudName.style.textShadow='0 0 24px rgba(255,61,90,.6)';
+    // Red tint on HUD background
+    document.getElementById('hudOverlay').style.background='rgba(10,4,6,.97)';
+  } else {
+    timerWrap.style.display='';
+    alertBar.style.display='none';
+    hudName.style.color='var(--accent)';
+    hudName.style.textShadow='none';
+    document.getElementById('hudOverlay').style.background='rgba(7,8,13,.97)';
+  }
+
   for(let i=0;i<6;i++) setPanel(i,'');
-
-  // reset score
   refreshScoreDisplay(true);
-
-  // show overlay
   document.getElementById('hudOverlay').classList.add('show');
 
-  // start timer
-  updateTimer();
-  timerHandle=setInterval(updateTimer, 250);
+  if(!isAlertMode){
+    updateTimer();
+    timerHandle=setInterval(updateTimer, 250);
+  } else {
+    clearInterval(timerHandle);
+  }
 }
 
 function updateTimer() {
@@ -628,18 +704,122 @@ function updateTimer() {
   document.getElementById('timerArc').style.stroke=stroke;
 }
 
-function updateHUD(type, skor, hits, misses) {
+function updateHUD(type, skor, hits, misses, infected) {
   hudSkor=skor; hudHits=hits; hudMisses=misses;
   refreshScoreDisplay(false);
 
   const isHit=(type==='H');
-  const isTimeout=(type==='T');
+  const isInfect=(type==='I');
 
-  // floating chip
-  spawnFloat(isHit ? '+1' : '−1', isHit ? 'var(--green)' : 'var(--red)');
+  if(isAlertMode){
+    // Red Alert panel logic
+    if(isHit){
+      // A panel was extinguished — find first infected and briefly show green,
+      // then update infect count
+      spawnFloat('+1','var(--green)');
+      flashScreen('rgba(0,230,118,.08)');
+      // Find and extinguish one infected panel (we don't know which from ESP32,
+      // so we flash all green briefly to show success)
+      alertExtinguishOne(infected!=null?infected:null);
+    } else if(type==='M'){
+      spawnFloat('−1','var(--red)');
+      flashScreen('rgba(255,61,90,.18)');
+      // Wrong panel — brief orange flash but infection stays
+      alertWrongHit();
+    } else if(isInfect){
+      // New panel caught fire
+      flashScreen('rgba(255,0,0,.15)');
+      alertSpreadInfection(infected);
+      spawnFloat('🔥','var(--red)');
+    }
+    // Update infect counter badge
+    if(infected!==null&&infected!==undefined){
+      document.getElementById('alertInfected').innerText=infected;
+      // Shake the badge when danger is high
+      if(infected>=4){
+        const badge=document.getElementById('alertBar');
+        badge.style.background='rgba(255,61,90,.22)';
+        badge.style.borderColor='rgba(255,61,90,.6)';
+      }
+    }
+  } else {
+    // Normal games
+    spawnFloat(isHit ? '+1' : '−1', isHit ? 'var(--green)' : 'var(--red)');
+    flashScreen(isHit ? 'rgba(0,230,118,.10)' : 'rgba(255,61,90,.13)');
+    if(isHit) flashPanels('hit');
+    else      flashPanels('miss');
+  }
+}
 
-  // flash overlay
-  flashScreen(isHit ? 'rgba(0,230,118,.10)' : 'rgba(255,61,90,.13)');
+// Red Alert: extinguish one infected panel visually
+// infected = number of currently infected panels AFTER extinguish
+function alertExtinguishOne(infectedCount) {
+  // Find first infected panel in our state and extinguish it
+  for(let i=0;i<6;i++){
+    if(alertPanelState[i]){
+      alertPanelState[i]=false;
+      setPanel(i,'extinguished');
+      setTimeout(()=>setPanel(i,''),400);
+      break;
+    }
+  }
+  // Sync count — mark excess as cleared
+  if(infectedCount!==null){
+    let cnt=alertPanelState.filter(Boolean).length;
+    // If count mismatch, re-sync
+    if(cnt>infectedCount){
+      for(let i=5;i>=0&&cnt>infectedCount;i--){
+        if(alertPanelState[i]){alertPanelState[i]=false;cnt--;}
+      }
+    }
+    syncAlertPanels();
+  }
+}
+
+function alertWrongHit(){
+  // Flash all non-infected briefly orange
+  for(let i=0;i<6;i++){
+    if(!alertPanelState[i]){
+      setPanel(i,'miss');
+      setTimeout(()=>setPanel(i,''),200);
+    }
+  }
+}
+
+function alertSpreadInfection(infectedCount){
+  // Light up a new panel
+  let set=0;
+  // Try to find an uninfected panel and mark it
+  const free=[];
+  for(let i=0;i<6;i++) if(!alertPanelState[i]) free.push(i);
+  if(free.length){
+    const pick=free[Math.floor(Math.random()*free.length)];
+    alertPanelState[pick]=true;
+    set++;
+  }
+  // Sync total count to match ESP32
+  if(infectedCount!==null){
+    let cnt=alertPanelState.filter(Boolean).length;
+    // If under, mark more
+    while(cnt<infectedCount){
+      for(let i=0;i<6;i++){
+        if(!alertPanelState[i]){alertPanelState[i]=true;cnt++;break;}
+      }
+    }
+  }
+  syncAlertPanels();
+}
+
+function syncAlertPanels(){
+  for(let i=0;i<6;i++){
+    const cur=document.getElementById('p'+i);
+    if(!cur) continue;
+    if(alertPanelState[i]){
+      if(!cur.classList.contains('infected')) setPanel(i,'infected');
+    } else {
+      if(cur.classList.contains('infected')) setPanel(i,'');
+    }
+  }
 }
 
 function refreshScoreDisplay(instant) {
@@ -666,7 +846,12 @@ function stopHUD(disconnected, skor, hits, misses) {
     hudMisses=misses??hudMisses;
   }
 
+  // Reset Red Alert panel state
+  alertPanelState=[false,false,false,false,false,false];
+  for(let i=0;i<6;i++) setPanel(i,'');
+
   document.getElementById('hudOverlay').classList.remove('show');
+  document.getElementById('hudOverlay').style.background='rgba(7,8,13,.97)';
 
   if(!disconnected) {
     showResult(hudSkor, hudHits, hudMisses);
@@ -707,27 +892,13 @@ function setPanel(idx, cls) {
   if(!p) return;
   p.className='panel'+(cls?' '+cls:'');
 }
-function clearPanelAfter(idx, ms) {
-  setTimeout(()=>setPanel(idx,''), ms);
-}
 
-// Wire BLE events to panel visuals too
-const _origUpdateHUD=updateHUD;
-// We'll handle panel state inside onBLE based on which panel was hit/missed
-// Since ESP32 doesn't send panel index in current protocol, we animate score area only.
-// To show panels we'd need "H:skor:pog:pro:panelIdx" — let's keep protocol minimal
-// and just pulse all panels on hit/miss for visual feedback.
 function flashPanels(cls) {
   for(let i=0;i<6;i++) setPanel(i,cls);
-  setTimeout(()=>{for(let i=0;i<6;i++) setPanel(i,'');}, 300);
+  setTimeout(()=>{for(let i=0;i<6;i++){
+    if(!alertPanelState[i]) setPanel(i,'');
+  }}, 300);
 }
-
-// Override updateHUD to also animate panels
-window.updateHUD = function(type, skor, hits, misses) {
-  _origUpdateHUD(type, skor, hits, misses);
-  if(type==='H') flashPanels('hit');
-  else           flashPanels('miss');
-};
 
 // ═══════════════ VISUAL FX ════════════════
 function spawnFloat(text, color) {
