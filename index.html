@@ -1,762 +1,760 @@
 <!DOCTYPE html>
 <html lang="sr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Volta Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #0a0b0f;
-            --card: #13151c;
-            --card2: #1a1d27;
-            --accent: #00e5ff;
-            --accent2: #00b0ff;
-            --green: #00e676;
-            --red: #ff4060;
-            --muted: #6b7db3;
-            --border: #22263a;
-            --text: #eef0ff;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Volta Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #07080d;
+  --card:    #0e1018;
+  --card2:   #161925;
+  --border:  #1e2235;
+  --accent:  #00e5ff;
+  --accent2: #0090cc;
+  --green:   #00e676;
+  --red:     #ff3d5a;
+  --orange:  #ff8c00;
+  --muted:   #5a6a8a;
+  --text:    #dde4f5;
+}
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+*{box-sizing:border-box;margin:0;padding:0}
 
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 24px 16px 48px;
-            background-image:
-                radial-gradient(ellipse 60% 40% at 50% -10%, rgba(0,229,255,0.08) 0%, transparent 70%),
-                radial-gradient(ellipse 40% 30% at 80% 100%, rgba(0,176,255,0.05) 0%, transparent 60%);
-        }
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:20px 14px 60px;
+  background-image:
+    radial-gradient(ellipse 70% 35% at 50% -5%, rgba(0,229,255,.07) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 25% at 90% 95%,  rgba(0,144,204,.05) 0%, transparent 60%);
+}
 
-        .container {
-            max-width: 440px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
+.wrap{max-width:420px;width:100%;display:flex;flex-direction:column;gap:14px}
 
-        /* ── HEADER ── */
-        .header {
-            text-align: center;
-            padding: 24px 0 8px;
-        }
+/* ── HEADER ── */
+.hdr{text-align:center;padding:22px 0 4px}
+.hdr h1{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:38px;font-weight:900;letter-spacing:5px;
+  background:linear-gradient(100deg,#fff 30%,var(--accent));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent
+}
+.hdr p{font-size:11px;color:var(--muted);letter-spacing:2.5px;text-transform:uppercase;margin-top:2px}
 
-        .header h1 {
-            font-family: 'Orbitron', monospace;
-            font-size: 30px;
-            font-weight: 900;
-            letter-spacing: 3px;
-            background: linear-gradient(100deg, #fff 30%, var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+/* ── CARD ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 18px}
+.sec-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
 
-        .header p {
-            font-size: 12px;
-            color: var(--muted);
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-top: 4px;
-        }
+/* ── TABS ── */
+.tabs{display:flex;gap:4px;background:var(--bg);border-radius:10px;padding:4px;margin-bottom:18px}
+.tab{flex:1;padding:9px;border:none;border-radius:7px;background:transparent;color:var(--muted);
+  font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;letter-spacing:1px;
+  text-transform:uppercase;cursor:pointer;transition:.18s}
+.tab.on{background:var(--card2);color:var(--accent)}
 
-        /* ── CARDS ── */
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 22px 20px;
-        }
+/* ── INPUTS ── */
+.ig{display:flex;flex-direction:column;gap:11px;margin-bottom:14px}
+.iw label{display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.iw input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:9px;
+  padding:12px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:.18s}
+.iw input:focus{border-color:var(--accent)}
+.iw input::placeholder{color:var(--muted)}
 
-        /* ── AUTH SECTION ── */
-        #authSekcija .tabs {
-            display: flex;
-            gap: 4px;
-            background: var(--bg);
-            border-radius: 12px;
-            padding: 4px;
-            margin-bottom: 20px;
-        }
+/* ── BUTTONS ── */
+.btn{width:100%;border:none;border-radius:11px;padding:14px;
+  font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;
+  letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:.13s}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.3;cursor:not-allowed;transform:none}
+.btn-p{background:linear-gradient(90deg,var(--accent2),var(--accent));color:#000}
+.btn-s{background:var(--card2);color:var(--muted);border:1px solid var(--border)}
+.btn-d{background:rgba(255,61,90,.1);color:var(--red);border:1px solid rgba(255,61,90,.25)}
+.btn-c{background:var(--card2);color:var(--text);border:1px solid var(--border)}
+.btn-c.ok{background:rgba(0,230,118,.1);color:var(--green);border-color:rgba(0,230,118,.3)}
 
-        #authSekcija .tab-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 9px;
-            background: transparent;
-            color: var(--muted);
-            font-family: 'DM Sans', sans-serif;
-            font-weight: 700;
-            font-size: 13px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+/* ── ERROR ── */
+.err{background:rgba(255,61,90,.1);border:1px solid rgba(255,61,90,.3);border-radius:9px;
+  padding:9px 13px;font-size:13px;color:var(--red);margin-bottom:11px;display:none}
 
-        #authSekcija .tab-btn.active {
-            background: var(--card2);
-            color: var(--accent);
-        }
+/* ── USER BAR ── */
+#uBar{display:none;align-items:center;justify-content:space-between}
+.avatar{width:34px;height:34px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent2),var(--accent));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:13px;color:#000;flex-shrink:0}
+.uname{font-size:14px;font-weight:700}
+.uemail{font-size:12px;color:var(--muted);max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
+/* ── STATUS ── */
+.st-row{display:flex;align-items:center;gap:8px;margin-top:12px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.dot.g{background:var(--green);box-shadow:0 0 7px var(--green)}
+.dot.c{background:var(--accent);box-shadow:0 0 7px var(--accent)}
+.dot.o{background:var(--orange);box-shadow:0 0 7px var(--orange)}
+#stTxt{font-size:13px;color:var(--muted)}
 
-        .input-wrap {
-            position: relative;
-        }
+/* ── LEVEL SELECTOR ── */
+.level-row{display:flex;gap:6px;margin-bottom:14px}
+.lv{flex:1;border:1px solid var(--border);border-radius:9px;padding:8px 4px;
+  background:var(--bg);color:var(--muted);text-align:center;cursor:pointer;transition:.15s}
+.lv span{display:block;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;letter-spacing:1px}
+.lv small{font-size:9px;letter-spacing:1px;text-transform:uppercase}
+.lv.on{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,.07)}
 
-        .input-wrap label {
-            display: block;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: var(--muted);
-            margin-bottom: 6px;
-        }
+/* ── GAME CARDS ── */
+.game-grid{display:flex;flex-direction:column;gap:9px;margin-bottom:14px}
+.gc{background:var(--bg);border:2px solid var(--border);border-radius:13px;
+  padding:14px 16px;cursor:pointer;transition:.18s;position:relative;overflow:hidden}
+.gc::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(0,229,255,.06),transparent);
+  opacity:0;transition:.18s}
+.gc.on{border-color:var(--accent)}.gc.on::after{opacity:1}
+.gc.locked{opacity:.38;pointer-events:none}
+.gc h3{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;letter-spacing:1px;margin-bottom:3px}
+.gc p{font-size:12px;color:var(--muted);line-height:1.5}
+.badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:9px;
+  font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px}
+.ba{background:rgba(0,229,255,.15);color:var(--accent)}
+.bb{background:rgba(255,61,90,.15);color:var(--red)}
+.bs{background:rgba(90,106,138,.2);color:var(--muted);margin-left:6px}
 
-        .input-wrap input {
-            width: 100%;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 13px 16px;
-            color: var(--text);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 15px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
+/* ── RESULT ── */
+#rezBox{display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);text-align:center}
+.rl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.rs{font-family:'Barlow Condensed',sans-serif;font-size:56px;font-weight:900;color:var(--accent);line-height:1}
+.rsub{font-size:12px;color:var(--muted);margin-top:4px}
+.rsave{font-size:12px;color:var(--green);margin-top:6px;min-height:18px}
 
-        .input-wrap input:focus {
-            border-color: var(--accent);
-        }
+/* ══════════════════════════════════════════════
+   LIVE HUD OVERLAY
+══════════════════════════════════════════════ */
+#hudOverlay{
+  display:none;position:fixed;inset:0;z-index:999;
+  background:rgba(7,8,13,.97);
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:0;
+  overflow:hidden;
+}
+#hudOverlay.show{display:flex}
 
-        .input-wrap input::placeholder { color: var(--muted); }
+/* scanline fx */
+#hudOverlay::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,229,255,.018) 3px,rgba(0,229,255,.018) 4px);
+}
 
-        /* ── BUTTONS ── */
-        .btn {
-            width: 100%;
-            border: none;
-            border-radius: 12px;
-            padding: 15px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 14px;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
+.hud-game-label{
+  font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;
+  letter-spacing:4px;text-transform:uppercase;color:var(--muted);margin-bottom:6px
+}
+.hud-game-name{
+  font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;
+  letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:22px
+}
 
-        .btn:active { transform: scale(0.98); }
-        .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+/* timer ring */
+.timer-wrap{position:relative;width:120px;height:120px;margin-bottom:20px}
+#timerRing{transform:rotate(-90deg)}
+#timerArc{
+  stroke-dasharray:339.3;
+  stroke-dashoffset:0;
+  transition:stroke-dashoffset .4s linear, stroke .4s
+}
+.timer-inner{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center
+}
+#timerSec{
+  font-family:'Barlow Condensed',sans-serif;font-size:34px;font-weight:900;color:#fff;line-height:1
+}
+#timerLbl{font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
 
-        .btn-primary {
-            background: linear-gradient(90deg, var(--accent2), var(--accent));
-            color: #000;
-        }
+/* score block */
+.score-block{
+  display:flex;align-items:center;gap:18px;margin-bottom:18px
+}
+.sb-item{text-align:center}
+.sb-val{
+  font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:900;line-height:1
+}
+.sb-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:2px}
+#hudSkor   .sb-val{color:var(--accent)}
+#hudHits   .sb-val{color:var(--green)}
+#hudMisses .sb-val{color:var(--red)}
+.sb-div{width:1px;height:48px;background:var(--border)}
 
-        .btn-secondary {
-            background: var(--card2);
-            color: var(--muted);
-            border: 1px solid var(--border);
-        }
+/* floating +1 / -1 */
+#floatPool{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.float-chip{
+  position:absolute;font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;
+  opacity:1;pointer-events:none;
+  animation:floatUp .9s ease-out forwards
+}
+@keyframes floatUp{
+  0%  {opacity:1;transform:translateY(0) scale(1)}
+  60% {opacity:1;transform:translateY(-52px) scale(1.15)}
+  100%{opacity:0;transform:translateY(-90px) scale(.9)}
+}
 
-        .btn-danger {
-            background: rgba(255,64,96,0.1);
-            color: var(--red);
-            border: 1px solid rgba(255,64,96,0.25);
-        }
+/* pulse ring on skor change */
+@keyframes scorePulse{
+  0%  {transform:scale(1)}
+  30% {transform:scale(1.18)}
+  100%{transform:scale(1)}
+}
+.pulse{animation:scorePulse .28s ease-out}
 
-        .btn-connect {
-            background: #22263a;
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
+/* hit/miss flash */
+#flashOverlay{
+  position:absolute;inset:0;pointer-events:none;opacity:0;
+  transition:opacity .12s
+}
 
-        .btn-connect.connected {
-            background: rgba(0,230,118,0.1);
-            color: var(--green);
-            border-color: rgba(0,230,118,0.3);
-        }
+/* panel grid */
+.panel-grid{
+  display:grid;grid-template-columns:repeat(6,1fr);gap:6px;
+  width:100%;max-width:340px;margin-bottom:20px
+}
+.panel{
+  aspect-ratio:1;border-radius:8px;background:var(--card2);
+  border:1px solid var(--border);transition:background .12s,transform .1s,box-shadow .12s
+}
+.panel.hit {background:var(--green);box-shadow:0 0 14px var(--green);transform:scale(1.08)}
+.panel.miss{background:var(--red);  box-shadow:0 0 14px var(--red);  transform:scale(1.05)}
+.panel.active-a{background:var(--accent);box-shadow:0 0 16px var(--accent)}
+.panel.active-b{background:var(--red);   box-shadow:0 0 16px var(--red)}
+.panel.timeout{background:var(--orange); box-shadow:0 0 12px var(--orange)}
 
-        /* ── AUTH ERROR ── */
-        .auth-error {
-            background: rgba(255,64,96,0.1);
-            border: 1px solid rgba(255,64,96,0.3);
-            border-radius: 10px;
-            padding: 10px 14px;
-            font-size: 13px;
-            color: var(--red);
-            margin-bottom: 12px;
-            display: none;
-        }
-
-        /* ── USER BAR ── */
-        #korisnikBar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            display: none;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent2), var(--accent));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            font-size: 14px;
-            color: #000;
-            flex-shrink: 0;
-        }
-
-        .user-email {
-            font-size: 13px;
-            color: var(--muted);
-            max-width: 220px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        /* ── STATUS ROW ── */
-        .status-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 14px;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--muted);
-            flex-shrink: 0;
-            margin-right: 8px;
-        }
-
-        .status-dot.green { background: var(--green); box-shadow: 0 0 6px var(--green); }
-        .status-dot.cyan { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
-        .status-dot.orange { background: #ff9100; box-shadow: 0 0 6px #ff9100; }
-
-        #statusTekst {
-            display: flex;
-            align-items: center;
-            font-size: 13px;
-            color: var(--muted);
-        }
-
-        /* ── SCORE ── */
-        #rezultatKontejner {
-            display: none;
-            margin-top: 18px;
-            padding-top: 18px;
-            border-top: 1px solid var(--border);
-            text-align: center;
-        }
-
-        .score-label {
-            font-size: 11px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--muted);
-            margin-bottom: 4px;
-        }
-
-        .score-display {
-            font-family: 'Orbitron', monospace;
-            font-size: 52px;
-            font-weight: 900;
-            color: var(--accent);
-            line-height: 1;
-        }
-
-        .score-saved {
-            font-size: 12px;
-            color: var(--green);
-            margin-top: 6px;
-        }
-
-        /* ── GAME CARDS ── */
-        /* gameSekcija se kontrolise kroz JS */
-
-        .game-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 14px;
-        }
-
-        .game-card {
-            background: var(--bg);
-            border: 2px solid var(--border);
-            border-radius: 14px;
-            padding: 16px 18px;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .game-card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(0,229,255,0.05), transparent);
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-
-        .game-card.active {
-            border-color: var(--accent);
-        }
-
-        .game-card.active::before { opacity: 1; }
-
-        .game-card h3 {
-            font-size: 15px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .game-card p {
-            font-size: 12px;
-            color: var(--muted);
-            line-height: 1.5;
-        }
-
-        .game-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-bottom: 6px;
-        }
-
-        .badge-a { background: rgba(0,229,255,0.15); color: var(--accent); }
-        .badge-b { background: rgba(255,64,96,0.15); color: var(--red); }
-
-        .game-card.locked {
-            opacity: 0.4;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-
-        .badge-soon {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            background: rgba(107,125,179,0.2);
-            color: var(--muted);
-            margin-left: 8px;
-            vertical-align: middle;
-        }
-
-        /* ── DIVIDER ── */
-        .divider {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 4px 0;
-            color: var(--muted);
-            font-size: 11px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
-
-        /* ── LOADER ── */
-        .spinner {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid rgba(0,229,255,0.2);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-            vertical-align: middle;
-            margin-right: 6px;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ── SECTION TITLE ── */
-        .section-title {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--muted);
-            margin-bottom: 14px;
-        }
-    </style>
+/* level badge on HUD */
+.hud-level{
+  font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;
+  letter-spacing:3px;text-transform:uppercase;
+  padding:4px 12px;border-radius:20px;
+  border:1px solid var(--border);color:var(--muted);margin-bottom:18px
+}
+</style>
 </head>
 <body>
+<div class="wrap">
 
-<div class="container">
+  <!-- HEADER -->
+  <div class="hdr">
+    <h1>VOLTA PRO</h1>
+    <p>Combat Training System</p>
+  </div>
 
-    <!-- HEADER -->
-    <div class="header">
-        <h1>VOLTA PRO</h1>
-        <p>Combat Training System</p>
+  <!-- AUTH -->
+  <div class="card" id="authCard">
+    <div class="tabs">
+      <button class="tab on" onclick="showTab('login')">Prijava</button>
+      <button class="tab"    onclick="showTab('reg')">Registracija</button>
+    </div>
+    <div id="authErr" class="err"></div>
+
+    <div id="loginF">
+      <div class="ig">
+        <div class="iw"><label>Email</label><input type="email" id="lEmail" placeholder="tvoj@email.com"></div>
+        <div class="iw"><label>Lozinka</label><input type="password" id="lPass" placeholder="••••••••"></div>
+      </div>
+      <button class="btn btn-p" onclick="login()">Prijavi se</button>
     </div>
 
-    <!-- ══════════════ AUTH SEKCIJA ══════════════ -->
-    <div class="card" id="authSekcija">
-        <div class="tabs">
-            <button class="tab-btn active" onclick="prikaziTab('login')">Prijava</button>
-            <button class="tab-btn" onclick="prikaziTab('register')">Registracija</button>
-        </div>
+    <div id="regF" style="display:none">
+      <div class="ig">
+        <div class="iw"><label>Ime / Nadimak</label><input type="text" id="rIme" placeholder="MojNadimak"></div>
+        <div class="iw"><label>Email</label><input type="email" id="rEmail" placeholder="tvoj@email.com"></div>
+        <div class="iw"><label>Lozinka</label><input type="password" id="rPass" placeholder="Min. 6 karaktera"></div>
+      </div>
+      <button class="btn btn-p" onclick="reg()">Kreiraj nalog</button>
+    </div>
+  </div>
 
-        <div id="authGreska" class="auth-error"></div>
+  <!-- USER BAR -->
+  <div class="card" id="uBar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="avatar" id="avIni">?</div>
+      <div>
+        <div class="uname" id="uName">—</div>
+        <div class="uemail" id="uEmail">—</div>
+      </div>
+    </div>
+    <button class="btn btn-d" style="width:auto;padding:9px 15px" onclick="logout()">Odjavi se</button>
+  </div>
 
-        <!-- LOGIN FORMA -->
-        <div id="loginForma">
-            <div class="input-group">
-                <div class="input-wrap">
-                    <label>Email</label>
-                    <input type="email" id="loginEmail" placeholder="tvoj@email.com" autocomplete="email">
-                </div>
-                <div class="input-wrap">
-                    <label>Lozinka</label>
-                    <input type="password" id="loginLozinka" placeholder="••••••••" autocomplete="current-password">
-                </div>
-            </div>
-            <button class="btn btn-primary" onclick="prijaviSe()">Prijavi se</button>
-        </div>
+  <!-- BLE -->
+  <div class="card" id="bleCard" style="display:none">
+    <div class="sec-label">Bluetooth veza</div>
+    <button id="btnConn" class="btn btn-c" onclick="connect()">🔗 &nbsp;Poveži uređaj</button>
+    <div class="st-row">
+      <div class="dot" id="stDot"></div>
+      <div id="stTxt">Nije povezano</div>
+    </div>
+    <!-- result after game -->
+    <div id="rezBox">
+      <div class="rl">Poslednji rezultat</div>
+      <div class="rs" id="rezSkor">0</div>
+      <div class="rsub" id="rezSub"></div>
+      <div class="rsave" id="rezSave"></div>
+    </div>
+  </div>
 
-        <!-- REGISTER FORMA -->
-        <div id="registerForma" style="display:none;">
-            <div class="input-group">
-                <div class="input-wrap">
-                    <label>Ime (nadimak)</label>
-                    <input type="text" id="regIme" placeholder="MojNadimak">
-                </div>
-                <div class="input-wrap">
-                    <label>Email</label>
-                    <input type="email" id="regEmail" placeholder="tvoj@email.com" autocomplete="email">
-                </div>
-                <div class="input-wrap">
-                    <label>Lozinka</label>
-                    <input type="password" id="regLozinka" placeholder="Min. 6 karaktera" autocomplete="new-password">
-                </div>
-            </div>
-            <button class="btn btn-primary" onclick="registrujSe()">Kreiraj nalog</button>
-        </div>
+  <!-- GAME SELECT -->
+  <div class="card" id="gameCard" style="display:none">
+    <div class="sec-label">Izaberi trening</div>
+
+    <!-- NIVO -->
+    <div class="sec-label" style="margin-bottom:8px">Nivo težine</div>
+    <div class="level-row" id="levelRow">
+      <div class="lv on" onclick="setLevel(1,this)"><span>1</span><small>Beginner</small></div>
+      <div class="lv"    onclick="setLevel(2,this)"><span>2</span><small>Medium</small></div>
+      <div class="lv"    onclick="setLevel(3,this)"><span>3</span><small>Pro</small></div>
+      <div class="lv"    onclick="setLevel(4,this)"><span>4</span><small>Master</small></div>
+      <div class="lv"    onclick="setLevel(5,this)"><span>5</span><small>Apex</small></div>
     </div>
 
-    <!-- ══════════════ KORISNIK BAR ══════════════ -->
-    <div class="card" id="korisnikBar">
-        <div class="user-info">
-            <div class="avatar" id="avatarInicijal">?</div>
-            <div>
-                <div id="korisnikIme" style="font-weight:700; font-size:14px;">—</div>
-                <div class="user-email" id="korisnikEmail">—</div>
-            </div>
-        </div>
-        <button class="btn btn-danger" style="width:auto; padding:10px 16px;" onclick="odjaviSe()">Odjavi se</button>
+    <div class="game-grid">
+      <div class="gc on" id="gcA" onclick="pickGame('A',this)">
+        <span class="badge ba">Igra A</span>
+        <h3>Apex Pulse</h3>
+        <p>Plava meta se nasumično pojavljuje. Udari je pre isteka — +1. Promaši — −1.</p>
+      </div>
+      <div class="gc" id="gcB" onclick="pickGame('B',this)">
+        <span class="badge bb">Igra B</span>
+        <h3>Grid Lock</h3>
+        <p>Polje se pali crvenom i bledi ka narandzastoj. Pogodi ga na vreme — +1. Promaši ili istekne — −1.</p>
+      </div>
     </div>
 
-    <!-- ══════════════ BLE KONTROLA ══════════════ -->
-    <div class="card" id="bleSekcija" style="display:none;">
-        <div class="section-title">Bluetooth Veza</div>
-        <button id="btnConnect" class="btn btn-connect" onclick="povezi()">🔗 &nbsp;Poveži Uređaj</button>
-        <div class="status-row">
-            <div id="statusTekst">
-                <span class="status-dot" id="statusDot"></span>
-                Nije povezano
-            </div>
-        </div>
-
-        <!-- REZULTAT -->
-        <div id="rezultatKontejner">
-            <div class="score-label">Poslednji Rezultat</div>
-            <div class="score-display" id="krajnjiSkor">0</div>
-            <div class="score-saved" id="savedMsg"></div>
-        </div>
-    </div>
-
-    <!-- ══════════════ GAME SELEKTOR ══════════════ -->
-    <div class="card" id="gameSekcija" style="display:none;">
-        <div class="section-title">Izaberi Trening</div>
-        <div class="game-grid">
-            <div class="game-card active" onclick="izaberiIgru('A', this)">
-                <span class="game-badge badge-a">Igra A</span>
-                <h3>Apex Pulse</h3>
-                <p>Testiraj reflekse na lažnim manevrima! Plavi paneli menjaju poziciju i nivo u žutu boju neposredno pre udarca.</p>
-            </div>
-            <div class="game-card locked">
-                <span class="game-badge badge-b">Igra B</span>
-                <h3>Grid Lock <span class="badge-soon">Uskoro</span></h3>
-                <p>Odbrani zid! Ugasi crvene panele pre nego što se svih 6 modula zaključa.</p>
-            </div>
-        </div>
-        <button id="btnPokreni" class="btn btn-primary" onclick="pokreniIgru()" disabled>Pokreni Trening</button>
-    </div>
+    <button id="btnStart" class="btn btn-p" onclick="startGame()" disabled>⚡ &nbsp;Pokreni trening</button>
+  </div>
 
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     SUPABASE JS SDK
-═══════════════════════════════════════════════════════════ -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- ══ LIVE HUD OVERLAY ══ -->
+<div id="hudOverlay">
+  <div id="flashOverlay"></div>
+  <div id="floatPool"></div>
 
+  <div class="hud-game-label">Trening u toku</div>
+  <div class="hud-game-name" id="hudGameName">APEX PULSE</div>
+  <div class="hud-level" id="hudLevelBadge">NIVO 1 — BEGINNER</div>
+
+  <!-- Timer ring -->
+  <div class="timer-wrap">
+    <svg id="timerRing" width="120" height="120" viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="54" fill="none" stroke="#1e2235" stroke-width="7"/>
+      <circle id="timerArc" cx="60" cy="60" r="54" fill="none"
+              stroke="#00e5ff" stroke-width="7" stroke-linecap="round"
+              stroke-dasharray="339.3" stroke-dashoffset="0"/>
+    </svg>
+    <div class="timer-inner">
+      <div id="timerSec">45</div>
+      <div id="timerLbl">sec</div>
+    </div>
+  </div>
+
+  <!-- Panel grid (6 panels mirroring physical sensors) -->
+  <div class="panel-grid" id="panelGrid">
+    <div class="panel" id="p0"></div>
+    <div class="panel" id="p1"></div>
+    <div class="panel" id="p2"></div>
+    <div class="panel" id="p3"></div>
+    <div class="panel" id="p4"></div>
+    <div class="panel" id="p5"></div>
+  </div>
+
+  <!-- Score block -->
+  <div class="score-block">
+    <div class="sb-item" id="hudSkor">
+      <div class="sb-val" id="svSkor">0</div>
+      <div class="sb-lbl">Score</div>
+    </div>
+    <div class="sb-div"></div>
+    <div class="sb-item" id="hudHits">
+      <div class="sb-val" id="svHits">0</div>
+      <div class="sb-lbl">Pogodaka</div>
+    </div>
+    <div class="sb-div"></div>
+    <div class="sb-item" id="hudMisses">
+      <div class="sb-val" id="svMiss">0</div>
+      <div class="sb-lbl">Promasaja</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ═══════════════════════════════════════════════════════════
-// KONFIGURACIJA
-// ═══════════════════════════════════════════════════════════
+// ═══════════════ CONFIG ════════════════
 const SUPABASE_URL = "https://wdnndorxgdzhlytqkyvh.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indkbm5kb3J4Z2R6aGx5dHFreXZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNzIzMDQsImV4cCI6MjA4Nzc0ODMwNH0.O5PxSn58e0m8uy9zXSraGs9FfxCzUgVcxKF-8SqNgbU";
-
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-const CHAR_UUID    = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+const SVC_UUID  = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+const CHAR_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
 
-let karakteristika = null;
-let selektovanaIgra = 'A';
-let trenutniKorisnik = null;
+const LEVEL_NAMES = ['Beginner','Medium','Pro','Master','Apex'];
+const GAME_NAMES  = { A:'APEX PULSE', B:'GRID LOCK' };
+const GAME_DUR    = 45000;
 
-// ═══════════════════════════════════════════════════════════
-// AUTH — TABOVI
-// ═══════════════════════════════════════════════════════════
-function prikaziTab(tab) {
-    document.getElementById('loginForma').style.display   = tab === 'login'    ? '' : 'none';
-    document.getElementById('registerForma').style.display = tab === 'register' ? '' : 'none';
-    document.querySelectorAll('.tab-btn').forEach((b, i) => {
-        b.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
+let bleChar  = null;
+let selGame  = 'A';
+let selLevel = 1;
+let user     = null;
+
+// HUD state
+let hudActive   = false;
+let hudSkor     = 0;
+let hudHits     = 0;
+let hudMisses   = 0;
+let hudStart    = 0;
+let timerHandle = null;
+
+// ═══════════════ AUTH UI ════════════════
+function showTab(t) {
+  document.getElementById('loginF').style.display = t==='login' ? '' : 'none';
+  document.getElementById('regF').style.display   = t==='reg'   ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((b,i)=>{
+    b.classList.toggle('on', (i===0&&t==='login')||(i===1&&t==='reg'));
+  });
+  setErr('');
+}
+function setErr(m){ const e=document.getElementById('authErr'); e.innerText=m; e.style.display=m?'block':'none'; }
+function xlErr(m){
+  if(m.includes('Invalid login')) return 'Pogrešan email ili lozinka.';
+  if(m.includes('already registered')) return 'Email već postoji.';
+  if(m.includes('Password should')) return 'Lozinka mora imati min. 6 znakova.';
+  if(m.includes('Invalid email')) return 'Unesite ispravan email.';
+  return m;
+}
+
+async function login() {
+  const email=document.getElementById('lEmail').value.trim();
+  const pass =document.getElementById('lPass').value;
+  if(!email||!pass){setErr('Popuni sve podatke.');return;}
+  setErr('');
+  const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(error){setErr(xlErr(error.message));return;}
+  afterLogin(data.user);
+}
+
+async function reg() {
+  const ime  =document.getElementById('rIme').value.trim();
+  const email=document.getElementById('rEmail').value.trim();
+  const pass =document.getElementById('rPass').value;
+  if(!ime||!email||!pass){setErr('Popuni sva polja.');return;}
+  if(pass.length<6){setErr('Lozinka mora imati min. 6 znakova.');return;}
+  setErr('');
+  const {error}=await sb.auth.signUp({email,password:pass,options:{data:{display_name:ime}}});
+  if(error){setErr(xlErr(error.message));return;}
+  const {data,error:e2}=await sb.auth.signInWithPassword({email,password:pass});
+  if(e2){setErr(xlErr(e2.message));return;}
+  afterLogin(data.user);
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  user=null; showLoggedOut();
+}
+
+function afterLogin(u) {
+  user=u;
+  const name=u.user_metadata?.display_name||u.email.split('@')[0];
+  document.getElementById('uName').innerText=name;
+  document.getElementById('uEmail').innerText=u.email;
+  document.getElementById('avIni').innerText=name.charAt(0).toUpperCase();
+  document.getElementById('authCard').style.display='none';
+  document.getElementById('uBar').style.display='flex';
+  document.getElementById('bleCard').style.display='';
+  document.getElementById('gameCard').style.display='';
+}
+
+function showLoggedOut() {
+  document.getElementById('authCard').style.display='';
+  document.getElementById('uBar').style.display='none';
+  document.getElementById('bleCard').style.display='none';
+  document.getElementById('gameCard').style.display='none';
+  document.getElementById('rezBox').style.display='none';
+  document.getElementById('btnStart').disabled=true;
+  bleChar=null;
+  const b=document.getElementById('btnConn');
+  b.innerText='🔗  Poveži uređaj'; b.classList.remove('ok');
+  setSt('Nije povezano','');
+}
+
+// ═══════════════ STATUS ════════════════
+function setSt(txt, cls) {
+  const d=document.getElementById('stDot');
+  d.className='dot'+(cls?' '+cls:'');
+  document.getElementById('stTxt').innerText=txt;
+}
+
+// ═══════════════ LEVEL ════════════════
+function setLevel(n, el) {
+  selLevel=n;
+  document.querySelectorAll('.lv').forEach(e=>e.classList.remove('on'));
+  el.classList.add('on');
+  if(bleChar) sendBLE('L:'+n);
+}
+
+// ═══════════════ GAME PICK ════════════
+function pickGame(code, el) {
+  selGame=code;
+  document.querySelectorAll('.gc:not(.locked)').forEach(e=>e.classList.remove('on'));
+  el.classList.add('on');
+}
+
+// ═══════════════ BLE ════════════════
+async function connect() {
+  try {
+    const dev=await navigator.bluetooth.requestDevice({
+      filters:[{name:'VOLTA PRO'}],
+      optionalServices:[SVC_UUID]
     });
-    prikaziGresku('');
-}
+    const srv=await dev.gatt.connect();
+    const svc=await srv.getPrimaryService(SVC_UUID);
+    bleChar=await svc.getCharacteristic(CHAR_UUID);
 
-function prikaziGresku(msg) {
-    const el = document.getElementById('authGreska');
-    el.innerText = msg;
-    el.style.display = msg ? 'block' : 'none';
-}
+    const b=document.getElementById('btnConn');
+    b.innerText='✅  Povezano'; b.classList.add('ok');
+    setSt('Spreman za trening','g');
+    document.getElementById('btnStart').disabled=false;
 
-// ═══════════════════════════════════════════════════════════
-// AUTH — PRIJAVA
-// ═══════════════════════════════════════════════════════════
-async function prijaviSe() {
-    const email    = document.getElementById('loginEmail').value.trim();
-    const lozinka  = document.getElementById('loginLozinka').value;
-    if (!email || !lozinka) { prikaziGresku('Popuni sve podatke.'); return; }
+    await bleChar.startNotifications();
+    bleChar.addEventListener('characteristicvaluechanged', onBLE);
 
-    prikaziGresku('');
-    const { data, error } = await sb.auth.signInWithPassword({ email, password: lozinka });
-    if (error) { prikaziGresku(prevediGresku(error.message)); return; }
-    posleLogin(data.user);
-}
-
-// ═══════════════════════════════════════════════════════════
-// AUTH — REGISTRACIJA
-// ═══════════════════════════════════════════════════════════
-async function registrujSe() {
-    const ime      = document.getElementById('regIme').value.trim();
-    const email    = document.getElementById('regEmail').value.trim();
-    const lozinka  = document.getElementById('regLozinka').value;
-    if (!ime || !email || !lozinka) { prikaziGresku('Popuni sva polja.'); return; }
-    if (lozinka.length < 6) { prikaziGresku('Lozinka mora imati min. 6 karaktera.'); return; }
-
-    prikaziGresku('');
-    const { data, error } = await sb.auth.signUp({
-        email,
-        password: lozinka,
-        options: { data: { display_name: ime } }
+    dev.addEventListener('gattserverdisconnected',()=>{
+      bleChar=null;
+      document.getElementById('btnStart').disabled=true;
+      document.getElementById('btnConn').innerText='🔗  Poveži uređaj';
+      document.getElementById('btnConn').classList.remove('ok');
+      setSt('Uređaj isključen','');
+      if(hudActive) stopHUD(true);
     });
-
-    if (error) { prikaziGresku(prevediGresku(error.message)); return; }
-
-    // Odmah prijavi bez čekanja email potvrde
-    const { data: loginData, error: loginError } = await sb.auth.signInWithPassword({ email, password: lozinka });
-    if (loginError) { prikaziGresku(prevediGresku(loginError.message)); return; }
-    posleLogin(loginData.user);
+  } catch(e){ alert('BLE greška: '+e); }
 }
 
-// ═══════════════════════════════════════════════════════════
-// AUTH — ODJAVA
-// ═══════════════════════════════════════════════════════════
-async function odjaviSe() {
-    await sb.auth.signOut();
-    trenutniKorisnik = null;
-    prikaziLoggedOut();
+function sendBLE(msg) {
+  if(bleChar) bleChar.writeValue(new TextEncoder().encode(msg)).catch(()=>{});
 }
 
-// ═══════════════════════════════════════════════════════════
-// UI STANJA
-// ═══════════════════════════════════════════════════════════
-function posleLogin(user) {
-    trenutniKorisnik = user;
-    const ime = user.user_metadata?.display_name || user.email.split('@')[0];
-    document.getElementById('korisnikIme').innerText  = ime;
-    document.getElementById('korisnikEmail').innerText = user.email;
-    document.getElementById('avatarInicijal').innerText = ime.charAt(0).toUpperCase();
+// ═══════════════ BLE PARSING ════════════════
+// Formats from ESP32:
+//   START:A / START:B
+//   H:skor:pog:pro   (hit)
+//   M:skor:pog:pro   (miss)
+//   T:skor:pog:pro   (timeout)
+//   DONE:skor:pog:pro
+function onBLE(ev) {
+  const raw=new TextDecoder().decode(ev.target.value).trim();
+  const parts=raw.split(':');
 
-    document.getElementById('authSekcija').style.display    = 'none';
-    document.getElementById('korisnikBar').style.display    = 'flex';
-    document.getElementById('bleSekcija').style.display     = '';
-    document.getElementById('gameSekcija').style.display    = '';
+  if(parts[0]==='START') {
+    startHUD(parts[1]);
+    return;
+  }
+  if(parts[0]==='DONE') {
+    const [,s,h,m]=parts;
+    stopHUD(false,parseInt(s),parseInt(h),parseInt(m));
+    return;
+  }
+  if(parts[0]==='H'||parts[0]==='M'||parts[0]==='T') {
+    const [type,s,h,m]=parts;
+    updateHUD(type, parseInt(s), parseInt(h), parseInt(m));
+    return;
+  }
 }
 
-function prikaziLoggedOut() {
-    document.getElementById('authSekcija').style.display    = '';
-    document.getElementById('korisnikBar').style.display    = 'none';
-    document.getElementById('bleSekcija').style.display     = 'none';
-    document.getElementById('gameSekcija').style.display    = 'none';
-    document.getElementById('rezultatKontejner').style.display = 'none';
-    document.getElementById('btnPokreni').disabled = true;
-    karakteristika = null;
-    const btnC = document.getElementById('btnConnect');
-    btnC.innerText = '🔗  Poveži Uređaj';
-    btnC.classList.remove('connected');
-    setStatus('Nije povezano', '');
+// ═══════════════ START GAME ════════════════
+async function startGame() {
+  if(!bleChar) return;
+  // Send level first, then game code
+  sendBLE('L:'+selLevel);
+  await new Promise(r=>setTimeout(r,80));
+  sendBLE(selGame);
+  document.getElementById('rezBox').style.display='none';
+  setSt('Igra u toku...','o');
 }
 
-// ═══════════════════════════════════════════════════════════
-// BLE
-// ═══════════════════════════════════════════════════════════
-async function povezi() {
+// ═══════════════ HUD ════════════════
+function startHUD(gameCode) {
+  hudActive=true;
+  hudSkor=0; hudHits=0; hudMisses=0;
+  hudStart=Date.now();
+
+  // fill labels
+  document.getElementById('hudGameName').innerText=GAME_NAMES[gameCode]||gameCode;
+  document.getElementById('hudLevelBadge').innerText='NIVO '+selLevel+' — '+LEVEL_NAMES[selLevel-1].toUpperCase();
+
+  // reset panels
+  for(let i=0;i<6;i++) setPanel(i,'');
+
+  // reset score
+  refreshScoreDisplay(true);
+
+  // show overlay
+  document.getElementById('hudOverlay').classList.add('show');
+
+  // start timer
+  updateTimer();
+  timerHandle=setInterval(updateTimer, 250);
+}
+
+function updateTimer() {
+  const elapsed=Date.now()-hudStart;
+  const rem=Math.max(0, GAME_DUR-elapsed);
+  const sec=Math.ceil(rem/1000);
+  document.getElementById('timerSec').innerText=sec;
+
+  // ring
+  const pct=rem/GAME_DUR;
+  const circ=339.3;
+  document.getElementById('timerArc').style.strokeDashoffset= circ*(1-pct);
+
+  // color transition: cyan → orange → red
+  let stroke;
+  if(pct>0.4)       stroke=`rgba(0,229,255,1)`;
+  else if(pct>0.2)  stroke=`rgba(255,140,0,1)`;
+  else               stroke=`rgba(255,61,90,1)`;
+  document.getElementById('timerArc').style.stroke=stroke;
+}
+
+function updateHUD(type, skor, hits, misses) {
+  hudSkor=skor; hudHits=hits; hudMisses=misses;
+  refreshScoreDisplay(false);
+
+  const isHit=(type==='H');
+  const isTimeout=(type==='T');
+
+  // floating chip
+  spawnFloat(isHit ? '+1' : '−1', isHit ? 'var(--green)' : 'var(--red)');
+
+  // flash overlay
+  flashScreen(isHit ? 'rgba(0,230,118,.10)' : 'rgba(255,61,90,.13)');
+}
+
+function refreshScoreDisplay(instant) {
+  document.getElementById('svSkor').innerText=hudSkor>=0?'+'+hudSkor:hudSkor;
+  document.getElementById('svHits').innerText=hudHits;
+  document.getElementById('svMiss').innerText=hudMisses;
+  if(!instant) {
+    // pulse animation on score
+    const el=document.getElementById('svSkor');
+    el.classList.remove('pulse');
+    void el.offsetWidth;
+    el.classList.add('pulse');
+    el.style.color=hudSkor>=0?'var(--accent)':'var(--red)';
+  }
+}
+
+function stopHUD(disconnected, skor, hits, misses) {
+  hudActive=false;
+  clearInterval(timerHandle);
+
+  if(!disconnected) {
+    hudSkor=skor??hudSkor;
+    hudHits=hits??hudHits;
+    hudMisses=misses??hudMisses;
+  }
+
+  document.getElementById('hudOverlay').classList.remove('show');
+
+  if(!disconnected) {
+    showResult(hudSkor, hudHits, hudMisses);
+  }
+}
+
+async function showResult(skor, hits, misses) {
+  const b=document.getElementById('rezBox');
+  document.getElementById('rezSkor').innerText= skor>=0 ? '+'+skor : skor;
+  document.getElementById('rezSkor').style.color = skor>=0 ? 'var(--accent)' : 'var(--red)';
+  document.getElementById('rezSub').innerText = `${hits} pogodaka  ·  ${misses} promasaja`;
+  document.getElementById('rezSave').innerText='';
+  b.style.display='block';
+  setSt('Igra završena!','c');
+
+  // Save to Supabase
+  if(user && typeof skor==='number') {
     try {
-        const device = await navigator.bluetooth.requestDevice({
-            filters: [{ name: 'VOLTA PRO' }],
-            optionalServices: [SERVICE_UUID]
-        });
-        const server  = await device.gatt.connect();
-        const service = await server.getPrimaryService(SERVICE_UUID);
-        karakteristika = await service.getCharacteristic(CHAR_UUID);
-
-        const btnC = document.getElementById('btnConnect');
-        btnC.innerText = '✅  Povezano';
-        btnC.classList.add('connected');
-        setStatus('Spreman za trening', 'green');
-        document.getElementById('btnPokreni').disabled = false;
-
-        await karakteristika.startNotifications();
-        karakteristika.addEventListener('characteristicvaluechanged', onBleData);
-
-        device.addEventListener('gattserverdisconnected', () => {
-            karakteristika = null;
-            document.getElementById('btnPokreni').disabled = true;
-            btnC.innerText = '🔗  Poveži Uređaj';
-            btnC.classList.remove('connected');
-            setStatus('Uređaj isključen', '');
-        });
-    } catch (e) {
-        alert('BLE greška: ' + e);
+      const {error}=await sb.from('rezultati').insert({
+        korisnik_id: user.id,
+        email: user.email,
+        igra: selGame,
+        nivo: selLevel,
+        skor,
+        pogodaka: hits,
+        promasaja: misses
+      });
+      document.getElementById('rezSave').innerText = error ? '⚠️ Greška pri čuvanju.' : '✅ Rezultat sačuvan!';
+    } catch {
+      document.getElementById('rezSave').innerText='⚠️ Greška pri čuvanju.';
     }
+  }
 }
 
-async function onBleData(event) {
-    const vrednost = new TextDecoder().decode(event.target.value).trim();
-    const skor = parseInt(vrednost, 10);
-
-    document.getElementById('krajnjiSkor').innerText = isNaN(skor) ? vrednost : skor;
-    document.getElementById('rezultatKontejner').style.display = 'block';
-    setStatus('Igra završena!', 'cyan');
-
-    // Sačuvaj rezultat u Supabase
-    if (trenutniKorisnik && !isNaN(skor)) {
-        const savedMsg = document.getElementById('savedMsg');
-        savedMsg.innerText = '';
-        try {
-            const { error } = await sb.from('rezultati').insert({
-                korisnik_id: trenutniKorisnik.id,
-                email: trenutniKorisnik.email,
-                igra: selektovanaIgra,
-                skor: skor
-            });
-            savedMsg.innerText = error ? '⚠️ Greška pri čuvanju.' : '✅ Rezultat sačuvan!';
-        } catch {
-            savedMsg.innerText = '⚠️ Greška pri čuvanju.';
-        }
-    }
+// ═══════════════ PANEL HELPERS ════════════════
+function setPanel(idx, cls) {
+  const p=document.getElementById('p'+idx);
+  if(!p) return;
+  p.className='panel'+(cls?' '+cls:'');
+}
+function clearPanelAfter(idx, ms) {
+  setTimeout(()=>setPanel(idx,''), ms);
 }
 
-function izaberiIgru(kod, el) {
-    // Za sad samo Igra A dostupna
-    if (kod !== 'A') return;
-    selektovanaIgra = kod;
-    document.querySelectorAll('.game-card:not(.locked)').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
+// Wire BLE events to panel visuals too
+const _origUpdateHUD=updateHUD;
+// We'll handle panel state inside onBLE based on which panel was hit/missed
+// Since ESP32 doesn't send panel index in current protocol, we animate score area only.
+// To show panels we'd need "H:skor:pog:pro:panelIdx" — let's keep protocol minimal
+// and just pulse all panels on hit/miss for visual feedback.
+function flashPanels(cls) {
+  for(let i=0;i<6;i++) setPanel(i,cls);
+  setTimeout(()=>{for(let i=0;i<6;i++) setPanel(i,'');}, 300);
 }
 
-async function pokreniIgru() {
-    if (!karakteristika) return;
-    await karakteristika.writeValue(new TextEncoder().encode(selektovanaIgra));
-    document.getElementById('rezultatKontejner').style.display = 'none';
-    setStatus('Igra u toku...', 'orange');
+// Override updateHUD to also animate panels
+window.updateHUD = function(type, skor, hits, misses) {
+  _origUpdateHUD(type, skor, hits, misses);
+  if(type==='H') flashPanels('hit');
+  else           flashPanels('miss');
+};
+
+// ═══════════════ VISUAL FX ════════════════
+function spawnFloat(text, color) {
+  const pool=document.getElementById('floatPool');
+  const chip=document.createElement('div');
+  chip.className='float-chip';
+  chip.innerText=text;
+  chip.style.color=color;
+  chip.style.left=(30+Math.random()*40)+'%';
+  chip.style.top =(40+Math.random()*20)+'%';
+  pool.appendChild(chip);
+  chip.addEventListener('animationend',()=>chip.remove());
 }
 
-// ═══════════════════════════════════════════════════════════
-// POMOĆNE FUNKCIJE
-// ═══════════════════════════════════════════════════════════
-function setStatus(tekst, boja) {
-    document.getElementById('statusTekst').innerHTML =
-        `<span class="status-dot ${boja}" id="statusDot"></span>${tekst}`;
+function flashScreen(rgba) {
+  const el=document.getElementById('flashOverlay');
+  el.style.background=rgba;
+  el.style.opacity='1';
+  setTimeout(()=>el.style.opacity='0', 120);
 }
 
-function prevediGresku(msg) {
-    if (msg.includes('Invalid login')) return 'Pogrešan email ili lozinka.';
-    if (msg.includes('already registered')) return 'Email je već registrovan.';
-    if (msg.includes('Password should')) return 'Lozinka mora imati min. 6 karaktera.';
-    if (msg.includes('Invalid email')) return 'Unesi ispravnu email adresu.';
-    return msg;
-}
-
-// ═══════════════════════════════════════════════════════════
-// INIT — provjeri da li je korisnik već ulogovan
-// ═══════════════════════════════════════════════════════════
-(async () => {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session?.user) {
-        posleLogin(session.user);
-    }
-
-    sb.auth.onAuthStateChange((_event, session) => {
-        if (session?.user) posleLogin(session.user);
-        else prikaziLoggedOut();
-    });
+// ═══════════════ INIT ════════════════
+(async()=>{
+  const {data:{session}}=await sb.auth.getSession();
+  if(session?.user) afterLogin(session.user);
+  sb.auth.onAuthStateChange((_,s)=>{ if(s?.user) afterLogin(s.user); else showLoggedOut(); });
 })();
 </script>
-
 </body>
 </html>
