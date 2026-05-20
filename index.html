@@ -302,7 +302,7 @@
         }
 
         /* ── GAME CARDS ── */
-        #gameSekcija { display: none; }
+        /* gameSekcija se kontrolise kroz JS */
 
         .game-grid {
             display: flex;
@@ -514,7 +514,7 @@
     </div>
 
     <!-- ══════════════ GAME SELEKTOR ══════════════ -->
-    <div class="card" id="gameSekcija">
+    <div class="card" id="gameSekcija" style="display:none;">
         <div class="section-title">Izaberi Trening</div>
         <div class="game-grid">
             <div class="game-card active" onclick="izaberiIgru('A', this)">
@@ -606,13 +606,10 @@ async function registrujSe() {
 
     if (error) { prikaziGresku(prevediGresku(error.message)); return; }
 
-    // Supabase može odmah prijaviti ili zahtevati email potvrdu
-    if (data.user && data.session) {
-        posleLogin(data.user);
-    } else {
-        prikaziGresku('✅ Nalog kreiran! Proveri email za potvrdu, pa se prijavi.');
-        prikaziTab('login');
-    }
+    // Odmah prijavi bez čekanja email potvrde
+    const { data: loginData, error: loginError } = await sb.auth.signInWithPassword({ email, password: lozinka });
+    if (loginError) { prikaziGresku(prevediGresku(loginError.message)); return; }
+    posleLogin(loginData.user);
 }
 
 // ═══════════════════════════════════════════════════════════
