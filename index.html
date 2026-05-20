@@ -4,42 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Volta Pro Kontrola</title>
-    <!-- CSS ostaje isti, samo dodaj stil za BLE dugme -->
+    <!-- Učitavanje Supabase klijenta -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --bg-color: #0d0e12; --card-bg: #161820; --accent-color: #00e5ff; --text-color: #ffffff; --text-muted: #8fa0dd; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .container { max-width: 450px; width: 100%; display: flex; flex-direction: column; gap: 20px; }
-        .status-card { background-color: var(--card-bg); border-radius: 16px; padding: 20px; border: 1px solid #262936; text-align: center; }
-        .game-card { background-color: var(--card-bg); border: 2px solid #262936; border-radius: 16px; padding: 20px; cursor: pointer; transition: all 0.2s ease; }
+        .card { background-color: var(--card-bg); border-radius: 16px; padding: 20px; border: 1px solid #262936; text-align: center; }
+        .game-card { background-color: var(--card-bg); border: 2px solid #262936; border-radius: 16px; padding: 20px; cursor: pointer; transition: all 0.2s ease; margin-bottom: 10px; }
         .game-card.active { border-color: var(--accent-color); }
         .btn-action { background: linear-gradient(90deg, #00b0ff, #00e5ff); color: #000; border: none; border-radius: 12px; padding: 16px; width: 100%; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
         .btn-ble { background: #333; color: #fff; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #262936; background: #0d0e12; color: white; box-sizing: border-box; }
+        #appSection { display: none; } /* Sakriveno dok se korisnik ne uloguje */
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="status-card">
-        <button id="btnBle" class="btn-action btn-ble" onclick="poveziBle()">🔗 POVEŽI APARAT (BLE)</button>
-        <div id="bleStatus" style="margin-top:10px; font-size:12px; color:var(--text-muted);">Status: Nije povezan</div>
+    <!-- SEKCIJA ZA PRIJAVU I REGISTRACIJU -->
+    <div id="authSection" class="card">
+        <h2>VOLTA PRO - PRIJAVA</h2>
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Lozinka">
+        <button class="btn-action" onclick="handleAuth('login')">Prijavi se</button>
+        <button class="btn-action" onclick="handleAuth('signup')" style="background: #262936; color: #00e5ff;">Registracija</button>
     </div>
 
-    <div class="game-selector">
-        <div class="game-card active" onclick="izaberiIgru('A', this)"><h3>Igra A: Apex Pulse</h3></div>
-        <div class="game-card" onclick="izaberiIgru('B', this)"><h3>Igra B: Grid Lock</h3></div>
-        <button id="btnPokreni" class="btn-action" onclick="pokreniTrening()" disabled>POKRENI TRENING</button>
+    <!-- SEKCIJA ZA KONTROLU (VIDLJIVA NAKON LOGIN-A) -->
+    <div id="appSection">
+        <div class="card">
+            <button id="btnBle" class="btn-action btn-ble" onclick="poveziBle()">🔗 POVEŽI APARAT (BLE)</button>
+            <div id="bleStatus" style="margin-top:10px; font-size:12px; color:var(--text-muted);">Status: Nije povezan</div>
+        </div>
+
+        <div class="game-selector">
+            <div class="game-card active" onclick="izaberiIgru('A', this)"><h3>Igra A: Apex Pulse</h3></div>
+            <div class="game-card" onclick="izaberiIgru('B', this)"><h3>Igra B: Grid Lock</h3></div>
+            <button id="btnPokreni" class="btn-action" onclick="pokreniTrening()" disabled>POKRENI TRENING</button>
+        </div>
     </div>
 </div>
 
 <script>
+    // KONFIGURACIJA
     const SUPABASE_URL = "https://wdnndorxgdzhlytqkyvh.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."; // Tvoj ključ
-    const APARAT_ID = "VOLTA_001";
+    const SUPABASE_KEY = "TVOJ_SUPABASE_KEY_OVDE"; 
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
-    let bleChar;
+    const APARAT_ID = "VOLTA_001";
+    let bleChar, korisnik;
     let selektovanaIgra = "A";
 
-    // 1. BLUETOOTH FUNKCIJE
+    // 1. AUTH LOGIKA
+    async function handleAuth(type) {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        let response;
+        if (type === 'signup') {
+            response = await supabase.auth.signUp({ email, password });
+        } else {
+            response = await supabase.auth.signInWithPassword({ email, password });
+        }
+
+        if (response.error) return alert("Greška: " + response.error.message);
+        
+        korisnik = response.data.user;
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('appSection').style.display = 'block';
+        alert("Dobrodošao/la: " + korisnik.email);
+    }
+
+    // 2. BLUETOOTH FUNKCIJE
     async function poveziBle() {
         try {
             const device = await navigator.bluetooth.requestDevice({
@@ -54,30 +91,26 @@
             document.getElementById('btnPokreni').disabled = false;
             
             await bleChar.startNotifications();
-            bleChar.addEventListener('characteristicvaluechanged', (event) => {
-                let skor = new TextDecoder().decode(event.target.value);
+            bleChar.addEventListener('characteristicvaluechanged', (e) => {
+                let skor = new TextDecoder().decode(e.target.value);
                 azurirajBazu(skor);
             });
         } catch(e) { alert("BLE Greška: " + e); }
     }
 
-    // 2. LOGIKA IGRE
     async function pokreniTrening() {
         if (!bleChar) return alert("Poveži uređaj prvo!");
-        
-        // Šalji komandu na ESP32
         await bleChar.writeValue(new TextEncoder().encode(selektovanaIgra));
-        alert("Igra pokrenuta!");
     }
 
-    // 3. SUPABASE AŽURIRANJE
+    // 3. SUPABASE ČUVANJE REZULTATA
     async function azurirajBazu(skor) {
-        await fetch(`${SUPABASE_URL}/rest/v1/aparati_status?aparat_id=eq.${APARAT_ID}`, {
-            method: "PATCH",
-            headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json" },
-            body: JSON.stringify({ poslednji_skor: skor, status: "SLOBODAN" })
-        });
-        alert("Rezultat sačuvan u bazi: " + skor);
+        const { error } = await supabase.from('rezultati').insert([
+            { korisnik_id: korisnik.id, poeni: skor, igra: selektovanaIgra, datum: new Date() }
+        ]);
+        
+        if (error) alert("Greška pri čuvanju: " + error.message);
+        else alert("Bravo! Rezultat " + skor + " je sačuvan.");
     }
 
     function izaberiIgru(kod, el) {
