@@ -4,283 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Volta Pro Kontrola</title>
+    <!-- CSS ostaje isti, samo dodaj stil za BLE dugme -->
     <style>
-        :root {
-            --bg-color: #0d0e12;
-            --card-bg: #161820;
-            --accent-color: #00e5ff;
-            --text-color: #ffffff;
-            --text-muted: #8fa0dd;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .container {
-            max-width: 450px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .header {
-            text-align: center;
-            padding: 20px 0;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 28px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            background: linear-gradient(45deg, #ffffff, var(--accent-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .status-card {
-            background-color: var(--card-bg);
-            border-radius: 16px;
-            padding: 20px;
-            border: 1px solid #262936;
-            text-align: center;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-top: 10px;
-        }
-
-        .status-slobodan { background-color: rgba(0, 230, 118, 0.15); color: #00e676; }
-        .status-toku { background-color: rgba(255, 145, 0, 0.15); color: #ff9100; }
-        .status-cekaj { background-color: rgba(0, 229, 255, 0.15); color: var(--accent-color); }
-
-        .game-selector {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .game-card {
-            background-color: var(--card-bg);
-            border: 2px solid #262936;
-            border-radius: 16px;
-            padding: 20px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .game-card.active {
-            border-color: var(--accent-color);
-            background-gradient: linear-gradient(145deg, #161820, #1d2b36);
-        }
-
-        .game-card h3 {
-            margin: 0 0 6px 0;
-            font-size: 18px;
-        }
-
-        .game-card p {
-            margin: 0;
-            font-size: 13px;
-            color: var(--text-muted);
-            line-height: 1.4;
-        }
-
-        .btn-action {
-            background: linear-gradient(90deg, #00b0ff, #00e5ff);
-            color: #000000;
-            border: none;
-            border-radius: 12px;
-            padding: 16px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: transform 0.1s ease;
-            margin-top: 10px;
-        }
-
-        .btn-action:active {
-            transform: scale(0.98);
-        }
-
-        .btn-action:disabled {
-            background: #262936;
-            color: #525875;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .score-display {
-            font-size: 48px;
-            font-weight: 900;
-            color: var(--accent-color);
-            margin: 15px 0 5px 0;
-        }
+        :root { --bg-color: #0d0e12; --card-bg: #161820; --accent-color: #00e5ff; --text-color: #ffffff; --text-muted: #8fa0dd; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 450px; width: 100%; display: flex; flex-direction: column; gap: 20px; }
+        .status-card { background-color: var(--card-bg); border-radius: 16px; padding: 20px; border: 1px solid #262936; text-align: center; }
+        .game-card { background-color: var(--card-bg); border: 2px solid #262936; border-radius: 16px; padding: 20px; cursor: pointer; transition: all 0.2s ease; }
+        .game-card.active { border-color: var(--accent-color); }
+        .btn-action { background: linear-gradient(90deg, #00b0ff, #00e5ff); color: #000; border: none; border-radius: 12px; padding: 16px; width: 100%; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
+        .btn-ble { background: #333; color: #fff; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <h1>VOLTA PRO</h1>
-    </div>
-
-    <!-- STATUS APARATA I ZADNJI REZULTAT -->
     <div class="status-card">
-        <span style="color: var(--text-muted); font-size: 14px;">Status Aparata:</span><br>
-        <div id="aparatStatusBadge" class="status-badge status-slobodan">Učitavanje...</div>
-        
-        <div id="rezultatKontejner" style="display: none; margin-top: 15px;">
-            <div style="font-size: 13px; color: var(--text-muted);">Poslednji rezultat:</div>
-            <div id="krajnjiSkor" class="score-display">0</div>
-            <div style="font-size: 12px; color: #00e676;">Bodovi uspešno sačuvani!</div>
-        </div>
+        <button id="btnBle" class="btn-action btn-ble" onclick="poveziBle()">🔗 POVEŽI APARAT (BLE)</button>
+        <div id="bleStatus" style="margin-top:10px; font-size:12px; color:var(--text-muted);">Status: Nije povezan</div>
     </div>
 
-    <!-- SELEKTOR IGRE (INDEKSI "A" I "B" USKLAĐENI SA ESP32) -->
-    <div class="game-selector" id="gameSelectorSekcija">
-        <div class="game-card active" onclick="izaberiIgru('A', this)">
-            <h3>Igra A: Apex Pulse</h3>
-            <p>Testiraj reflekse na lažnim manevrima! Plavi paneli menjaju poziciju i nivo u žutu boju neposredno pre udarca.</p>
-        </div>
-
-        <div class="game-card" onclick="izaberiIgru('B', this)">
-            <h3>Igra B: Grid Lock</h3>
-            <p>Odbrani zid! Ugasi crvene panele pre nego što se svih 6 modula aktivira i kompletno zaključa sistem.</p>
-        </div>
-
-        <button id="btnPokreni" class="btn-action" onclick="pokreniTrening()">Pokreni Trening</button>
+    <div class="game-selector">
+        <div class="game-card active" onclick="izaberiIgru('A', this)"><h3>Igra A: Apex Pulse</h3></div>
+        <div class="game-card" onclick="izaberiIgru('B', this)"><h3>Igra B: Grid Lock</h3></div>
+        <button id="btnPokreni" class="btn-action" onclick="pokreniTrening()" disabled>POKRENI TRENING</button>
     </div>
 </div>
 
 <script>
-    // =========================================================================
-    // SUPABASE KONFIGURACIJA
-    // =========================================================================
     const SUPABASE_URL = "https://wdnndorxgdzhlytqkyvh.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indkbm5kb3J4Z2R6aGx5dHFreXZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNzIzMDQsImV4cCI6MjA4Nzc0ODMwNH0.O5PxSn58e0m8uy9zXSraGs9FfxCzUgVcxKF-8SqNgbU"; 
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."; // Tvoj ključ
     const APARAT_ID = "VOLTA_001";
-    const KORISNIK_EMAIL = "test.igrac@gmail.com"; // Ovo posle vučeš iz auth-a
+    
+    let bleChar;
+    let selektovanaIgra = "A";
 
-    let selektovanaIgra = "A"; // Default je Apex Pulse
-    let trenutniStatusAparata = "";
-
-    // Zaglavlja za direktne REST API pozive bazi
-    const headers = {
-        "apikey": SUPABASE_KEY,
-        "Authorization": `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json"
-    };
-
-    // =========================================================================
-    // LOGIKA APLIKACIJE
-    // =========================================================================
-    function izaberiIgru(kodIgre, element) {
-        if (trenutniStatusAparata !== "SLOBODAN") return;
-        
-        selektovanaIgra = kodIgre;
-        
-        // Sredi vizuelni stil kartica
-        document.querySelectorAll('.game-card').forEach(card => card.classList.remove('active'));
-        element.classList.add('active');
-    }
-
-    async function pratiStatusAparata() {
+    // 1. BLUETOOTH FUNKCIJE
+    async function poveziBle() {
         try {
-            const response = await fetch(`${SUPABASE_URL}/rest/v1/aparati_status?aparat_id=eq.${APARAT_ID}&select=status,poslednji_skor`, {
-                method: "GET",
-                headers: headers
+            const device = await navigator.bluetooth.requestDevice({
+                filters: [{ name: 'Vilenjak_Igra' }],
+                optionalServices: ['6e400001-b5a3-f393-e0a9-e50e24dcca9e']
             });
+            const server = await device.gatt.connect();
+            const service = await server.getPrimaryService('6e400001-b5a3-f393-e0a9-e50e24dcca9e');
+            bleChar = await service.getCharacteristic('6e400002-b5a3-f393-e0a9-e50e24dcca9e');
             
-            const data = await response.json();
-            if (data && data.length > 0) {
-                const status = data[0].status;
-                const skor = data[0].poslednji_skor;
-                trenutniStatusAparata = status;
-
-                 osveziUI(status, skor);
-            }
-        } catch (error) {
-            console.error("Greška pri sinhronizaciji:", error);
-        }
+            document.getElementById('bleStatus').innerText = "Status: Povezan!";
+            document.getElementById('btnPokreni').disabled = false;
+            
+            await bleChar.startNotifications();
+            bleChar.addEventListener('characteristicvaluechanged', (event) => {
+                let skor = new TextDecoder().decode(event.target.value);
+                azurirajBazu(skor);
+            });
+        } catch(e) { alert("BLE Greška: " + e); }
     }
 
-    function osveziUI(status, skor) {
-        const badge = document.getElementById("aparatStatusBadge");
-        const btn = document.getElementById("btnPokreni");
-        const rezKontejner = document.getElementById("rezultatKontejner");
-
-        badge.className = "status-badge";
-
-        if (status === "SLOBODAN") {
-            badge.innerText = "Slobodan";
-            badge.classList.add("status-slobodan");
-            btn.disabled = false;
-            btn.innerText = "Pokreni Trening";
-            
-            if (skor !== null && skor !== undefined) {
-                document.getElementById("krajnjiSkor").innerText = skor;
-                rezKontejner.style.display = "block";
-            }
-        } else if (status === "POKRENI_IGRU") {
-            badge.innerText = "Slanje komande...";
-            badge.classList.add("status-cekaj");
-            btn.disabled = true;
-            btn.innerText = "Priprema hardvera...";
-        } else if (status === "IGRA_U_TOKU") {
-            badge.innerText = "Trening u toku";
-            badge.classList.add("status-toku");
-            btn.disabled = true;
-            btn.innerText = "Udaraj panele!";
-            rezKontejner.style.display = "none"; // Sakrij stari skor dok igra traje
-        }
-    }
-
+    // 2. LOGIKA IGRE
     async function pokreniTrening() {
-        if (trenutniStatusAparata !== "SLOBODAN") return;
-
-        osveziUI("POKRENI_IGRU", null);
-
-        try {
-            // Šaljemo komandu za pokretanje igre na ESP32 kroz bazu
-            await fetch(`${SUPABASE_URL}/rest/v1/aparati_status?aparat_id=eq.${APARAT_ID}`, {
-                method: "PATCH",
-                headers: headers,
-                body: JSON.stringify({
-                    status: "POKRENI_IGRU",
-                    izabrana_igra: selektovanaIgra,
-                    trenutni_korisnik_email: KORISNIK_EMAIL,
-                    poslednji_skor: null // Brišemo stari skor pre starta
-                })
-            });
-        } catch (error) {
-            console.error("Greška pri slanju komande:", error);
-            osveziUI("SLOBODAN", null);
-        }
+        if (!bleChar) return alert("Poveži uređaj prvo!");
+        
+        // Šalji komandu na ESP32
+        await bleChar.writeValue(new TextEncoder().encode(selektovanaIgra));
+        alert("Igra pokrenuta!");
     }
 
-    // Pokreni osluškivanje baze na svake 2 sekunde
-    setInterval(pratiStatusAparata, 2000);
-    pratiStatusAparata(); // Prvo izvršavanje odmah pri učitavanju
-</script>
+    // 3. SUPABASE AŽURIRANJE
+    async function azurirajBazu(skor) {
+        await fetch(`${SUPABASE_URL}/rest/v1/aparati_status?aparat_id=eq.${APARAT_ID}`, {
+            method: "PATCH",
+            headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ poslednji_skor: skor, status: "SLOBODAN" })
+        });
+        alert("Rezultat sačuvan u bazi: " + skor);
+    }
 
+    function izaberiIgru(kod, el) {
+        selektovanaIgra = kod;
+        document.querySelectorAll('.game-card').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+    }
+</script>
 </body>
 </html>
