@@ -363,6 +363,26 @@
         .badge-a { background: rgba(0,229,255,0.15); color: var(--accent); }
         .badge-b { background: rgba(255,64,96,0.15); color: var(--red); }
 
+        .game-card.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .badge-soon {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: rgba(107,125,179,0.2);
+            color: var(--muted);
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
         /* ── DIVIDER ── */
         .divider {
             display: flex;
@@ -500,11 +520,11 @@
             <div class="game-card active" onclick="izaberiIgru('A', this)">
                 <span class="game-badge badge-a">Igra A</span>
                 <h3>Apex Pulse</h3>
-                <p>Testiraj reflekse na lažnim manevrima! Plavi paneli menjaju poziciju pre udarca.</p>
+                <p>Testiraj reflekse na lažnim manevrima! Plavi paneli menjaju poziciju i nivo u žutu boju neposredno pre udarca.</p>
             </div>
-            <div class="game-card" onclick="izaberiIgru('B', this)">
+            <div class="game-card locked">
                 <span class="game-badge badge-b">Igra B</span>
-                <h3>Grid Lock</h3>
+                <h3>Grid Lock <span class="badge-soon">Uskoro</span></h3>
                 <p>Odbrani zid! Ugasi crvene panele pre nego što se svih 6 modula zaključa.</p>
             </div>
         </div>
@@ -695,8 +715,10 @@ async function onBleData(event) {
 }
 
 function izaberiIgru(kod, el) {
+    // Za sad samo Igra A dostupna
+    if (kod !== 'A') return;
     selektovanaIgra = kod;
-    document.querySelectorAll('.game-card').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.game-card:not(.locked)').forEach(c => c.classList.remove('active'));
     el.classList.add('active');
 }
 
