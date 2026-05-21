@@ -634,12 +634,26 @@ function onBLE(ev) {
 // ═══════════════ START GAME ════════════════
 async function startGame() {
   if(!bleChar) return;
-  // Send level first, then game code
-  sendBLE('L:'+selLevel);
-  await new Promise(r=>setTimeout(r,80));
-  sendBLE(selGame);
-  document.getElementById('rezBox').style.display='none';
-  setSt('Igra u toku...','o');
+  const btn = document.getElementById('btnStart');
+  btn.disabled = true; // spriječi višestruke klikove dok šaljemo
+
+  try {
+    // Pošalji nivo i sačekaj da write završi
+    await bleChar.writeValue(new TextEncoder().encode('L:' + selLevel));
+    // Čekaj 120ms — ESP32 BLE stack treba vremena između writova
+    await new Promise(r => setTimeout(r, 120));
+    // Pošalji kod igre i sačekaj
+    await bleChar.writeValue(new TextEncoder().encode(selGame));
+  } catch(e) {
+    console.error('BLE write greška:', e);
+    btn.disabled = false;
+    setSt('Greška pri slanju — pokušaj ponovo', '');
+    return;
+  }
+
+  document.getElementById('rezBox').style.display = 'none';
+  setSt('Igra u toku...', 'o');
+  // Dugme ostaje disabled tokom igre — re-enableuje se u stopHUD()
 }
 
 // ═══════════════ HUD ════════════════
@@ -846,12 +860,14 @@ function stopHUD(disconnected, skor, hits, misses) {
     hudMisses=misses??hudMisses;
   }
 
-  // Reset Red Alert panel state
   alertPanelState=[false,false,false,false,false,false];
   for(let i=0;i<6;i++) setPanel(i,'');
 
   document.getElementById('hudOverlay').classList.remove('show');
   document.getElementById('hudOverlay').style.background='rgba(7,8,13,.97)';
+
+  // Re-enable dugme za sledeću igru
+  if(bleChar) document.getElementById('btnStart').disabled=false;
 
   if(!disconnected) {
     showResult(hudSkor, hudHits, hudMisses);
