@@ -3,944 +3,2736 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Volta Pro</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<title>Đurović — Komandni centar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-:root {
-  --bg:      #07080d;
-  --card:    #0e1018;
-  --card2:   #161925;
-  --border:  #1e2235;
-  --accent:  #00e5ff;
-  --accent2: #0090cc;
-  --green:   #00e676;
-  --red:     #ff3d5a;
-  --orange:  #ff8c00;
-  --muted:   #5a6a8a;
-  --text:    #dde4f5;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0a0c10;--bg2:#111318;--bg3:#191c24;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#e8e6df;--muted:#7a7870;--muted2:#4a4845;
+  --gold:#c9a84c;--gold2:#e8c96a;--gold-bg:rgba(201,168,76,0.08);
+  --red:#c94c4c;--red-bg:rgba(201,76,76,0.08);
+  --orange:#c97a4c;--orange-bg:rgba(201,122,76,0.08);
+  --green:#4caa6e;--green-bg:rgba(76,170,110,0.08);
+  --blue:#4c7ec9;--blue-bg:rgba(76,126,201,0.08);
+  --radius:6px;--radius-lg:10px;
 }
-
-*{box-sizing:border-box;margin:0;padding:0}
-
-body{
-  font-family:'DM Sans',sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:20px 14px 60px;
-  background-image:
-    radial-gradient(ellipse 70% 35% at 50% -5%, rgba(0,229,255,.07) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 25% at 90% 95%,  rgba(0,144,204,.05) 0%, transparent 60%);
-}
-
-.wrap{max-width:420px;width:100%;display:flex;flex-direction:column;gap:14px}
+html,body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:14px;line-height:1.6;min-height:100vh;}
 
 /* ── HEADER ── */
-.hdr{text-align:center;padding:22px 0 4px}
-.hdr h1{
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:38px;font-weight:900;letter-spacing:5px;
-  background:linear-gradient(100deg,#fff 30%,var(--accent));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent
+.header{border-bottom:0.5px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;background:var(--bg);z-index:100;}
+.header-logo{display:flex;align-items:center;gap:12px;}
+.logo-mark{width:28px;height:28px;background:var(--gold);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);flex-shrink:0;}
+.logo-text{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;letter-spacing:0.08em;color:var(--gold);}
+.logo-sub{font-size:10px;letter-spacing:0.18em;color:var(--muted);text-transform:uppercase;font-weight:500;margin-left:4px;}
+.header-meta{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--muted);}
+.header-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse-dot 2.4s ease-in-out infinite;}
+@keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.time-display{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);}
+
+/* ── LAYOUT ── */
+.layout{display:grid;grid-template-columns:248px 1fr 310px;min-height:calc(100vh - 56px);}
+
+/* ── SIDEBAR ── */
+.sidebar{border-right:0.5px solid var(--border);padding:1.25rem 0;background:var(--bg);}
+.sidebar-section{padding:0 1rem;margin-bottom:1.75rem;}
+.sidebar-label{font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:0.6rem;padding-left:0.25rem;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:var(--radius);cursor:pointer;color:var(--muted);font-size:13px;font-weight:400;transition:all 0.15s;border:none;background:none;width:100%;text-align:left;}
+.nav-item:hover{background:var(--bg3);color:var(--text);}
+.nav-item.active{background:var(--gold-bg);color:var(--gold2);border:0.5px solid rgba(201,168,76,0.2);}
+.nav-icon{width:15px;height:15px;opacity:0.7;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:var(--red-bg);color:var(--red);border:0.5px solid rgba(201,76,76,0.25);font-size:10px;font-weight:500;padding:1px 6px;border-radius:20px;font-family:'IBM Plex Mono',monospace;}
+.nav-badge.gold{background:var(--gold-bg);color:var(--gold);border-color:rgba(201,168,76,0.25);}
+.director-list{display:flex;flex-direction:column;gap:2px;}
+.director-item{display:flex;align-items:center;gap:9px;padding:6px 10px;border-radius:var(--radius);cursor:pointer;transition:background 0.15s;}
+.director-item:hover{background:var(--bg3);}
+.d-avatar{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;flex-shrink:0;font-family:'IBM Plex Mono',monospace;}
+.d-name{font-size:12px;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.d-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+
+/* ── MAIN ── */
+.main{background:var(--bg2);display:flex;flex-direction:column;}
+.toolbar{padding:0.85rem 1.5rem;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--bg2);}
+.page-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:600;color:var(--text);}
+.page-subtitle{font-size:11px;color:var(--muted);margin-top:2px;}
+
+/* ── BUTTON ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--radius);font-size:12px;font-weight:500;cursor:pointer;border:0.5px solid var(--border2);background:var(--bg3);color:var(--text);transition:all 0.15s;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;}
+.btn:hover{background:var(--bg);border-color:var(--border2);}
+.btn-primary{background:var(--gold-bg);border-color:rgba(201,168,76,0.35);color:var(--gold2);}
+.btn-primary:hover{background:rgba(201,168,76,0.15);border-color:rgba(201,168,76,0.5);}
+.btn-danger{background:var(--red-bg);border-color:rgba(201,76,76,0.3);color:var(--red);}
+.btn-blue{background:var(--blue-bg);border-color:rgba(76,126,201,0.3);color:var(--blue);}
+
+/* ── STATS ROW ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:0.5px solid var(--border);}
+.stat-cell{padding:0.9rem 1.25rem;background:var(--bg2);}
+.stat-cell:not(:last-child){border-right:0.5px solid var(--border);}
+.stat-num{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:500;color:var(--text);line-height:1;}
+.stat-label{font-size:10px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.1em;}
+.stat-num.red{color:var(--red);}.stat-num.orange{color:var(--orange);}.stat-num.green{color:var(--green);}.stat-num.gold{color:var(--gold);}
+
+/* ── TASK LIST ── */
+.task-list{flex:1;overflow-y:auto;padding:1rem 1.25rem;display:flex;flex-direction:column;gap:7px;}
+.task-card{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:0.85rem 1.1rem;cursor:pointer;transition:all 0.16s;position:relative;overflow:hidden;}
+.task-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;}
+.task-card.urgentno::before{background:var(--red);}
+.task-card.visoko::before{background:var(--orange);}
+.task-card.normalno::before{background:var(--blue);}
+.task-card.nisko::before{background:var(--muted2);}
+.task-card:hover{border-color:var(--border2);background:var(--bg);transform:translateX(2px);}
+.task-card.selected{border-color:rgba(201,168,76,0.35);background:rgba(201,168,76,0.04);}
+.task-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:7px;}
+.task-title{font-size:13px;font-weight:500;color:var(--text);line-height:1.4;flex:1;}
+.task-title.gotovo{text-decoration:line-through;color:var(--muted);font-weight:400;}
+.priority-badge{font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;white-space:nowrap;flex-shrink:0;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:0.04em;}
+.priority-badge.urgentno{background:var(--red-bg);color:var(--red);border:0.5px solid rgba(201,76,76,0.25);}
+.priority-badge.visoko{background:var(--orange-bg);color:var(--orange);border:0.5px solid rgba(201,122,76,0.25);}
+.priority-badge.normalno{background:var(--blue-bg);color:var(--blue);border:0.5px solid rgba(76,126,201,0.25);}
+.priority-badge.nisko{background:var(--bg2);color:var(--muted);border:0.5px solid var(--border);}
+.task-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.task-meta-item{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);}
+.status-pill{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 7px;border-radius:20px;font-family:'IBM Plex Mono',monospace;}
+.status-pill.poslato{background:var(--blue-bg);color:var(--blue);}
+.status-pill.primljeno{background:var(--green-bg);color:var(--green);}
+.status-pill.u-toku{background:var(--orange-bg);color:var(--orange);}
+.status-pill.zavrseno{background:rgba(76,170,110,0.15);color:var(--green);}
+.status-pill.prekoraceno{background:var(--red-bg);color:var(--red);}
+.status-pill.ceka{background:var(--bg2);color:var(--muted);border:0.5px solid var(--border);}
+.status-dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;padding:3rem;color:var(--muted);}
+
+/* ── RIGHT PANEL ── */
+.right-panel{border-left:0.5px solid var(--border);background:var(--bg);overflow-y:auto;}
+.form-panel{padding:1.25rem;}
+.form-section-title{font-family:'Playfair Display',serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:1rem;padding-bottom:0.65rem;border-bottom:0.5px solid var(--border);}
+.form-group{margin-bottom:0.85rem;}
+.form-label{display:block;font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:5px;}
+.form-label span{color:var(--red);margin-left:2px;}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:7px 9px;outline:none;transition:border-color 0.15s;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:rgba(201,168,76,0.4);background:var(--bg2);}
+.form-textarea{resize:vertical;min-height:72px;line-height:1.5;}
+.form-select option{background:#1a1c24;color:var(--text);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+
+/* ── DIRECTOR CHECKBOXES ── */
+.director-grid{display:flex;flex-direction:column;gap:5px;}
+.dir-check{display:flex;align-items:center;gap:9px;padding:6px 9px;border-radius:var(--radius);border:0.5px solid var(--border);cursor:pointer;transition:all 0.15s;background:var(--bg3);}
+.dir-check:hover{border-color:var(--border2);background:var(--bg2);}
+.dir-check.checked{border-color:rgba(201,168,76,0.35);background:var(--gold-bg);}
+.dir-check input[type="checkbox"]{display:none;}
+.check-box{width:15px;height:15px;border-radius:4px;border:0.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;background:var(--bg2);}
+.dir-check.checked .check-box{background:var(--gold);border-color:var(--gold);}
+.check-mark{display:none;width:9px;height:9px;}
+.dir-check.checked .check-mark{display:block;}
+.dir-info{flex:1;min-width:0;}
+.dir-name-sm{font-size:12px;color:var(--text);font-weight:500;}
+.dir-phone{font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
+
+/* ── TELEGRAM PREVIEW ── */
+.tg-preview{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:0.9rem;margin-top:1rem;}
+.tg-preview-label{font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.tg-icon{width:13px;height:13px;background:#2AABEE;border-radius:50%;flex-shrink:0;}
+.tg-message{background:var(--bg2);border-radius:0 var(--radius-lg) var(--radius-lg) var(--radius-lg);padding:9px 11px;font-size:11px;line-height:1.7;color:var(--text);white-space:pre-line;font-family:'IBM Plex Mono',monospace;border:0.5px solid var(--border);}
+
+/* ── TASK DETAIL ── */
+.task-detail{padding:1.25rem;display:flex;flex-direction:column;gap:1.1rem;}
+.detail-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:600;color:var(--text);line-height:1.4;}
+.detail-section{padding-top:0.9rem;border-top:0.5px solid var(--border);}
+.detail-section-label{font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:9px;}
+.timeline{display:flex;flex-direction:column;}
+.timeline-item{display:flex;gap:11px;position:relative;padding-bottom:13px;}
+.timeline-item:last-child{padding-bottom:0;}
+.timeline-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px;position:relative;z-index:1;}
+.timeline-item:not(:last-child) .timeline-dot::after{content:'';position:absolute;left:3px;top:11px;width:1px;height:calc(100% + 8px);background:var(--border);}
+.timeline-dot.blue{background:var(--blue);}.timeline-dot.green{background:var(--green);}.timeline-dot.orange{background:var(--orange);}.timeline-dot.red{background:var(--red);}.timeline-dot.gray{background:var(--muted2);}
+.timeline-text{font-size:12px;color:var(--text);line-height:1.5;flex:1;}
+.timeline-time{font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
+
+/* ── ESKALACIJA ── */
+.escal-banner{background:var(--red-bg);border:0.5px solid rgba(201,76,76,0.3);border-radius:var(--radius);padding:9px 11px;display:flex;align-items:flex-start;gap:9px;}
+.escal-text{font-size:12px;color:var(--red);line-height:1.5;}
+.escal-text strong{font-weight:600;}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:1.6rem;width:480px;max-width:95vw;max-height:90vh;overflow-y:auto;}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
+.modal-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:600;color:var(--text);}
+.modal-close{width:26px;height:26px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--bg3);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all 0.15s;}
+.modal-close:hover{color:var(--text);border-color:var(--border2);}
+
+/* ── TOAST ── */
+.toast-container{position:fixed;bottom:20px;right:20px;z-index:300;display:flex;flex-direction:column;gap:7px;}
+.toast{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:11px 15px;display:flex;align-items:center;gap:9px;font-size:13px;min-width:260px;animation:slideIn 0.22s ease;box-shadow:0 8px 24px rgba(0,0,0,0.45);}
+.toast.success{border-left:3px solid var(--green);}.toast.error{border-left:3px solid var(--red);}.toast.info{border-left:3px solid var(--blue);}
+@keyframes slideIn{from{transform:translateX(20px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+/* ── SCOREBOARD TABLE ── */
+.score-table{width:100%;border-collapse:collapse;}
+.score-table th{font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);font-weight:500;padding:6px 10px;text-align:left;border-bottom:0.5px solid var(--border);}
+.score-table td{padding:8px 10px;font-size:12px;border-bottom:0.5px solid var(--border);vertical-align:middle;}
+.score-table tr:last-child td{border-bottom:none;}
+.score-table tr:hover td{background:var(--bg3);}
+.perf-bar-wrap{display:flex;align-items:center;gap:7px;}
+.perf-bar-bg{flex:1;height:4px;background:var(--bg2);border-radius:2px;overflow:hidden;}
+.perf-bar-fill{height:100%;border-radius:2px;transition:width 0.5s ease;}
+.perf-pct{font-family:'IBM Plex Mono',monospace;font-size:11px;min-width:30px;text-align:right;}
+
+/* ── STATISTIKA / GRAFIKONI ── */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);}
+.chart-cell{background:var(--bg2);padding:1.25rem 1.5rem;}
+.chart-cell.full{grid-column:1/-1;}
+.chart-title{font-size:11px;text-transform:uppercase;letter-spacing:0.14em;color:var(--muted);font-weight:500;margin-bottom:1rem;}
+.chart-wrap{position:relative;height:180px;}
+.chart-wrap.tall{height:220px;}
+.chart-wrap.short{height:140px;}
+
+/* ── SETTINGS ── */
+.config-section{padding:1.25rem 1.5rem;border-bottom:0.5px solid var(--border);}
+.config-section-title{font-size:10px;text-transform:uppercase;letter-spacing:0.15em;color:var(--muted);margin-bottom:0.9rem;}
+.config-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--border);}
+.config-row:last-child{border-bottom:none;}
+.config-label{font-size:13px;color:var(--text);}
+.toggle-wrap{display:flex;align-items:center;gap:7px;cursor:pointer;}
+.toggle{width:34px;height:19px;background:var(--bg3);border-radius:10px;border:0.5px solid var(--border2);position:relative;transition:all 0.2s;}
+.toggle::after{content:'';position:absolute;left:3px;top:3px;width:11px;height:11px;border-radius:50%;background:var(--muted);transition:all 0.2s;}
+.toggle.on{background:rgba(76,170,110,0.2);border-color:rgba(76,170,110,0.4);}
+.toggle.on::after{left:18px;background:var(--green);}
+
+/* ── COLOR PICKER ── */
+.color-opt{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color 0.15s;}
+.color-opt.sel{border-color:#fff;}
+
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--muted2);border-radius:2px;}
+.hidden{display:none!important;}
+
+/* ══ CUSTOM KALENDAR ══ */
+.cal-wrap{position:relative;width:100%;}
+.cal-trigger{width:100%;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:7px 9px;outline:none;cursor:pointer;text-align:left;display:flex;align-items:center;justify-content:space-between;transition:border-color 0.15s;}
+.cal-trigger:focus,.cal-trigger.open{border-color:rgba(201,168,76,0.4);background:var(--bg2);}
+.cal-trigger-text{color:var(--text);}
+.cal-trigger-text.placeholder{color:var(--muted);}
+.cal-trigger-icon{opacity:0.5;flex-shrink:0;}
+.cal-dropdown{position:absolute;top:calc(100% + 4px);left:0;z-index:400;background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:0.75rem;width:260px;box-shadow:0 8px 24px rgba(0,0,0,0.5);display:none;}
+.cal-dropdown.open{display:block;}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem;}
+.cal-nav{background:none;border:0.5px solid var(--border);border-radius:var(--radius);color:var(--muted);cursor:pointer;width:26px;height:26px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;font-size:14px;}
+.cal-nav:hover{background:var(--bg3);color:var(--text);}
+.cal-month-year{font-size:13px;font-weight:500;color:var(--text);font-family:'IBM Plex Sans',sans-serif;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-day-name{font-size:10px;color:var(--muted);text-align:center;padding:3px 0;font-weight:500;text-transform:uppercase;letter-spacing:0.05em;}
+.cal-day{font-size:12px;color:var(--text);text-align:center;padding:5px 2px;border-radius:var(--radius);cursor:pointer;transition:all 0.12s;font-family:'IBM Plex Mono',monospace;border:none;background:none;width:100%;}
+.cal-day:hover{background:var(--bg3);color:var(--text);}
+.cal-day.today{color:var(--gold);font-weight:600;}
+.cal-day.selected{background:var(--gold);color:var(--bg);font-weight:600;}
+.cal-day.selected:hover{background:var(--gold2);}
+.cal-day.other-month{color:var(--muted2);}
+.cal-day.disabled{color:var(--muted2);cursor:default;opacity:0.4;}
+.cal-day.disabled:hover{background:none;}
+.cal-footer{display:flex;gap:6px;margin-top:0.6rem;border-top:0.5px solid var(--border);padding-top:0.6rem;}
+.cal-clear{flex:1;font-size:11px;padding:5px;background:none;border:0.5px solid var(--border);border-radius:var(--radius);color:var(--muted);cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all 0.15s;}
+.cal-clear:hover{color:var(--text);border-color:var(--border2);}
+.cal-today-btn{flex:1;font-size:11px;padding:5px;background:var(--gold-bg);border:0.5px solid rgba(201,168,76,0.3);border-radius:var(--radius);color:var(--gold);cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all 0.15s;}
+.cal-today-btn:hover{background:rgba(201,168,76,0.15);}
+
+/* ══════════════════════════════════════
+   MOBILNI PRIKAZ — ispod 768px
+══════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* Header kompaktan */
+  .header {
+    padding: 0 1rem;
+    height: 50px;
+  }
+  .logo-sub { display: none; }
+  .logo-text { font-size: 15px; }
+  .header-meta > span,
+  .header-meta > .header-dot,
+  .time-display { display: none; }
+  .header-meta { gap: 8px; }
+  .btn { padding: 6px 10px; font-size: 12px; }
+  .btn svg { width: 13px; height: 13px; }
+
+  /* Sidebar i desni panel — sakriveni na mobu, zamenjeni bottom nav-om */
+  .sidebar { display: none; }
+  .right-panel { display: none; }
+
+  /* Layout postaje jedan stub */
+  .layout {
+    display: block;
+    min-height: calc(100vh - 50px);
+    padding-bottom: 64px; /* prostor za bottom nav */
+  }
+
+  /* Main zauzima ceo ekran */
+  .main { min-height: calc(100vh - 50px - 64px); }
+
+  /* Toolbar */
+  .toolbar {
+    padding: 0.7rem 1rem;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .page-title { font-size: 15px; }
+  .page-subtitle { font-size: 11px; }
+  .toolbar > div:last-child {
+    width: 100%;
+    overflow-x: auto;
+    display: flex;
+    gap: 6px;
+    padding-bottom: 2px;
+  }
+  .toolbar select { font-size: 12px; padding: 4px 7px; }
+
+  /* Stats row — 2x2 */
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .stat-cell { padding: 0.75rem 1rem; }
+  .stat-num { font-size: 20px; }
+  .stat-label { font-size: 10px; }
+
+  /* Task list */
+  .task-list { padding: 0.75rem; gap: 8px; }
+  .task-card { padding: 0.8rem 1rem; }
+  .task-title { font-size: 13px; }
+
+  /* Charts — jedan po koloni */
+  .charts-grid { grid-template-columns: 1fr; }
+  .chart-cell { padding: 1rem; }
+  .chart-cell.full { grid-column: 1; }
+  .chart-wrap { height: 200px; }
+  .chart-wrap.tall { height: 220px; }
+  .chart-wrap.short { height: 180px; }
+
+  /* Score table scroll */
+  #view-scoreboard > div { overflow-x: auto; padding: 0.75rem; }
+  .score-table { min-width: 520px; }
+
+  /* Settings */
+  .config-section { padding: 1rem; }
+
+  /* Modal */
+  .modal { width: 95vw; padding: 1.25rem; max-height: 88vh; }
+  .form-row { grid-template-columns: 1fr; gap: 0; }
+
+  /* ── BOTTOM NAVIGATION BAR ── */
+  .bottom-nav {
+    display: flex !important;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 64px;
+    background: var(--bg);
+    border-top: 0.5px solid var(--border2);
+    z-index: 150;
+    padding: 0 4px;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--muted);
+    font-size: 10px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 500;
+    padding: 8px 4px;
+    border-radius: var(--radius);
+    transition: color 0.15s;
+    position: relative;
+  }
+  .bottom-nav-item svg { width: 20px; height: 20px; }
+  .bottom-nav-item.active { color: var(--gold2); }
+  .bottom-nav-item.active svg { stroke: var(--gold2); }
+  .bottom-nav-badge {
+    position: absolute;
+    top: 6px;
+    right: calc(50% - 18px);
+    background: var(--red);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 600;
+    min-width: 15px;
+    height: 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* FAB dugme za novi zadatak na mobu */
+  .fab {
+    display: flex !important;
+    position: fixed;
+    bottom: 76px;
+    right: 16px;
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--bg);
+    border: none;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    z-index: 149;
+    box-shadow: 0 4px 16px rgba(201,168,76,0.35);
+    transition: transform 0.15s;
+  }
+  .fab:active { transform: scale(0.93); }
+  .fab svg { width: 22px; height: 22px; }
+
+  /* Mobilni panel za novi zadatak (drawer) */
+  .mobile-drawer {
+    display: block !important;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg2);
+    border-top: 0.5px solid var(--border2);
+    border-radius: 16px 16px 0 0;
+    z-index: 250;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 1rem 1rem 1.5rem;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+  }
+  .mobile-drawer.open { transform: translateY(0); }
+  .drawer-handle {
+    width: 36px; height: 4px;
+    background: var(--muted2);
+    border-radius: 2px;
+    margin: 0 auto 1rem;
+  }
+  .drawer-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 249;
+  }
+  .drawer-overlay.open { display: block; }
+
+  /* Detalj zadatka — fullscreen na mobu */
+  #rp-detail-mobile {
+    display: none;
+    position: fixed;
+    inset: 0;
+    top: 50px;
+    background: var(--bg);
+    z-index: 140;
+    overflow-y: auto;
+    padding: 1rem;
+    padding-bottom: 80px;
+  }
+  #rp-detail-mobile.open { display: block; }
 }
-.hdr p{font-size:11px;color:var(--muted);letter-spacing:2.5px;text-transform:uppercase;margin-top:2px}
 
-/* ── CARD ── */
-.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 18px}
-.sec-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+/* Sakriveni elementi na desktopu */
+.bottom-nav { display: none; }
+.fab { display: none; }
+.mobile-drawer { display: none; }
+.drawer-overlay { display: none; }
+#rp-detail-mobile { display: none; }
 
-/* ── TABS ── */
-.tabs{display:flex;gap:4px;background:var(--bg);border-radius:10px;padding:4px;margin-bottom:18px}
-.tab{flex:1;padding:9px;border:none;border-radius:7px;background:transparent;color:var(--muted);
-  font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;letter-spacing:1px;
-  text-transform:uppercase;cursor:pointer;transition:.18s}
-.tab.on{background:var(--card2);color:var(--accent)}
-
-/* ── INPUTS ── */
-.ig{display:flex;flex-direction:column;gap:11px;margin-bottom:14px}
-.iw label{display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
-.iw input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:9px;
-  padding:12px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:.18s}
-.iw input:focus{border-color:var(--accent)}
-.iw input::placeholder{color:var(--muted)}
-
-/* ── BUTTONS ── */
-.btn{width:100%;border:none;border-radius:11px;padding:14px;
-  font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;
-  letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:.13s}
-.btn:active{transform:scale(.97)}
-.btn:disabled{opacity:.3;cursor:not-allowed;transform:none}
-.btn-p{background:linear-gradient(90deg,var(--accent2),var(--accent));color:#000}
-.btn-s{background:var(--card2);color:var(--muted);border:1px solid var(--border)}
-.btn-d{background:rgba(255,61,90,.1);color:var(--red);border:1px solid rgba(255,61,90,.25)}
-.btn-c{background:var(--card2);color:var(--text);border:1px solid var(--border)}
-.btn-c.ok{background:rgba(0,230,118,.1);color:var(--green);border-color:rgba(0,230,118,.3)}
-
-/* ── ERROR ── */
-.err{background:rgba(255,61,90,.1);border:1px solid rgba(255,61,90,.3);border-radius:9px;
-  padding:9px 13px;font-size:13px;color:var(--red);margin-bottom:11px;display:none}
-
-/* ── USER BAR ── */
-#uBar{display:none;align-items:center;justify-content:space-between}
-.avatar{width:34px;height:34px;border-radius:50%;
-  background:linear-gradient(135deg,var(--accent2),var(--accent));
-  display:flex;align-items:center;justify-content:center;
-  font-weight:900;font-size:13px;color:#000;flex-shrink:0}
-.uname{font-size:14px;font-weight:700}
-.uemail{font-size:12px;color:var(--muted);max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-/* ── STATUS ── */
-.st-row{display:flex;align-items:center;gap:8px;margin-top:12px}
-.dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0}
-.dot.g{background:var(--green);box-shadow:0 0 7px var(--green)}
-.dot.c{background:var(--accent);box-shadow:0 0 7px var(--accent)}
-.dot.o{background:var(--orange);box-shadow:0 0 7px var(--orange)}
-#stTxt{font-size:13px;color:var(--muted)}
-
-/* ── LEVEL SELECTOR ── */
-.level-row{display:flex;gap:6px;margin-bottom:14px}
-.lv{flex:1;border:1px solid var(--border);border-radius:9px;padding:8px 4px;
-  background:var(--bg);color:var(--muted);text-align:center;cursor:pointer;transition:.15s}
-.lv span{display:block;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;letter-spacing:1px}
-.lv small{font-size:9px;letter-spacing:1px;text-transform:uppercase}
-.lv.on{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,.07)}
-
-/* ── GAME CARDS ── */
-.game-grid{display:flex;flex-direction:column;gap:9px;margin-bottom:14px}
-.gc{background:var(--bg);border:2px solid var(--border);border-radius:13px;
-  padding:14px 16px;cursor:pointer;transition:.18s;position:relative;overflow:hidden}
-.gc::after{content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(0,229,255,.06),transparent);
-  opacity:0;transition:.18s}
-.gc.on{border-color:var(--accent)}.gc.on::after{opacity:1}
-.gc.locked{opacity:.38;pointer-events:none}
-.gc h3{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;letter-spacing:1px;margin-bottom:3px}
-.gc p{font-size:12px;color:var(--muted);line-height:1.5}
-.badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:9px;
-  font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px}
-.ba{background:rgba(0,229,255,.15);color:var(--accent)}
-.bb{background:rgba(255,61,90,.15);color:var(--red)}
-.bs{background:rgba(90,106,138,.2);color:var(--muted);margin-left:6px}
-
-/* ── RESULT ── */
-#rezBox{display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);text-align:center}
-.rl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
-.rs{font-family:'Barlow Condensed',sans-serif;font-size:56px;font-weight:900;color:var(--accent);line-height:1}
-.rsub{font-size:12px;color:var(--muted);margin-top:4px}
-.rsave{font-size:12px;color:var(--green);margin-top:6px;min-height:18px}
-
-/* ══════════════════════════════════════════════
-   LIVE HUD OVERLAY
-══════════════════════════════════════════════ */
-#hudOverlay{
-  display:none;position:fixed;inset:0;z-index:999;
-  background:rgba(7,8,13,.97);
-  flex-direction:column;align-items:center;justify-content:center;
-  gap:0;
+/* ══════════════════════════════════════
+   LOGIN EKRAN
+══════════════════════════════════════ */
+#loginScreen{
+  position:fixed;inset:0;z-index:2000;
+  background:#04080f;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
   overflow:hidden;
 }
-#hudOverlay.show{display:flex}
+#loginScreen.gone{display:none;}
 
-/* scanline fx */
-#hudOverlay::before{
-  content:'';position:absolute;inset:0;pointer-events:none;
-  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,229,255,.018) 3px,rgba(0,229,255,.018) 4px);
-}
-
-.hud-game-label{
-  font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;
-  letter-spacing:4px;text-transform:uppercase;color:var(--muted);margin-bottom:6px
-}
-.hud-game-name{
-  font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;
-  letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:22px
+/* Hex grid */
+.hex-bg{
+  position:absolute;inset:0;pointer-events:none;
+  opacity:0.055;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='104'%3E%3Cpath d='M30 2L58 18v36L30 70 2 54V18z' fill='none' stroke='%234c7ec9' stroke-width='0.8'/%3E%3Cpath d='M30 70l28 16v36L30 138 2 122V86z' fill='none' stroke='%234c7ec9' stroke-width='0.8'/%3E%3C/svg%3E");
 }
 
-/* timer ring */
-.timer-wrap{position:relative;width:120px;height:120px;margin-bottom:20px}
-#timerRing{transform:rotate(-90deg)}
-#timerArc{
-  stroke-dasharray:339.3;
-  stroke-dashoffset:0;
-  transition:stroke-dashoffset .4s linear, stroke .4s
+/* Scan linija */
+.scan-line{
+  position:absolute;left:0;right:0;height:1.5px;top:0;
+  background:linear-gradient(90deg,transparent 0%,rgba(76,126,201,0) 10%,rgba(76,126,201,0.5) 50%,rgba(76,126,201,0) 90%,transparent 100%);
+  animation:scan-anim 6s linear infinite;pointer-events:none;
 }
-.timer-inner{
-  position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center
-}
-#timerSec{
-  font-family:'Barlow Condensed',sans-serif;font-size:34px;font-weight:900;color:#fff;line-height:1
-}
-#timerLbl{font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+@keyframes scan-anim{0%{top:-2px;opacity:0;}5%{opacity:1;}95%{opacity:1;}100%{top:100vh;opacity:0;}}
 
-/* score block */
-.score-block{
-  display:flex;align-items:center;gap:18px;margin-bottom:18px
-}
-.sb-item{text-align:center}
-.sb-val{
-  font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:900;line-height:1
-}
-.sb-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:2px}
-#hudSkor   .sb-val{color:var(--accent)}
-#hudHits   .sb-val{color:var(--green)}
-#hudMisses .sb-val{color:var(--red)}
-.sb-div{width:1px;height:48px;background:var(--border)}
+/* Korner dekoracije */
+.lc{position:absolute;width:48px;height:48px;pointer-events:none;}
+.lc.tl{top:16px;left:16px;border-top:1.5px solid rgba(201,168,76,0.5);border-left:1.5px solid rgba(201,168,76,0.5);}
+.lc.tr{top:16px;right:16px;border-top:1.5px solid rgba(201,168,76,0.5);border-right:1.5px solid rgba(201,168,76,0.5);}
+.lc.bl{bottom:16px;left:16px;border-bottom:1.5px solid rgba(201,168,76,0.5);border-left:1.5px solid rgba(201,168,76,0.5);}
+.lc.br{bottom:16px;right:16px;border-bottom:1.5px solid rgba(201,168,76,0.5);border-right:1.5px solid rgba(201,168,76,0.5);}
 
-/* floating +1 / -1 */
-#floatPool{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-.float-chip{
-  position:absolute;font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;
-  opacity:1;pointer-events:none;
-  animation:floatUp .9s ease-out forwards
-}
-@keyframes floatUp{
-  0%  {opacity:1;transform:translateY(0) scale(1)}
-  60% {opacity:1;transform:translateY(-52px) scale(1.15)}
-  100%{opacity:0;transform:translateY(-90px) scale(.9)}
+/* Vertikalne ukrasne linije */
+.vl{position:absolute;top:0;bottom:0;width:1px;background:linear-gradient(180deg,transparent,rgba(76,126,201,0.12),transparent);pointer-events:none;}
+.vl.l{left:12%;}
+.vl.r{right:12%;}
+
+/* Centralni sadrzaj */
+.login-wrap{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;
+  width:100%;max-width:400px;
+  padding:1.5rem;
 }
 
-/* pulse ring on skor change */
-@keyframes scorePulse{
-  0%  {transform:scale(1)}
-  30% {transform:scale(1.18)}
-  100%{transform:scale(1)}
+/* Grb */
+.grb-wrap{
+  position:relative;margin-bottom:1.5rem;
+  display:flex;align-items:center;justify-content:center;
 }
-.pulse{animation:scorePulse .28s ease-out}
+/* SVG štit sa zaobljenim dnom */
+.grb-shield-wrap{
+  position:relative;
+  width:140px;height:160px;
+  filter:drop-shadow(0 0 16px rgba(201,168,76,0.22)) drop-shadow(0 0 4px rgba(201,168,76,0.1));
+  animation:shield-pulse 3s ease-in-out infinite;
+}
+@keyframes shield-pulse{
+  0%,100%{filter:drop-shadow(0 0 10px rgba(201,168,76,0.18)) drop-shadow(0 0 3px rgba(201,168,76,0.08));}
+  50%{filter:drop-shadow(0 0 22px rgba(201,168,76,0.38)) drop-shadow(0 0 8px rgba(201,168,76,0.18));}
+}
+.grb-shield-svg{
+  position:absolute;inset:0;width:100%;height:100%;
+}
+.grb-img{
+  position:absolute;
+  top:7px;left:7px;
+  width:calc(100% - 14px);
+  height:calc(100% - 14px);
+  object-fit:cover;
+  object-position:center top;
+  /* Isti oblik kao SVG štit — clip-path prati zaobljeni deo */
+  clip-path:path('M 6 0 L 120 0 Q 126 0 126 6 L 126 96 Q 126 130 63 148 Q 0 130 0 96 L 0 6 Q 0 0 6 0 Z');
+}
 
-/* hit/miss flash */
-#flashOverlay{
-  position:absolute;inset:0;pointer-events:none;opacity:0;
-  transition:opacity .12s
+/* Naslov */
+.login-title{
+  font-family:'Playfair Display',serif;
+  font-size:24px;font-weight:700;
+  letter-spacing:0.1em;
+  color:#dde3ee;
+  text-align:center;
+  line-height:1.2;
+  text-transform:uppercase;
+}
+.login-title .gold{color:#c9a84c;}
+.login-divider{
+  width:80px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,168,76,0.5),transparent);
+  margin:0.75rem auto;
+}
+.login-subtitle{
+  font-size:9px;letter-spacing:0.35em;
+  text-transform:uppercase;color:#3a4d66;
+  font-family:'IBM Plex Mono',monospace;
+  margin-bottom:2rem;text-align:center;
 }
 
-/* panel grid */
-.panel-grid{
-  display:grid;grid-template-columns:repeat(6,1fr);gap:6px;
-  width:100%;max-width:340px;margin-bottom:20px
+/* Forma */
+.login-box{
+  width:100%;
+  background:rgba(10,14,22,0.95);
+  border:0.5px solid rgba(76,126,201,0.18);
+  border-radius:12px;
+  padding:1.75rem 1.5rem;
+  position:relative;
 }
-.panel{
-  aspect-ratio:1;border-radius:8px;background:var(--card2);
-  border:1px solid var(--border);transition:background .12s,transform .1s,box-shadow .12s
+.login-box::before{
+  content:'';position:absolute;top:0;left:15%;right:15%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,168,76,0.35),transparent);
 }
-.panel.hit    {background:var(--green);  box-shadow:0 0 14px var(--green);  transform:scale(1.08)}
-.panel.miss   {background:var(--red);    box-shadow:0 0 14px var(--red);    transform:scale(1.05)}
-.panel.active-a{background:var(--accent);box-shadow:0 0 16px var(--accent)}
-.panel.active-b{background:var(--red);   box-shadow:0 0 16px var(--red)}
-.panel.timeout {background:var(--orange);box-shadow:0 0 12px var(--orange)}
-/* Red Alert panel states */
-.panel.infected{
-  background:var(--red);
-  box-shadow:0 0 18px rgba(255,61,90,.9), 0 0 40px rgba(255,0,0,.4);
-  animation:infectPulse 0.6s ease-in-out infinite alternate
+.login-box::after{
+  content:'';position:absolute;bottom:0;left:15%;right:15%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(76,126,201,0.2),transparent);
 }
-.panel.extinguished{
-  background:var(--green);
-  box-shadow:0 0 18px var(--green);
-  transform:scale(1.12)
+.l-label{
+  display:block;font-size:9px;letter-spacing:0.25em;
+  text-transform:uppercase;color:#3a4d66;
+  font-weight:500;margin-bottom:5px;
+  font-family:'IBM Plex Mono',monospace;
 }
-@keyframes infectPulse{
-  from{box-shadow:0 0 10px rgba(255,61,90,.7),0 0 24px rgba(255,0,0,.3)}
-  to  {box-shadow:0 0 24px rgba(255,61,90,1), 0 0 52px rgba(255,0,0,.6)}
+.l-input{
+  width:100%;background:rgba(4,8,15,0.8);
+  border:0.5px solid rgba(76,126,201,0.2);
+  border-radius:6px;color:#dde3ee;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:13px;padding:10px 12px;outline:none;
+  transition:all 0.2s;margin-bottom:1rem;
 }
-/* Red Alert — infect counter badge */
-.alert-bar{
-  display:flex;align-items:center;justify-content:space-between;
-  width:100%;max-width:340px;margin-bottom:12px;
-  padding:8px 14px;border-radius:10px;
-  background:rgba(255,61,90,.08);border:1px solid rgba(255,61,90,.25)
+.l-input:focus{
+  border-color:rgba(201,168,76,0.45);
+  box-shadow:0 0 0 3px rgba(201,168,76,0.06);
+  background:rgba(4,8,15,1);
 }
-.alert-bar-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--red)}
-.alert-bar-val{
-  font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--red);
-  display:flex;align-items:center;gap:6px
+.l-btn{
+  width:100%;padding:11px;margin-top:0.25rem;
+  background:linear-gradient(135deg,rgba(201,168,76,0.14),rgba(201,168,76,0.06));
+  border:0.5px solid rgba(201,168,76,0.38);
+  border-radius:6px;color:#e8c96a;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;font-weight:600;
+  letter-spacing:0.25em;text-transform:uppercase;
+  cursor:pointer;transition:all 0.2s;
 }
-.fire-icon{font-size:18px}
-/* flicker red on screen for Red Alert */
-@keyframes alertFlicker{
-  0%  {opacity:.18}
-  20% {opacity:.04}
-  40% {opacity:.22}
-  60% {opacity:.06}
-  80% {opacity:.20}
-  100%{opacity:0}
+.l-btn:hover:not(:disabled){
+  background:linear-gradient(135deg,rgba(201,168,76,0.22),rgba(201,168,76,0.1));
+  box-shadow:0 0 24px rgba(201,168,76,0.08);
 }
-.alert-flicker{animation:alertFlicker .5s ease-out forwards}
+.l-btn:disabled{opacity:0.45;cursor:not-allowed;}
+.l-error{
+  font-size:11px;color:#c94c4c;text-align:center;
+  margin-top:0.75rem;min-height:16px;
+  font-family:'IBM Plex Mono',monospace;letter-spacing:0.05em;
+}
+.l-loading{
+  font-size:9px;letter-spacing:0.2em;color:#3a4d66;
+  text-align:center;margin-top:1rem;
+  font-family:'IBM Plex Mono',monospace;
+  animation:blink 1.2s ease-in-out infinite;
+}
+@keyframes blink{0%,100%{opacity:0.4;}50%{opacity:1;}}
 
-/* level badge on HUD */
-.hud-level{
-  font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;
-  letter-spacing:3px;text-transform:uppercase;
-  padding:4px 12px;border-radius:20px;
-  border:1px solid var(--border);color:var(--muted);margin-bottom:18px
+/* Klasifikacija oznaka */
+.classif{
+  position:absolute;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:8px;letter-spacing:0.2em;
+  text-transform:uppercase;color:rgba(201,168,76,0.2);
+  pointer-events:none;
+}
+.classif.top{top:8px;left:50%;transform:translateX(-50%);}
+.classif.bot{bottom:8px;left:50%;transform:translateX(-50%);}
+
+@media(max-width:480px){
+  .login-title{font-size:20px;}
+  .grb-shield-wrap{width:110px;height:126px;}
+  .grb-img{top:5px;left:5px;width:calc(100% - 10px);height:calc(100% - 10px);}
+  .vl{display:none;}
 }
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <!-- HEADER -->
-  <div class="hdr">
-    <h1>VOLTA PRO</h1>
-    <p>Combat Training System</p>
-  </div>
+<!-- ═══ LOGIN EKRAN ═══ -->
+<div id="loginScreen">
+  <div class="hex-bg"></div>
+  <div class="scan-line"></div>
+  <div class="lc tl"></div><div class="lc tr"></div>
+  <div class="lc bl"></div><div class="lc br"></div>
+  <div class="vl l"></div><div class="vl r"></div>
+  <span class="classif top">Strogo poverljivo — samo ovlašćena lica</span>
+  <span class="classif bot">Đurović Komandni Centar — v2.0</span>
 
-  <!-- AUTH -->
-  <div class="card" id="authCard">
-    <div class="tabs">
-      <button class="tab on" onclick="showTab('login')">Prijava</button>
-      <button class="tab"    onclick="showTab('reg')">Registracija</button>
-    </div>
-    <div id="authErr" class="err"></div>
-
-    <div id="loginF">
-      <div class="ig">
-        <div class="iw"><label>Email</label><input type="email" id="lEmail" placeholder="tvoj@email.com"></div>
-        <div class="iw"><label>Lozinka</label><input type="password" id="lPass" placeholder="••••••••"></div>
+  <div class="login-wrap">
+    <div class="grb-wrap">
+      <div class="grb-shield-wrap">
+        <!-- SVG štit: zaobljeni gornji uglovi, elegantno zaobljeno dno -->
+        <svg class="grb-shield-svg" viewBox="0 0 140 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#e8c96a" stop-opacity="0.9"/>
+              <stop offset="40%" stop-color="#c9a84c" stop-opacity="0.6"/>
+              <stop offset="100%" stop-color="#e8c96a" stop-opacity="0.85"/>
+            </linearGradient>
+            <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#0d1520"/>
+              <stop offset="100%" stop-color="#060c14"/>
+            </linearGradient>
+          </defs>
+          <!-- Sjena/glow sloj -->
+          <path d="M 8 2 L 132 2 Q 138 2 138 8 L 138 98 Q 138 138 70 158 Q 2 138 2 98 L 2 8 Q 2 2 8 2 Z"
+            fill="none" stroke="rgba(201,168,76,0.08)" stroke-width="6"/>
+          <!-- Pozadina štita -->
+          <path d="M 8 2 L 132 2 Q 138 2 138 8 L 138 98 Q 138 138 70 158 Q 2 138 2 98 L 2 8 Q 2 2 8 2 Z"
+            fill="url(#bgGrad)"/>
+          <!-- Zlatna bordura -->
+          <path d="M 8 2 L 132 2 Q 138 2 138 8 L 138 98 Q 138 138 70 158 Q 2 138 2 98 L 2 8 Q 2 2 8 2 Z"
+            fill="none" stroke="url(#goldGrad)" stroke-width="2.5"/>
+          <!-- Unutrašnja tanka linija -->
+          <path d="M 12 6 L 128 6 Q 133 6 133 11 L 133 97 Q 133 133 70 152 Q 7 133 7 97 L 7 11 Q 7 6 12 6 Z"
+            fill="none" stroke="rgba(201,168,76,0.18)" stroke-width="0.8"/>
+        </svg>
+        <img class="grb-img" src="data:image/png;base64,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" alt="Grb Vrnjačke Banje" />
       </div>
-      <button class="btn btn-p" onclick="login()">Prijavi se</button>
     </div>
 
-    <div id="regF" style="display:none">
-      <div class="ig">
-        <div class="iw"><label>Ime / Nadimak</label><input type="text" id="rIme" placeholder="MojNadimak"></div>
-        <div class="iw"><label>Email</label><input type="email" id="rEmail" placeholder="tvoj@email.com"></div>
-        <div class="iw"><label>Lozinka</label><input type="password" id="rPass" placeholder="Min. 6 karaktera"></div>
-      </div>
-      <button class="btn btn-p" onclick="reg()">Kreiraj nalog</button>
+    <div class="login-title"><span class="gold">Đurović</span><br>Komandni centar</div>
+    <div class="login-divider"></div>
+    <div class="login-subtitle">Vrnjačka Banja &nbsp;·&nbsp; Operativni sistem</div>
+
+    <div class="login-box">
+      <label class="l-label">Identifikacioni e-mail</label>
+      <input class="l-input" type="email" id="loginEmail" placeholder="korisnik@email.com" autocomplete="email" />
+      <label class="l-label">Pristupna šifra</label>
+      <input class="l-input" type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter')doLogin()" />
+      <button class="l-btn" id="loginBtn" onclick="doLogin()">
+        Prijava u sistem
+      </button>
+      <div class="l-error" id="loginError"></div>
+    </div>
+    <div class="l-loading hidden" id="loginLoading">Autentifikacija u toku...</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════ HEADER ═══════════════════════════════ -->
+<header class="header">
+  <div class="header-logo">
+    <div class="logo-mark" aria-hidden="true"></div>
+    <div style="display:flex;align-items:baseline;gap:6px;">
+      <span class="logo-text">Đurović</span>
+      <span class="logo-sub">Komandni centar</span>
     </div>
   </div>
+  <div class="header-meta">
+    <div class="header-dot" aria-hidden="true"></div>
+    <span>Sistem aktivan</span>
+    <span class="time-display" id="clock">--:--:--</span>
+    <button class="btn btn-primary" onclick="openModal('newTask')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Novi zadatak
+    </button>
+    <button class="btn" onclick="switchView('settings')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Podešavanja
+    </button>
+  </div>
+</header>
 
-  <!-- USER BAR -->
-  <div class="card" id="uBar">
-    <div style="display:flex;align-items:center;gap:10px">
-      <div class="avatar" id="avIni">?</div>
+<!-- ═══════════════════════════════ LAYOUT ═══════════════════════════════ -->
+<div class="layout">
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">Pregled</div>
+    <div style="display:flex;flex-direction:column;gap:3px;">
+      <button class="nav-item active" onclick="switchView('tasks');switchNav(this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12l2 2 4-4"/></svg>
+        Svi zadaci
+        <span class="nav-badge gold" id="badge-total">0</span>
+      </button>
+      <button class="nav-item" onclick="filterTasks('urgentno');switchNav(this);switchView('tasks');">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Urgentno
+        <span class="nav-badge" id="badge-urgentno">0</span>
+      </button>
+      <button class="nav-item" onclick="filterTasks('prekoraceno');switchNav(this);switchView('tasks');">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Prekoračeno
+        <span class="nav-badge" id="badge-prekoraceno">0</span>
+      </button>
+      <button class="nav-item" onclick="switchView('statistika');switchNav(this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Statistika
+      </button>
+      <button class="nav-item" onclick="switchView('scoreboard');switchNav(this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg>
+        Rang lista
+      </button>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Izvršioci</div>
+    <div class="director-list" id="sidebarDirectors"></div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main" id="mainContent">
+
+  <!-- TASKS VIEW -->
+  <div id="view-tasks">
+    <div class="toolbar">
       <div>
-        <div class="uname" id="uName">—</div>
-        <div class="uemail" id="uEmail">—</div>
+        <div class="page-title">Zadaci</div>
+        <div class="page-subtitle" id="filterLabel">Svi aktivni zadaci</div>
+      </div>
+      <div style="display:flex;gap:7px;align-items:center;">
+        <select class="form-select" style="width:auto;padding:5px 9px;" onchange="sortTasks(this.value)">
+          <option value="date">Datum ↓</option>
+          <option value="priority">Prioritet</option>
+          <option value="status">Status</option>
+        </select>
+        <button class="btn" onclick="filterTasks('all');switchView('tasks')">Svi</button>
+        <button class="btn btn-danger" onclick="filterTasks('prekoraceno');switchView('tasks')">Prekoračeni</button>
       </div>
     </div>
-    <button class="btn btn-d" style="width:auto;padding:9px 15px" onclick="logout()">Odjavi se</button>
+    <div class="stats-row">
+      <div class="stat-cell"><div class="stat-num gold" id="stat-total">0</div><div class="stat-label">Ukupno aktivnih</div></div>
+      <div class="stat-cell"><div class="stat-num green" id="stat-zavrseno">0</div><div class="stat-label">Završeno danas</div></div>
+      <div class="stat-cell"><div class="stat-num orange" id="stat-ceka">0</div><div class="stat-label">Čeka potvrdu</div></div>
+      <div class="stat-cell"><div class="stat-num red" id="stat-prekoraceno">0</div><div class="stat-label">Prekoračeno</div></div>
+    </div>
+    <div class="task-list" id="taskList">
+      <div class="empty-state">
+        <div style="font-size:28px;opacity:0.3;margin-bottom:10px;">◈</div>
+        <div style="font-size:14px;color:var(--muted);margin-bottom:5px;">Nema zadataka</div>
+        <div style="font-size:12px;color:var(--muted2);">Kreirajte prvi zadatak klikom na "Novi zadatak"</div>
+      </div>
+    </div>
   </div>
 
-  <!-- BLE -->
-  <div class="card" id="bleCard" style="display:none">
-    <div class="sec-label">Bluetooth veza</div>
-    <button id="btnConn" class="btn btn-c" onclick="connect()">🔗 &nbsp;Poveži uređaj</button>
-    <div class="st-row">
-      <div class="dot" id="stDot"></div>
-      <div id="stTxt">Nije povezano</div>
+  <!-- STATISTIKA VIEW -->
+  <div id="view-statistika" class="hidden">
+    <div class="toolbar">
+      <div>
+        <div class="page-title">Statistika izvršenih zadataka</div>
+        <div class="page-subtitle">Grafički pregled po izvršiocima, prioritetima i vremenskom periodu</div>
+      </div>
+      <div style="display:flex;gap:7px;">
+        <select class="form-select" style="width:auto;padding:5px 9px;" id="statPeriod" onchange="renderStats()">
+          <option value="7">Poslednjih 7 dana</option>
+          <option value="30" selected>Poslednjih 30 dana</option>
+          <option value="90">Poslednjih 90 dana</option>
+          <option value="0">Sve vreme</option>
+        </select>
+        <button class="btn btn-blue" onclick="seedDemoData()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.66"/></svg>
+          Demo podaci
+        </button>
+      </div>
     </div>
-    <!-- result after game -->
-    <div id="rezBox">
-      <div class="rl">Poslednji rezultat</div>
-      <div class="rs" id="rezSkor">0</div>
-      <div class="rsub" id="rezSub"></div>
-      <div class="rsave" id="rezSave"></div>
+
+    <div class="charts-grid">
+      <!-- Red 1: Trendovi + Pie status -->
+      <div class="chart-cell">
+        <div class="chart-title">Zadaci po danima — 30 dana</div>
+        <div class="chart-wrap"><canvas id="chartTrend"></canvas></div>
+      </div>
+      <div class="chart-cell">
+        <div class="chart-title">Raspodjela po statusu</div>
+        <div class="chart-wrap" style="display:flex;align-items:center;justify-content:center;">
+          <canvas id="chartStatus" style="max-width:200px;max-height:180px;"></canvas>
+        </div>
+      </div>
+
+      <!-- Red 2: Po izvršiocima + Prioriteti -->
+      <div class="chart-cell">
+        <div class="chart-title">Izvršeni zadaci po izvršilacu</div>
+        <div class="chart-wrap tall"><canvas id="chartDirectors"></canvas></div>
+      </div>
+      <div class="chart-cell">
+        <div class="chart-title">Raspodjela po prioritetu</div>
+        <div class="chart-wrap tall" style="display:flex;align-items:center;justify-content:center;">
+          <canvas id="chartPriority" style="max-width:220px;max-height:220px;"></canvas>
+        </div>
+      </div>
+
+      <!-- Red 3: Stopa završenosti po izvršilacu (full width) -->
+      <div class="chart-cell full">
+        <div class="chart-title">Stopa završenosti po izvršilacu (%)</div>
+        <div class="chart-wrap short"><canvas id="chartCompletion"></canvas></div>
+      </div>
     </div>
   </div>
 
-  <!-- GAME SELECT -->
-  <div class="card" id="gameCard" style="display:none">
-    <div class="sec-label">Izaberi trening</div>
-
-    <!-- NIVO -->
-    <div class="sec-label" style="margin-bottom:8px">Nivo težine</div>
-    <div class="level-row" id="levelRow">
-      <div class="lv on" onclick="setLevel(1,this)"><span>1</span><small>Beginner</small></div>
-      <div class="lv"    onclick="setLevel(2,this)"><span>2</span><small>Medium</small></div>
-      <div class="lv"    onclick="setLevel(3,this)"><span>3</span><small>Pro</small></div>
-      <div class="lv"    onclick="setLevel(4,this)"><span>4</span><small>Master</small></div>
-      <div class="lv"    onclick="setLevel(5,this)"><span>5</span><small>Apex</small></div>
-    </div>
-
-    <div class="game-grid">
-      <div class="gc on" id="gcA" onclick="pickGame('A',this)">
-        <span class="badge ba">Igra A</span>
-        <h3>Apex Pulse</h3>
-        <p>Plava meta se nasumično pojavljuje. Udari je pre isteka — +1. Promaši — −1.</p>
-      </div>
-      <div class="gc" id="gcB" onclick="pickGame('B',this)">
-        <span class="badge bb">Igra B</span>
-        <h3>Grid Lock</h3>
-        <p>Polje se pali crvenom i bledi ka narandzastoj. Pogodi ga na vreme — +1. Promaši ili istekne — −1.</p>
-      </div>
-      <div class="gc" id="gcC" onclick="pickGame('C',this)" style="border-color:rgba(255,61,90,.35)">
-        <span class="badge" style="background:rgba(255,61,90,.18);color:var(--red)">Igra C</span>
-        <h3 style="color:var(--red)">🔴 Red Alert <span style="font-size:11px;font-weight:600;letter-spacing:1px;color:var(--muted);vertical-align:middle">SURVIVAL</span></h3>
-        <p>Infekcija se širi! Gasi crvena polja pre nego što sva 6 pocrvene — tada gubiš. Nema tajmera — samo survival.</p>
+  <!-- SCOREBOARD VIEW -->
+  <div id="view-scoreboard" class="hidden">
+    <div class="toolbar">
+      <div>
+        <div class="page-title">Rang lista izvršioca</div>
+        <div class="page-subtitle">Mesečni pregled performansi</div>
       </div>
     </div>
-
-    <button id="btnStart" class="btn btn-p" onclick="startGame()" disabled>⚡ &nbsp;Pokreni trening</button>
+    <div style="padding:1rem 1.25rem;">
+      <table class="score-table">
+        <thead>
+          <tr>
+            <th>#</th><th>Izvršilac</th><th>Zadato</th><th>Primljeno</th><th>Završeno</th><th>Prosek reakcije</th><th>Performansa</th>
+          </tr>
+        </thead>
+        <tbody id="scoreBody"></tbody>
+      </table>
+    </div>
   </div>
 
+  <!-- SETTINGS VIEW -->
+  <div id="view-settings" class="hidden">
+    <div class="toolbar">
+      <div>
+        <div class="page-title">Podešavanja sistema</div>
+        <div class="page-subtitle">Telegram bot i eskalacija</div>
+      </div>
+    </div>
+    <div style="padding:1.5rem;max-width:580px;">
+      <div class="config-section">
+        <div class="config-section-title">Telegram bot konfiguracija</div>
+        <div class="form-group">
+          <label class="form-label">Bot token <span>*</span></label>
+          <input class="form-input" type="password" id="botToken" placeholder="1234567890:ABCdefGHI..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ime pošiljaoca</label>
+          <input class="form-input" type="text" id="senderName" value="Kabinet predsednika" />
+        </div>
+        <button class="btn btn-primary" style="margin-top:4px;" onclick="saveSettings()">Sačuvaj podešavanja</button>
+      </div>
+      <div class="config-section">
+        <div class="config-section-title">Eskalacija</div>
+        <div class="config-row">
+          <div><div class="config-label">Automatski podsetnici</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">Šalje podsetnik ako izvršilac nije potvrdio</div></div>
+          <div class="toggle-wrap" onclick="toggleSetting('escalation')"><div class="toggle on" id="toggle-escalation"></div></div>
+        </div>
+        <div class="config-row">
+          <div class="config-label">Vreme prve eskalacije</div>
+          <select class="form-select" style="width:auto;padding:4px 8px;" id="escalTime1"><option>6č</option><option selected>12č</option><option>24č</option></select>
+        </div>
+        <div class="config-row">
+          <div class="config-label">Interval podsetnika</div>
+          <select class="form-select" style="width:auto;padding:4px 8px;" id="escalInterval"><option>30 min</option><option selected>60 min</option><option>2č</option></select>
+        </div>
+        <div class="config-row">
+          <div class="config-label">Obavesti predsednika nakon</div>
+          <select class="form-select" style="width:auto;padding:4px 8px;" id="escalPres"><option>12č</option><option selected>24č</option><option>48č</option></select>
+        </div>
+        <div class="config-row">
+          <div class="config-label">Predsednik — Telegram broj</div>
+          <input class="form-input" style="width:150px;padding:4px 8px;" id="presPhone" placeholder="+381..." />
+        </div>
+      </div>
+      <div class="config-section">
+        <div class="config-section-title">Izvršioci i kontakti</div>
+        <div id="settingsDirectorList" style="display:flex;flex-direction:column;gap:7px;"></div>
+        <button class="btn" style="margin-top:10px;" onclick="openModal('addDirector')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Dodaj izvršioca
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIREKTORI VIEW (mob) -->
+  <div id="view-izvrsoci" class="hidden">
+    <div class="toolbar">
+      <div>
+        <div class="page-title">Izvršioci</div>
+        <div class="page-subtitle">Tapnite za pregled zadataka</div>
+      </div>
+    </div>
+    <div style="padding:0.75rem;display:flex;flex-direction:column;gap:8px;" id="mobileIzvrsociList"></div>
+  </div>
+
+</main>
+
+<!-- ═══ DESNI PANEL ═══ -->
+<aside class="right-panel" id="rightPanel">
+
+  <!-- FORMA ZA BRZI UNOS -->
+  <div id="rp-form" class="form-panel">
+    <div class="form-section-title">Brzi unos zadatka</div>
+    <div class="form-group">
+      <label class="form-label">Naslov <span>*</span></label>
+      <input class="form-input" id="qTitle" placeholder="Kratak opis zadatka..." oninput="updatePreview(false)" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Opis i uputstvo</label>
+      <textarea class="form-textarea" id="qDesc" placeholder="Detaljna uputstva..." oninput="updatePreview(false)"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Prioritet</label>
+        <select class="form-select" id="qPriority" onchange="updatePreview(false)">
+          <option value="normalno">Normalno</option>
+          <option value="visoko">Visoko</option>
+          <option value="urgentno">Urgentno</option>
+          <option value="nisko">Nisko</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Rok</label>
+        <div class="cal-wrap" id="cal-wrap-qDue">
+          <button type="button" class="cal-trigger" onclick="toggleCal('qDue')" id="cal-trigger-qDue">
+            <span class="cal-trigger-text placeholder" id="cal-text-qDue">Odaberi datum</span>
+            <svg class="cal-trigger-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </button>
+          <div class="cal-dropdown" id="cal-drop-qDue"></div>
+          <input type="hidden" id="qDue" />
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+        <label class="form-label" style="margin-bottom:0;">Pošalji izvršiocima</label>
+        <button class="btn btn-blue" style="padding:3px 9px;font-size:11px;" onclick="selectAllDirs('dirCheckboxes')">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/><polyline points="4 6 2 8 5 11"/></svg>
+          Pošalji svima
+        </button>
+      </div>
+      <div class="director-grid" id="dirCheckboxes"></div>
+    </div>
+    <div class="tg-preview">
+      <div class="tg-preview-label"><div class="tg-icon" aria-hidden="true"></div>Pregled Telegram poruke</div>
+      <div class="tg-message" id="tgMsgPreview">Unesite naslov i odaberite izvršioce...</div>
+    </div>
+    <div style="display:flex;gap:7px;margin-top:1rem;">
+      <button class="btn btn-primary" style="flex:1;" onclick="createTask()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Pošalji
+      </button>
+      <button class="btn" onclick="clearForm()">Obriši</button>
+    </div>
+  </div>
+
+  <!-- DETALJ ZADATKA -->
+  <div id="rp-detail" class="task-detail hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+      <div style="display:flex;align-items:center;gap:7px;">
+        <span class="priority-badge urgentno" id="detail-priority">urgentno</span>
+        <span class="status-pill poslato" id="detail-status"><span class="status-dot"></span> <span id="detail-status-text">Poslato</span></span>
+      </div>
+      <button class="btn" onclick="closeDetail()" style="padding:4px 8px;font-size:11px;">✕ Zatvori</button>
+    </div>
+    <div class="detail-title" id="detail-title">Naslov zadatka</div>
+    <div style="font-size:13px;color:var(--muted);line-height:1.6;" id="detail-desc"></div>
+    <div style="display:flex;gap:9px;flex-wrap:wrap;">
+      <div class="task-meta-item">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span id="detail-due">Bez roka</span>
+      </div>
+      <div class="task-meta-item">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span id="detail-recipients">—</span>
+      </div>
+    </div>
+    <div id="detail-escalation-section" style="display:none;">
+      <div class="escal-banner">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" style="flex-shrink:0;margin-top:1px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+        <div class="escal-text" id="detail-escalation-msg"></div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-label">Aktivnost</div>
+      <div class="timeline" id="detail-timeline"></div>
+    </div>
+    <div class="detail-section">
+      <div style="display:flex;gap:7px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="markDone()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Zatvori zadatak
+        </button>
+        <button class="btn" onclick="sendReminder()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Pošalji podsetnik
+        </button>
+        <button class="btn btn-danger" onclick="deleteTask()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</aside>
 </div>
 
-<!-- ══ LIVE HUD OVERLAY ══ -->
-<div id="hudOverlay">
-  <div id="flashOverlay"></div>
-  <div id="floatPool"></div>
-
-  <div class="hud-game-label">Trening u toku</div>
-  <div class="hud-game-name" id="hudGameName">APEX PULSE</div>
-  <div class="hud-level" id="hudLevelBadge">NIVO 1 — BEGINNER</div>
-
-  <!-- Timer ring — hidden in Red Alert survival mode -->
-  <div class="timer-wrap" id="timerWrap">
-    <svg id="timerRing" width="120" height="120" viewBox="0 0 120 120">
-      <circle cx="60" cy="60" r="54" fill="none" stroke="#1e2235" stroke-width="7"/>
-      <circle id="timerArc" cx="60" cy="60" r="54" fill="none"
-              stroke="#00e5ff" stroke-width="7" stroke-linecap="round"
-              stroke-dasharray="339.3" stroke-dashoffset="0"/>
-    </svg>
-    <div class="timer-inner">
-      <div id="timerSec">45</div>
-      <div id="timerLbl">sec</div>
+<!-- ═════════════════ MODAL: NOVI ZADATAK ═════════════════ -->
+<div class="modal-overlay" id="modal-newTask">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Novi zadatak</div>
+      <button class="modal-close" onclick="closeModal('newTask')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Naslov <span>*</span></label>
+      <input class="form-input" id="m-title" placeholder="Kratak opis zadatka..." oninput="updatePreview(true)" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Opis i uputstvo</label>
+      <textarea class="form-textarea" id="m-desc" style="min-height:90px;" placeholder="Detaljna uputstva, rokovi, resursi..." oninput="updatePreview(true)"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Prioritet</label>
+        <select class="form-select" id="m-priority" onchange="updatePreview(true)">
+          <option value="normalno">Normalno</option>
+          <option value="visoko">Visoko</option>
+          <option value="urgentno">Urgentno</option>
+          <option value="nisko">Nisko</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Rok izvršenja</label>
+        <div class="cal-wrap" id="cal-wrap-mDue">
+          <button type="button" class="cal-trigger" onclick="toggleCal('mDue')" id="cal-trigger-mDue">
+            <span class="cal-trigger-text placeholder" id="cal-text-mDue">Odaberi datum</span>
+            <svg class="cal-trigger-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </button>
+          <div class="cal-dropdown" id="cal-drop-mDue"></div>
+          <input type="hidden" id="m-due" />
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+        <label class="form-label" style="margin-bottom:0;">Primaoci</label>
+        <button class="btn btn-blue" style="padding:3px 9px;font-size:11px;" onclick="selectAllDirs('m-dirCheckboxes')">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12l2 2 4-4"/></svg>
+          Pošalji svima
+        </button>
+      </div>
+      <div class="director-grid" id="m-dirCheckboxes"></div>
+    </div>
+    <div class="tg-preview" style="margin-top:0.9rem;">
+      <div class="tg-preview-label"><div class="tg-icon" aria-hidden="true"></div>Pregled Telegram poruke</div>
+      <div class="tg-message" id="m-tgPreview">Unesite naslov...</div>
+    </div>
+    <div style="display:flex;gap:7px;margin-top:1.25rem;">
+      <button class="btn btn-primary" style="flex:1;" onclick="createTaskFromModal()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Pošalji izvršiocu/ima
+      </button>
+      <button class="btn" onclick="closeModal('newTask')">Otkaži</button>
     </div>
   </div>
-
-  <!-- Red Alert: infection bar (shown only for game C) -->
-  <div class="alert-bar" id="alertBar" style="display:none">
-    <div class="alert-bar-label">Polja u plamenu</div>
-    <div class="alert-bar-val">
-      <span class="fire-icon">🔥</span>
-      <span id="alertInfected">0</span>
-      <span style="font-size:14px;color:var(--muted)">/6</span>
-    </div>
-  </div>
-
-  <!-- Panel grid (6 panels mirroring physical sensors) -->
-  <div class="panel-grid" id="panelGrid">
-    <div class="panel" id="p0"></div>
-    <div class="panel" id="p1"></div>
-    <div class="panel" id="p2"></div>
-    <div class="panel" id="p3"></div>
-    <div class="panel" id="p4"></div>
-    <div class="panel" id="p5"></div>
-  </div>
-
-  <!-- Score block -->
-  <div class="score-block">
-    <div class="sb-item" id="hudSkor">
-      <div class="sb-val" id="svSkor">0</div>
-      <div class="sb-lbl">Score</div>
-    </div>
-    <div class="sb-div"></div>
-    <div class="sb-item" id="hudHits">
-      <div class="sb-val" id="svHits">0</div>
-      <div class="sb-lbl">Pogodaka</div>
-    </div>
-    <div class="sb-div"></div>
-    <div class="sb-item" id="hudMisses">
-      <div class="sb-val" id="svMiss">0</div>
-      <div class="sb-lbl">Promasaja</div>
-    </div>
-  </div>
-
 </div>
 
-<!-- SUPABASE -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- ═════════════════ MODAL: DODAJ DIREKTORA ═════════════════ -->
+<div class="modal-overlay" id="modal-addDirector">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Dodaj izvršioca</div>
+      <button class="modal-close" onclick="closeModal('addDirector')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Ime i prezime <span>*</span></label>
+      <input class="form-input" id="d-name" placeholder="npr. Marko Nikolić" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Funkcija</label>
+      <input class="form-input" id="d-role" placeholder="npr. Izvršilac" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Telegram Chat ID ili broj telefona <span>*</span></label>
+      <input class="form-input" id="d-phone" placeholder="+381601234567 ili -100..." />
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;">Koristite /start na botu da dobijete Chat ID</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Boja avatara</label>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;" id="colorPicker">
+        <div class="color-opt sel" data-color="#4c7ec9" style="background:#4c7ec9;" onclick="selectColor('#4c7ec9',this)"></div>
+        <div class="color-opt" data-color="#4caa6e" style="background:#4caa6e;" onclick="selectColor('#4caa6e',this)"></div>
+        <div class="color-opt" data-color="#c97a4c" style="background:#c97a4c;" onclick="selectColor('#c97a4c',this)"></div>
+        <div class="color-opt" data-color="#c94c4c" style="background:#c94c4c;" onclick="selectColor('#c94c4c',this)"></div>
+        <div class="color-opt" data-color="#9b59b6" style="background:#9b59b6;" onclick="selectColor('#9b59b6',this)"></div>
+        <div class="color-opt" data-color="#c9a84c" style="background:#c9a84c;" onclick="selectColor('#c9a84c',this)"></div>
+        <div class="color-opt" data-color="#2AABEE" style="background:#2AABEE;" onclick="selectColor('#2AABEE',this)"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:7px;margin-top:1.25rem;">
+      <button class="btn btn-primary" style="flex:1;" onclick="addDirector()">Dodaj izvršioca</button>
+      <button class="btn" onclick="closeModal('addDirector')">Otkaži</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ═══ BOTTOM NAVIGATION (samo mob) ═══ -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bottom-nav-item active" id="bn-tasks" onclick="mobileNav('tasks', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12l2 2 4-4"/></svg>
+    Zadaci
+    <span class="bottom-nav-badge" id="mbn-badge-total" style="display:none;">0</span>
+  </button>
+  <button class="bottom-nav-item" id="bn-stat" onclick="mobileNav('statistika', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Statistika
+  </button>
+  <button class="bottom-nav-item" id="bn-score" onclick="mobileNav('scoreboard', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg>
+    Rang lista
+  </button>
+  <button class="bottom-nav-item" id="bn-dirs" onclick="mobileNav('izvrsoci', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Izvršioci
+  </button>
+  <button class="bottom-nav-item" id="bn-settings" onclick="mobileNav('settings', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Podešavanja
+  </button>
+</nav>
+
+<!-- ═══ FAB dugme (mob) ═══ -->
+<button class="fab" id="fabBtn" onclick="openDrawer()" aria-label="Novi zadatak">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
+
+<!-- ═══ DRAWER OVERLAY ═══ -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+
+<!-- ═══ MOBILE DRAWER — novi zadatak ═══ -->
+<div class="mobile-drawer" id="mobileDrawer">
+  <div class="drawer-handle"></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+    <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:600;color:var(--text);">Novi zadatak</div>
+    <button class="btn" style="padding:4px 8px;font-size:11px;" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Naslov <span style="color:var(--red);">*</span></label>
+    <input class="form-input" id="mob-title" placeholder="Kratak opis zadatka..." oninput="updatePreviewMob()" />
+  </div>
+  <div class="form-group">
+    <label class="form-label">Opis i uputstvo</label>
+    <textarea class="form-textarea" id="mob-desc" placeholder="Detaljna uputstva..." oninput="updatePreviewMob()"></textarea>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">
+    <div class="form-group">
+      <label class="form-label">Prioritet</label>
+      <select class="form-select" id="mob-priority" onchange="updatePreviewMob()">
+        <option value="normalno">Normalno</option>
+        <option value="visoko">Visoko</option>
+        <option value="urgentno">Urgentno</option>
+        <option value="nisko">Nisko</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Rok</label>
+      <div class="cal-wrap" id="cal-wrap-mobDue">
+        <button type="button" class="cal-trigger" onclick="toggleCal('mobDue')" id="cal-trigger-mobDue">
+          <span class="cal-trigger-text placeholder" id="cal-text-mobDue">Odaberi datum</span>
+          <svg class="cal-trigger-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </button>
+        <div class="cal-dropdown" id="cal-drop-mobDue"></div>
+        <input type="hidden" id="mob-due" />
+      </div>
+    </div>
+  </div>
+  <div class="form-group">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+      <label class="form-label" style="margin-bottom:0;">Primaoci</label>
+      <button class="btn btn-blue" style="padding:3px 9px;font-size:11px;" onclick="selectAllDirs('mob-dirCheckboxes')">Pošalji svima</button>
+    </div>
+    <div class="director-grid" id="mob-dirCheckboxes"></div>
+  </div>
+  <div class="tg-preview" style="margin-top:0.75rem;">
+    <div class="tg-preview-label"><div class="tg-icon" aria-hidden="true"></div>Pregled Telegram poruke</div>
+    <div class="tg-message" id="mob-tgPreview">Unesite naslov...</div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:1rem;">
+    <button class="btn btn-primary" style="flex:1;" onclick="createTaskMob()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Pošalji
+    </button>
+    <button class="btn" onclick="closeDrawer()">Otkaži</button>
+  </div>
+</div>
+
+<!-- ═══ MOBILNI DETALJ ZADATKA ═══ -->
+<div id="rp-detail-mobile">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+    <button class="btn" onclick="closeMobileDetail()" style="padding:6px 10px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      Nazad
+    </button>
+    <div style="display:flex;gap:6px;">
+      <span class="priority-badge urgentno" id="mob-detail-priority">urgentno</span>
+      <span class="status-pill poslato" id="mob-detail-status"><span class="status-dot"></span> <span id="mob-detail-status-text">Poslato</span></span>
+    </div>
+  </div>
+  <div style="font-family:'Playfair Display',serif;font-size:17px;font-weight:600;color:var(--text);line-height:1.4;margin-bottom:0.75rem;" id="mob-detail-title"></div>
+  <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:0.75rem;" id="mob-detail-desc"></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem;">
+    <div class="task-meta-item">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span id="mob-detail-due"></span>
+    </div>
+    <div class="task-meta-item">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span id="mob-detail-recipients"></span>
+    </div>
+  </div>
+  <div id="mob-detail-escal" style="display:none;margin-bottom:1rem;">
+    <div class="escal-banner">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" style="flex-shrink:0;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+      <div class="escal-text" id="mob-detail-escal-msg"></div>
+    </div>
+  </div>
+  <div style="border-top:0.5px solid var(--border);padding-top:1rem;margin-bottom:1rem;">
+    <div style="font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:9px;">Aktivnost</div>
+    <div class="timeline" id="mob-detail-timeline"></div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button class="btn btn-primary" style="flex:1;" onclick="markDoneMob()">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      Zatvori zadatak
+    </button>
+    <button class="btn" onclick="sendReminderMob()">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Podsetnik
+    </button>
+    <button class="btn btn-danger" onclick="deleteTaskMob()">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+    </button>
+  </div>
+</div>
+
 <script>
-// ═══════════════ CONFIG ════════════════
-const SUPABASE_URL = "https://wdnndorxgdzhlytqkyvh.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indkbm5kb3J4Z2R6aGx5dHFreXZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNzIzMDQsImV4cCI6MjA4Nzc0ODMwNH0.O5PxSn58e0m8uy9zXSraGs9FfxCzUgVcxKF-8SqNgbU";
-const { createClient } = supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+// ═══════════════════════════════════════════════════════════
+// STANJE
+// ═══════════════════════════════════════════════════════════
+let state = {
+  directors: [
+    { id:1,  name:'Marko Predolac',   role:'Izvršilac',   phone:'+381601000001', color:'#4c7ec9', initials:'MP' },
+    { id:2,  name:'Darko Dunjić',      role:'Izvršilac',   phone:'+381601000002', color:'#4caa6e', initials:'DD' },
+    { id:3,  name:'Ivica Lazarević',  role:'Izvršilac',   phone:'+381601000003', color:'#c97a4c', initials:'IL' },
+    { id:4,  name:'Ivan Džatić',      role:'Izvršilac',   phone:'+381601000004', color:'#c94c4c', initials:'IJ' },
+    { id:5,  name:'Ivan Radović',     role:'Izvršilac',   phone:'+381601000005', color:'#9b59b6', initials:'IR' },
+    { id:6,  name:'Ivan Đunđić',      role:'Izvršilac',   phone:'+381601000006', color:'#c9a84c', initials:'IĐ' },
+    { id:7,  name:'Dušan Radović',    role:'Izvršilac',   phone:'+381601000007', color:'#2AABEE', initials:'DR' },
+  ],
+  tasks: [],
+  selectedTask: null,
+  currentFilter: 'all',
+  currentView: 'tasks',
+  settings: {
+    botToken: '', senderName: 'Kabinet predsednika',
+    escalation: true, escalTime1: '12č', escalInterval: '60 min',
+    escalPres: '24č', presPhone: ''
+  },
+  selectedColor: '#4c7ec9',
+  nextId: 100
+};
 
-const SVC_UUID  = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-const CHAR_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
 
-const LEVEL_NAMES = ['Beginner','Medium','Pro','Master','Apex'];
-const GAME_NAMES  = { A:'APEX PULSE', B:'GRID LOCK', C:'RED ALERT' };
-const GAME_DUR    = 45000;
+// ═══════════════════════════════════════════════════════════
+// SUPABASE AUTH
+// ═══════════════════════════════════════════════════════════
+let currentUser = null;
+let currentUloga = null;
 
-let bleChar   = null;
-let selGame   = 'A';
-let selLevel  = 1;
-let user      = null;
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  const btn   = document.getElementById('loginBtn');
+  const load  = document.getElementById('loginLoading');
 
-// HUD state
-let hudActive    = false;
-let hudSkor      = 0;
-let hudHits      = 0;
-let hudMisses    = 0;
-let hudStart     = 0;
-let timerHandle  = null;
-let isAlertMode  = false;
-// Red Alert: track infected panels on phone side too
-let alertPanelState = [false,false,false,false,false,false]; // true=infected
+  errEl.textContent = '';
+  if (!email || !pass) { errEl.textContent = 'Unesite e-mail i šifru'; return; }
 
-// ═══════════════ AUTH UI ════════════════
-function showTab(t) {
-  document.getElementById('loginF').style.display = t==='login' ? '' : 'none';
-  document.getElementById('regF').style.display   = t==='reg'   ? '' : 'none';
-  document.querySelectorAll('.tab').forEach((b,i)=>{
-    b.classList.toggle('on', (i===0&&t==='login')||(i===1&&t==='reg'));
-  });
-  setErr('');
-}
-function setErr(m){ const e=document.getElementById('authErr'); e.innerText=m; e.style.display=m?'block':'none'; }
-function xlErr(m){
-  if(m.includes('Invalid login')) return 'Pogrešan email ili lozinka.';
-  if(m.includes('already registered')) return 'Email već postoji.';
-  if(m.includes('Password should')) return 'Lozinka mora imati min. 6 znakova.';
-  if(m.includes('Invalid email')) return 'Unesite ispravan email.';
-  return m;
-}
-
-async function login() {
-  const email=document.getElementById('lEmail').value.trim();
-  const pass =document.getElementById('lPass').value;
-  if(!email||!pass){setErr('Popuni sve podatke.');return;}
-  setErr('');
-  const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
-  if(error){setErr(xlErr(error.message));return;}
-  afterLogin(data.user);
-}
-
-async function reg() {
-  const ime  =document.getElementById('rIme').value.trim();
-  const email=document.getElementById('rEmail').value.trim();
-  const pass =document.getElementById('rPass').value;
-  if(!ime||!email||!pass){setErr('Popuni sva polja.');return;}
-  if(pass.length<6){setErr('Lozinka mora imati min. 6 znakova.');return;}
-  setErr('');
-  const {error}=await sb.auth.signUp({email,password:pass,options:{data:{display_name:ime}}});
-  if(error){setErr(xlErr(error.message));return;}
-  const {data,error:e2}=await sb.auth.signInWithPassword({email,password:pass});
-  if(e2){setErr(xlErr(e2.message));return;}
-  afterLogin(data.user);
-}
-
-async function logout() {
-  await sb.auth.signOut();
-  user=null; showLoggedOut();
-}
-
-function afterLogin(u) {
-  user=u;
-  const name=u.user_metadata?.display_name||u.email.split('@')[0];
-  document.getElementById('uName').innerText=name;
-  document.getElementById('uEmail').innerText=u.email;
-  document.getElementById('avIni').innerText=name.charAt(0).toUpperCase();
-  document.getElementById('authCard').style.display='none';
-  document.getElementById('uBar').style.display='flex';
-  document.getElementById('bleCard').style.display='';
-  document.getElementById('gameCard').style.display='';
-}
-
-function showLoggedOut() {
-  document.getElementById('authCard').style.display='';
-  document.getElementById('uBar').style.display='none';
-  document.getElementById('bleCard').style.display='none';
-  document.getElementById('gameCard').style.display='none';
-  document.getElementById('rezBox').style.display='none';
-  document.getElementById('btnStart').disabled=true;
-  bleChar=null;
-  const b=document.getElementById('btnConn');
-  b.innerText='🔗  Poveži uređaj'; b.classList.remove('ok');
-  setSt('Nije povezano','');
-}
-
-// ═══════════════ STATUS ════════════════
-function setSt(txt, cls) {
-  const d=document.getElementById('stDot');
-  d.className='dot'+(cls?' '+cls:'');
-  document.getElementById('stTxt').innerText=txt;
-}
-
-// ═══════════════ LEVEL ════════════════
-function setLevel(n, el) {
-  selLevel=n;
-  document.querySelectorAll('.lv').forEach(e=>e.classList.remove('on'));
-  el.classList.add('on');
-  if(bleChar) sendBLE('L:'+n);
-}
-
-// ═══════════════ GAME PICK ════════════
-function pickGame(code, el) {
-  selGame=code;
-  document.querySelectorAll('.gc:not(.locked)').forEach(e=>e.classList.remove('on'));
-  el.classList.add('on');
-}
-
-// ═══════════════ BLE ════════════════
-async function connect() {
-  try {
-    const dev=await navigator.bluetooth.requestDevice({
-      filters:[{name:'VOLTA PRO'}],
-      optionalServices:[SVC_UUID]
-    });
-    const srv=await dev.gatt.connect();
-    const svc=await srv.getPrimaryService(SVC_UUID);
-    bleChar=await svc.getCharacteristic(CHAR_UUID);
-
-    const b=document.getElementById('btnConn');
-    b.innerText='✅  Povezano'; b.classList.add('ok');
-    setSt('Spreman za trening','g');
-    document.getElementById('btnStart').disabled=false;
-
-    await bleChar.startNotifications();
-    bleChar.addEventListener('characteristicvaluechanged', onBLE);
-
-    dev.addEventListener('gattserverdisconnected',()=>{
-      bleChar=null;
-      document.getElementById('btnStart').disabled=true;
-      document.getElementById('btnConn').innerText='🔗  Poveži uređaj';
-      document.getElementById('btnConn').classList.remove('ok');
-      setSt('Uređaj isključen','');
-      if(hudActive) stopHUD(true);
-    });
-  } catch(e){ alert('BLE greška: '+e); }
-}
-
-function sendBLE(msg) {
-  if(bleChar) bleChar.writeValue(new TextEncoder().encode(msg)).catch(()=>{});
-}
-
-// ═══════════════ BLE PARSING ════════════════
-// Formats from ESP32:
-//   START:A / START:B / START:C
-//   H:skor:hit:miss[:infected]  — hit
-//   M:skor:hit:miss[:infected]  — miss
-//   T:skor:hit:miss             — timeout (Grid Lock)
-//   I:skor:hit:miss:infected    — infect spread (Red Alert)
-//   DONE:skor:hit:miss
-function onBLE(ev) {
-  const raw=new TextDecoder().decode(ev.target.value).trim();
-  const parts=raw.split(':');
-
-  if(parts[0]==='START') {
-    startHUD(parts[1]);
-    return;
-  }
-  if(parts[0]==='DONE') {
-    const [,s,h,m]=parts;
-    stopHUD(false,parseInt(s),parseInt(h),parseInt(m));
-    return;
-  }
-  if(parts[0]==='H'||parts[0]==='M'||parts[0]==='T'||parts[0]==='I') {
-    const [type,s,h,m,inf]=parts;
-    updateHUD(type, parseInt(s), parseInt(h), parseInt(m), inf!==undefined?parseInt(inf):null);
-    return;
-  }
-}
-
-// ═══════════════ START GAME ════════════════
-async function startGame() {
-  if(!bleChar) return;
-  const btn = document.getElementById('btnStart');
-  btn.disabled = true; // spriječi višestruke klikove dok šaljemo
+  btn.disabled = true;
+  load.classList.remove('hidden');
 
   try {
-    // Pošalji nivo i sačekaj da write završi
-    await bleChar.writeValue(new TextEncoder().encode('L:' + selLevel));
-    // Čekaj 120ms — ESP32 BLE stack treba vremena između writova
-    await new Promise(r => setTimeout(r, 120));
-    // Pošalji kod igre i sačekaj
-    await bleChar.writeValue(new TextEncoder().encode(selGame));
+    const r = await fetch(`${SB_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'apikey': SB_KEY },
+      body: JSON.stringify({ email, password: pass })
+    });
+    const d = await r.json();
+    if (!r.ok || d.error) {
+      errEl.textContent = 'Pogrešan e-mail ili šifra';
+      btn.disabled = false; load.classList.add('hidden');
+      return;
+    }
+
+    // Sačuvaj token
+    currentUser = d.user;
+    localStorage.setItem('sb-access-token', d.access_token);
+    localStorage.setItem('sb-refresh-token', d.refresh_token);
+
+    // Provjeri ulogu
+    const kr = await fetch(`${SB_URL}/rest/v1/korisnici?id=eq.${d.user.id}&select=*`, {
+      headers: { ...SB_HDR, 'Authorization': `Bearer ${d.access_token}` }
+    });
+    const kd = await kr.json();
+    if (!kd.length) {
+      errEl.textContent = 'Nalog nije autorizovan za ovaj sistem';
+      btn.disabled = false; load.classList.add('hidden');
+      return;
+    }
+
+    currentUloga = kd[0].uloga;
+    // Ažuriraj header sa korisničkim tokenom
+    SB_HDR['Authorization'] = `Bearer ${d.access_token}`;
+
+    // Prikaži sistem
+    document.getElementById('loginScreen').classList.add('gone');
+    prikaziPoUlozi();
+    await loadFromSupabase();
+
   } catch(e) {
-    console.error('BLE write greška:', e);
-    btn.disabled = false;
-    setSt('Greška pri slanju — pokušaj ponovo', '');
+    console.error(e);
+    errEl.textContent = 'Greška pri prijavi. Pokušajte ponovo.';
+    btn.disabled = false; load.classList.add('hidden');
+  }
+}
+
+function prikaziPoUlozi() {
+  // Operativac nema pristup izveštajima
+  if (currentUloga === 'operativac') {
+    // Sakrij izveštaje tab ako postoji
+    const izv = document.getElementById('nav-izvestaji');
+    if (izv) izv.style.display = 'none';
+  }
+  // Prikaži korisnika u headeru
+  const headerMeta = document.querySelector('.header-meta');
+  if (headerMeta && currentUser) {
+    const span = document.createElement('span');
+    span.style.cssText = 'font-size:11px;color:var(--muted);font-family:"IBM Plex Mono",monospace;border:0.5px solid var(--border);padding:3px 8px;border-radius:4px;cursor:pointer;';
+    span.textContent = currentUloga === 'predsednik' ? '◈ Predsednik' : '◈ Operativac';
+    span.title = currentUser.email;
+    span.onclick = () => { if(confirm('Odjaviti se?')) doLogout(); };
+    headerMeta.insertBefore(span, headerMeta.firstChild);
+  }
+
+  // Operativac: sakrij tab za izveštaje u podešavanjima
+  if (currentUloga === 'operativac') {
+    applyOperativacRestrictions();
+  } else if (currentUloga === 'predsednik') {
+    // Predsednik: dodaj opciju za kreiranje operativca
+    addOperativacForm();
+  }
+}
+
+function applyOperativacRestrictions() {
+  // Operativac nema pristup izveštajima direktora
+  // Sakrij sekciju izveštaja u detaljima zadatka ako je dodamo kasnije
+}
+
+function addOperativacForm() {
+  // Dodaj formu za kreiranje operativca u podešavanjima
+  const settingsEl = document.querySelector('.config-section:last-of-type');
+  if (!settingsEl) return;
+  const div = document.createElement('div');
+  div.className = 'config-section';
+  div.innerHTML = `
+    <div class="config-section-title">Kreiranje naloga operativca</div>
+    <div class="form-group">
+      <label class="form-label">E-mail operativca</label>
+      <input class="form-input" type="email" id="op-email" placeholder="operativac@email.com" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Šifra</label>
+      <input class="form-input" type="password" id="op-pass" placeholder="Minimalno 6 karaktera" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Ime i prezime</label>
+      <input class="form-input" type="text" id="op-ime" placeholder="Ime Prezime" />
+    </div>
+    <button class="btn btn-primary" onclick="kreirajOperativca()">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Kreiraj nalog operativca
+    </button>
+    <div id="op-msg" style="font-size:11px;margin-top:8px;font-family:'IBM Plex Mono',monospace;min-height:16px;"></div>
+  `;
+  settingsEl.parentNode.appendChild(div);
+}
+
+async function kreirajOperativca() {
+  const email = document.getElementById('op-email').value.trim();
+  const pass  = document.getElementById('op-pass').value;
+  const ime   = document.getElementById('op-ime').value.trim();
+  const msg   = document.getElementById('op-msg');
+  if (!email || !pass || !ime) { msg.style.color='var(--red)'; msg.textContent='Sva polja su obavezna'; return; }
+  if (pass.length < 6) { msg.style.color='var(--red)'; msg.textContent='Šifra mora imati min. 6 karaktera'; return; }
+
+  msg.style.color='var(--muted)'; msg.textContent='Kreiranje...';
+
+  try {
+    // Kreiraj korisnika preko Supabase Admin (service role nije dostupan sa anon — koristimo signUp)
+    const r = await fetch(`${SB_URL}/auth/v1/signup`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_KEY},
+      body:JSON.stringify({email, password:pass})
+    });
+    const d = await r.json();
+    if (d.error) { msg.style.color='var(--red)'; msg.textContent=d.error.message; return; }
+
+    // Upiši u korisnici tabelu
+    await sbInsert('korisnici', { id:d.user.id, email, uloga:'operativac', ime });
+    msg.style.color='var(--green)'; msg.textContent=`✓ Nalog za ${ime} kreiran`;
+    document.getElementById('op-email').value='';
+    document.getElementById('op-pass').value='';
+    document.getElementById('op-ime').value='';
+  } catch(e) {
+    msg.style.color='var(--red)'; msg.textContent='Greška pri kreiranju';
+  }
+}
+
+async function doLogout() {
+  try {
+    await fetch(`${SB_URL}/auth/v1/logout`, {
+      method:'POST',
+      headers:{...SB_HDR,'Authorization':`Bearer ${localStorage.getItem('sb-access-token')}`}
+    });
+  } catch(e) {}
+  localStorage.removeItem('sb-access-token');
+  localStorage.removeItem('sb-refresh-token');
+  currentUser = null; currentUloga = null;
+  location.reload();
+}
+
+// Provjeri da li postoji aktivna sesija
+async function checkSession() {
+  const token = localStorage.getItem('sb-access-token');
+  if (!token) { return false; }
+  try {
+    const r = await fetch(`${SB_URL}/auth/v1/user`, {
+      headers:{'apikey':SB_KEY,'Authorization':`Bearer ${token}`}
+    });
+    if (!r.ok) { localStorage.removeItem('sb-access-token'); return false; }
+    const u = await r.json();
+    currentUser = u;
+    SB_HDR['Authorization'] = `Bearer ${token}`;
+    const kr = await fetch(`${SB_URL}/rest/v1/korisnici?id=eq.${u.id}&select=*`, { headers: SB_HDR });
+    const kd = await kr.json();
+    if (!kd.length) return false;
+    currentUloga = kd[0].uloga;
+    return true;
+  } catch(e) { return false; }
+}
+
+// ═══════════════════════════════════════════════════════════
+// SUPABASE KONFIGURACIJA
+// ═══════════════════════════════════════════════════════════
+const SB_URL  = 'https://zmuvzdqewcrvnfyaxzhk.supabase.co';
+const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptdXZ6ZHFld2Nydm5meWF4emhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MzY2OTEsImV4cCI6MjA5NTAxMjY5MX0.rcQUsaCQepblF6MzuP_FN5aWHfMjEgYHszx1MaX8Ad4';
+const SB_HDR  = { 'Content-Type':'application/json', 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` };
+
+async function sbGet(table, query='') {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${query}&order=created_at.desc`, { headers: SB_HDR });
+  if (!r.ok) { console.error('SB GET error', table, await r.text()); return []; }
+  return r.json();
+}
+async function sbInsert(table, data) {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
+    method:'POST', headers:{ ...SB_HDR, 'Prefer':'return=representation' },
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) { console.error('SB INSERT error', table, await r.text()); return null; }
+  const d = await r.json();
+  return Array.isArray(d) ? d[0] : d;
+}
+async function sbUpdate(table, id, data) {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {
+    method:'PATCH', headers:{ ...SB_HDR, 'Prefer':'return=representation' },
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) { console.error('SB UPDATE error', table, await r.text()); return null; }
+  const d = await r.json();
+  return Array.isArray(d) ? d[0] : d;
+}
+async function sbDelete(table, id) {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {
+    method:'DELETE', headers: SB_HDR
+  });
+  if (!r.ok) console.error('SB DELETE error', table, await r.text());
+}
+
+// ── Učitaj sve podatke iz Supabase ──
+async function loadFromSupabase() {
+  showLoading(true);
+  try {
+    // Izvršioci
+    const dirs = await sbGet('direktori', 'select=*');
+    if (dirs.length > 0) {
+      state.directors = dirs.map(d => ({
+        id: d.id, name: d.ime, role: d.uloga,
+        phone: d.telefon, color: d.boja, initials: d.inicijali
+      }));
+    } else {
+      // Ako je baza prazna — ubaci podrazumevane izvršioce
+      await seedDirectors();
+    }
+
+    // Zadaci
+    const zadaci = await sbGet('zadaci', 'select=*');
+    const primaoci = await sbGet('primaoci', 'select=*');
+    const izvestaji = await sbGet('izvestaji', 'select=*');
+
+    state.tasks = zadaci.map(z => {
+      const recs = primaoci.filter(p => p.zadatak_id === z.id).map(p => p.direktor_id);
+      const timeline = izvestaji
+        .filter(i => i.zadatak_id === z.id)
+        .sort((a,b) => new Date(a.created_at) - new Date(b.created_at))
+        .map(i => ({
+          text: i.poruka,
+          time: new Date(i.created_at).toLocaleTimeString('sr-Latn',{hour:'2-digit',minute:'2-digit'}),
+          color: i.tip === 'kreiran' ? 'blue' : i.tip === 'zatvoren' ? 'green' : i.tip === 'podsetnik' ? 'orange' : i.tip === 'izvestaj' ? 'gold' : 'gray',
+          direktorId: i.direktor_id,
+          tip: i.tip
+        }));
+      return {
+        id: z.id, title: z.naslov, desc: z.opis,
+        priority: z.prioritet, due: z.rok,
+        status: z.status,
+        createdAt: z.created_at,
+        closedAt: z.closed_at,
+        recipients: recs,
+        timeline
+      };
+    });
+
+    // Podešavanja iz localStorage (bot token ostaje lokalno)
+    try {
+      const ls = localStorage.getItem('djurovic-settings');
+      if (ls) state.settings = { ...state.settings, ...JSON.parse(ls) };
+    } catch(e) {}
+
+  } catch(e) {
+    console.error('Greška učitavanja:', e);
+    showToast('Greška pri učitavanju podataka', 'error');
+  }
+  showLoading(false);
+  render();
+
+  // Real-time polling svakih 15 sekundi
+  setInterval(async () => {
+    await refreshTasks();
+  }, 15000);
+}
+
+async function seedDirectors() {
+  const defaults = [
+    { ime:'Marko Predolac',  uloga:'Izvršilac', telefon:'+381601000001', boja:'#4c7ec9', inicijali:'MP' },
+    { ime:'Darko Dunjić',    uloga:'Izvršilac', telefon:'+381601000002', boja:'#4caa6e', inicijali:'DD' },
+    { ime:'Ivica Lazarević', uloga:'Izvršilac', telefon:'+381601000003', boja:'#c97a4c', inicijali:'IL' },
+    { ime:'Ivan Džatić',     uloga:'Izvršilac', telefon:'+381601000004', boja:'#c94c4c', inicijali:'IJ' },
+    { ime:'Ivan Radović',    uloga:'Izvršilac', telefon:'+381601000005', boja:'#9b59b6', inicijali:'IR' },
+    { ime:'Ivan Đunđić',     uloga:'Izvršilac', telefon:'+381601000006', boja:'#c9a84c', inicijali:'IĐ' },
+    { ime:'Dušan Radović',   uloga:'Izvršilac', telefon:'+381601000007', boja:'#2AABEE', inicijali:'DR' },
+  ];
+  for (const d of defaults) await sbInsert('direktori', d);
+  const dirs = await sbGet('direktori','select=*');
+  state.directors = dirs.map(d => ({ id:d.id, name:d.ime, role:d.uloga, phone:d.telefon, color:d.boja, initials:d.inicijali }));
+}
+
+async function refreshTasks() {
+  try {
+    const zadaci   = await sbGet('zadaci',   'select=*');
+    const primaoci = await sbGet('primaoci', 'select=*');
+    const izvestaji= await sbGet('izvestaji','select=*');
+    state.tasks = zadaci.map(z => {
+      const recs = primaoci.filter(p=>p.zadatak_id===z.id).map(p=>p.direktor_id);
+      const timeline = izvestaji
+        .filter(i=>i.zadatak_id===z.id)
+        .sort((a,b)=>new Date(a.created_at)-new Date(b.created_at))
+        .map(i=>({
+          text:i.poruka,
+          time:new Date(i.created_at).toLocaleTimeString('sr-Latn',{hour:'2-digit',minute:'2-digit'}),
+          color: i.tip==='kreiran'?'blue':i.tip==='zatvoren'?'green':i.tip==='podsetnik'?'orange':i.tip==='izvestaj'?'gold':'gray',
+          izvrsocId:i.direktor_id, tip:i.tip
+        }));
+      return { id:z.id, title:z.naslov, desc:z.opis, priority:z.prioritet, due:z.rok,
+               status:z.status, createdAt:z.created_at, closedAt:z.closed_at, recipients:recs, timeline };
+    });
+    render();
+  } catch(e) {}
+}
+
+function saveState() {
+  // Podešavanja (ne-osjetljiva) čuvamo lokalno
+  try { localStorage.setItem('djurovic-settings', JSON.stringify(state.settings)); } catch(e) {}
+}
+
+function showLoading(on) {
+  let el = document.getElementById('sb-loading');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'sb-loading';
+    el.style.cssText = 'position:fixed;top:56px;left:0;right:0;height:2px;background:var(--gold);z-index:999;transition:opacity 0.3s;';
+    document.body.appendChild(el);
+  }
+  el.style.opacity = on ? '1' : '0';
+}
+
+// ═══════════════════════════════════════════════════════════
+// SAT
+// ═══════════════════════════════════════════════════════════
+function updateClock() {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString('sr-Latn', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ═══════════════════════════════════════════════════════════
+// RENDEROVANJE
+// ═══════════════════════════════════════════════════════════
+function render() {
+  renderSidebarDirectors();
+  renderDirCheckboxes('dirCheckboxes');
+  renderDirCheckboxes('m-dirCheckboxes');
+  renderTaskList();
+  renderStatNumbers();
+  renderScoreboard();
+  renderSettingsDirectors();
+  updateBadges();
+  checkEscalation();
+  if (state.currentView === 'statistika') renderCharts();
+}
+
+function renderSidebarDirectors() {
+  document.getElementById('sidebarDirectors').innerHTML = state.directors.map(d => {
+    const active = state.tasks.filter(t => t.recipients.includes(d.id) && t.status !== 'zavrseno').length;
+    return `<div class="director-item" onclick="filterByDirector(${d.id})">
+      <div class="d-avatar" style="background:${d.color}22;color:${d.color};">${d.initials}</div>
+      <div class="d-name">${d.name}</div>
+      <div class="d-dot" style="background:${active > 0 ? 'var(--orange)' : 'var(--muted2)'}"></div>
+    </div>`;
+  }).join('');
+}
+
+function renderDirCheckboxes(cid) {
+  const el = document.getElementById(cid);
+  if (!el) return;
+  el.innerHTML = state.directors.map(d => `
+    <label class="dir-check" id="${cid}-${d.id}" onclick="toggleDir(event,'${cid}',${d.id})">
+      <input type="checkbox" />
+      <div class="check-box">
+        <svg class="check-mark" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="dir-info">
+        <div class="dir-name-sm">${d.name}</div>
+        <div class="dir-phone">${d.phone}</div>
+      </div>
+      <div style="width:7px;height:7px;border-radius:50%;background:${d.color};flex-shrink:0;"></div>
+    </label>`).join('');
+}
+
+function toggleDir(e, cid, id) {
+  e.preventDefault();
+  document.getElementById(`${cid}-${id}`).classList.toggle('checked');
+  const inModal = cid.startsWith('m-');
+  updatePreview(inModal);
+}
+
+function selectAllDirs(cid) {
+  const el = document.getElementById(cid);
+  if (!el) return;
+  const all = el.querySelectorAll('.dir-check');
+  const allChecked = el.querySelectorAll('.dir-check.checked').length === all.length;
+  all.forEach(label => {
+    if (allChecked) label.classList.remove('checked');
+    else label.classList.add('checked');
+  });
+  updatePreview(cid.startsWith('m-'));
+}
+
+function getCheckedDirs(cid) {
+  const el = document.getElementById(cid);
+  if (!el) return [];
+  return Array.from(el.querySelectorAll('.dir-check.checked')).map(el => {
+    const phone = el.querySelector('.dir-phone').textContent;
+    const d = state.directors.find(d => d.phone === phone);
+    return d ? d.id : null;
+  }).filter(Boolean);
+}
+
+function renderTaskList() {
+  const el = document.getElementById('taskList');
+  let tasks = [...state.tasks];
+  if (state.currentFilter === 'urgentno') tasks = tasks.filter(t => t.priority === 'urgentno');
+  else if (state.currentFilter === 'prekoraceno') tasks = tasks.filter(t => isOverdue(t));
+  else if (typeof state.currentFilter === 'number') tasks = tasks.filter(t => t.recipients.includes(state.currentFilter));
+
+  if (!tasks.length) {
+    el.innerHTML = `<div class="empty-state">
+      <div style="font-size:28px;opacity:0.3;margin-bottom:10px;">◈</div>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:5px;">Nema zadataka</div>
+      <div style="font-size:12px;color:var(--muted2);">Kreirajte novi zadatak klikom na "Novi zadatak"</div>
+    </div>`;
     return;
   }
 
-  document.getElementById('rezBox').style.display = 'none';
-  setSt('Igra u toku...', 'o');
-  // Dugme ostaje disabled tokom igre — re-enableuje se u stopHUD()
+  el.innerHTML = tasks.map(t => {
+    const over = isOverdue(t);
+    const recNames = t.recipients.map(id => { const d = state.directors.find(d=>d.id===id); return d ? d.initials : '?'; }).join(', ');
+    const sc = over && t.status !== 'zavrseno' ? 'prekoraceno' : t.status;
+    const sl = { poslato:'Poslato', primljeno:'Primljeno', 'u-toku':'U toku', zavrseno:'Završeno', prekoraceno:'Prekoračeno', ceka:'Čeka' }[sc] || sc;
+    return `<div class="task-card ${t.priority} ${state.selectedTask===t.id?'selected':''}" onclick="selectTask(${t.id})">
+      <div class="task-header">
+        <div class="task-title ${t.status==='zavrseno'?'gotovo':''}">${t.title}</div>
+        <span class="priority-badge ${t.priority}">${t.priority}</span>
+      </div>
+      <div class="task-meta">
+        <div class="task-meta-item">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          ${recNames}
+        </div>
+        ${t.due ? `<div class="task-meta-item">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          ${formatDate(t.due)}
+        </div>` : ''}
+        <span class="status-pill ${sc}"><span class="status-dot"></span> ${sl}</span>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-// ═══════════════ HUD ════════════════
-function startHUD(gameCode) {
-  hudActive=true;
-  hudSkor=0; hudHits=0; hudMisses=0;
-  hudStart=Date.now();
-  isAlertMode=(gameCode==='C');
-  alertPanelState=[false,false,false,false,false,false];
+function renderStatNumbers() {
+  const today = new Date().toDateString();
+  document.getElementById('stat-total').textContent = state.tasks.filter(t=>t.status!=='zavrseno').length;
+  document.getElementById('stat-zavrseno').textContent = state.tasks.filter(t=>t.status==='zavrseno' && new Date(t.closedAt||0).toDateString()===today).length;
+  document.getElementById('stat-ceka').textContent = state.tasks.filter(t=>t.status==='poslato').length;
+  document.getElementById('stat-prekoraceno').textContent = state.tasks.filter(t=>isOverdue(t)).length;
+}
 
-  document.getElementById('hudGameName').innerText=GAME_NAMES[gameCode]||gameCode;
-  document.getElementById('hudLevelBadge').innerText='NIVO '+selLevel+' — '+LEVEL_NAMES[selLevel-1].toUpperCase();
+function renderScoreboard() {
+  const rows = state.directors.map((d,i) => {
+    const assigned = state.tasks.filter(t=>t.recipients.includes(d.id)).length;
+    const received = state.tasks.filter(t=>t.recipients.includes(d.id) && ['primljeno','u-toku','zavrseno'].includes(t.status)).length;
+    const done = state.tasks.filter(t=>t.recipients.includes(d.id) && t.status==='zavrseno').length;
+    const pct = assigned > 0 ? Math.round((done/assigned)*100) : 100;
+    const color = pct>=80?'#4caa6e':pct>=60?'#c97a4c':'#c94c4c';
+    return { d, assigned, received, done, pct, color };
+  }).sort((a,b)=>b.pct-a.pct);
 
-  // Red Alert: hide timer ring, show infect bar; set ominous red tint on HUD name
-  const timerWrap=document.getElementById('timerWrap');
-  const alertBar =document.getElementById('alertBar');
-  const hudName  =document.getElementById('hudGameName');
-  if(isAlertMode){
-    timerWrap.style.display='none';
-    alertBar.style.display='flex';
-    document.getElementById('alertInfected').innerText='0';
-    hudName.style.color='var(--red)';
-    hudName.style.textShadow='0 0 24px rgba(255,61,90,.6)';
-    // Red tint on HUD background
-    document.getElementById('hudOverlay').style.background='rgba(10,4,6,.97)';
-  } else {
-    timerWrap.style.display='';
-    alertBar.style.display='none';
-    hudName.style.color='var(--accent)';
-    hudName.style.textShadow='none';
-    document.getElementById('hudOverlay').style.background='rgba(7,8,13,.97)';
+  document.getElementById('scoreBody').innerHTML = rows.map((r,i) => `
+    <tr>
+      <td style="color:var(--muted);font-family:'IBM Plex Mono',monospace;">${i+1}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:22px;height:22px;border-radius:50%;background:${r.d.color}22;color:${r.d.color};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;font-family:'IBM Plex Mono',monospace;">${r.d.initials}</div>
+          <div><div style="font-size:12px;font-weight:500;">${r.d.name}</div><div style="font-size:10px;color:var(--muted);">${r.d.role}</div></div>
+        </div>
+      </td>
+      <td style="font-family:'IBM Plex Mono',monospace;">${r.assigned}</td>
+      <td style="font-family:'IBM Plex Mono',monospace;color:var(--blue);">${r.received}</td>
+      <td style="font-family:'IBM Plex Mono',monospace;color:var(--green);">${r.done}</td>
+      <td style="font-family:'IBM Plex Mono',monospace;color:var(--muted);">~2.4č</td>
+      <td>
+        <div class="perf-bar-wrap">
+          <div class="perf-bar-bg"><div class="perf-bar-fill" style="width:${r.pct}%;background:${r.color};"></div></div>
+          <span class="perf-pct" style="color:${r.color};">${r.pct}%</span>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function renderSettingsDirectors() {
+  const el = document.getElementById('settingsDirectorList');
+  if (!el) return;
+  el.innerHTML = state.directors.map(d => `
+    <div style="display:flex;align-items:center;gap:9px;padding:7px 9px;background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);">
+      <div style="width:26px;height:26px;border-radius:50%;background:${d.color}22;color:${d.color};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;font-family:'IBM Plex Mono',monospace;flex-shrink:0;">${d.initials}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:500;">${d.name}</div>
+        <div style="font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;">${d.phone}</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);">${d.role}</div>
+      <button class="btn btn-danger" style="padding:3px 7px;font-size:11px;" onclick="removeDirector(${d.id})">✕</button>
+    </div>`).join('');
+  if (state.settings.botToken) document.getElementById('botToken').value = state.settings.botToken;
+  if (state.settings.senderName) document.getElementById('senderName').value = state.settings.senderName;
+  if (state.settings.presPhone) document.getElementById('presPhone').value = state.settings.presPhone;
+}
+
+function updateBadges() {
+  document.getElementById('badge-total').textContent = state.tasks.filter(t=>t.status!=='zavrseno').length;
+  document.getElementById('badge-urgentno').textContent = state.tasks.filter(t=>t.priority==='urgentno'&&t.status!=='zavrseno').length;
+  document.getElementById('badge-prekoraceno').textContent = state.tasks.filter(t=>isOverdue(t)).length;
+}
+
+// ═══════════════════════════════════════════════════════════
+// GRAFICI (Chart.js)
+// ═══════════════════════════════════════════════════════════
+let charts = {};
+
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+function renderCharts() {
+  const days = parseInt(document.getElementById('statPeriod').value) || 999999;
+  const cutoff = days === 0 ? 0 : Date.now() - days * 86400000;
+  const tasks = state.tasks.filter(t => new Date(t.createdAt).getTime() >= cutoff);
+
+  const chartDefaults = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: '#7a7870', font: { family: "'IBM Plex Mono', monospace", size: 11 }, boxWidth: 12 } } },
+  };
+  const gridColor = 'rgba(255,255,255,0.06)';
+  const axisColor = '#4a4845';
+
+  // ── 1. TREND: zadaci po danima ──────────────────────────────
+  destroyChart('trend');
+  const trendDays = Math.min(days === 0 ? 30 : days, 30);
+  const trendLabels = [];
+  const trendCreated = [];
+  const trendDone = [];
+  for (let i = trendDays - 1; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const ds = d.toDateString();
+    trendLabels.push(d.toLocaleDateString('sr-Latn',{day:'2-digit',month:'2-digit'}));
+    trendCreated.push(tasks.filter(t => new Date(t.createdAt).toDateString() === ds).length);
+    trendDone.push(tasks.filter(t => t.status === 'zavrseno' && t.closedAt && new Date(t.closedAt).toDateString() === ds).length);
   }
-
-  for(let i=0;i<6;i++) setPanel(i,'');
-  refreshScoreDisplay(true);
-  document.getElementById('hudOverlay').classList.add('show');
-
-  if(!isAlertMode){
-    updateTimer();
-    timerHandle=setInterval(updateTimer, 250);
-  } else {
-    clearInterval(timerHandle);
-  }
-}
-
-function updateTimer() {
-  const elapsed=Date.now()-hudStart;
-  const rem=Math.max(0, GAME_DUR-elapsed);
-  const sec=Math.ceil(rem/1000);
-  document.getElementById('timerSec').innerText=sec;
-
-  // ring
-  const pct=rem/GAME_DUR;
-  const circ=339.3;
-  document.getElementById('timerArc').style.strokeDashoffset= circ*(1-pct);
-
-  // color transition: cyan → orange → red
-  let stroke;
-  if(pct>0.4)       stroke=`rgba(0,229,255,1)`;
-  else if(pct>0.2)  stroke=`rgba(255,140,0,1)`;
-  else               stroke=`rgba(255,61,90,1)`;
-  document.getElementById('timerArc').style.stroke=stroke;
-}
-
-function updateHUD(type, skor, hits, misses, infected) {
-  hudSkor=skor; hudHits=hits; hudMisses=misses;
-  refreshScoreDisplay(false);
-
-  const isHit=(type==='H');
-  const isInfect=(type==='I');
-
-  if(isAlertMode){
-    // Red Alert panel logic
-    if(isHit){
-      // A panel was extinguished — find first infected and briefly show green,
-      // then update infect count
-      spawnFloat('+1','var(--green)');
-      flashScreen('rgba(0,230,118,.08)');
-      // Find and extinguish one infected panel (we don't know which from ESP32,
-      // so we flash all green briefly to show success)
-      alertExtinguishOne(infected!=null?infected:null);
-    } else if(type==='M'){
-      spawnFloat('−1','var(--red)');
-      flashScreen('rgba(255,61,90,.18)');
-      // Wrong panel — brief orange flash but infection stays
-      alertWrongHit();
-    } else if(isInfect){
-      // New panel caught fire
-      flashScreen('rgba(255,0,0,.15)');
-      alertSpreadInfection(infected);
-      spawnFloat('🔥','var(--red)');
-    }
-    // Update infect counter badge
-    if(infected!==null&&infected!==undefined){
-      document.getElementById('alertInfected').innerText=infected;
-      // Shake the badge when danger is high
-      if(infected>=4){
-        const badge=document.getElementById('alertBar');
-        badge.style.background='rgba(255,61,90,.22)';
-        badge.style.borderColor='rgba(255,61,90,.6)';
+  const ctxTrend = document.getElementById('chartTrend').getContext('2d');
+  charts.trend = new Chart(ctxTrend, {
+    type: 'line',
+    data: {
+      labels: trendLabels,
+      datasets: [
+        { label: 'Kreirano', data: trendCreated, borderColor: '#4c7ec9', backgroundColor: 'rgba(76,126,201,0.1)', tension: 0.4, fill: true, pointRadius: 3, pointBackgroundColor: '#4c7ec9', borderWidth: 1.5 },
+        { label: 'Završeno', data: trendDone, borderColor: '#4caa6e', backgroundColor: 'rgba(76,170,110,0.08)', tension: 0.4, fill: true, pointRadius: 3, pointBackgroundColor: '#4caa6e', borderWidth: 1.5 },
+      ]
+    },
+    options: {
+      ...chartDefaults,
+      scales: {
+        x: { ticks: { color: axisColor, font: { size: 10, family: "'IBM Plex Mono', monospace" }, maxTicksLimit: 8 }, grid: { color: gridColor } },
+        y: { ticks: { color: axisColor, font: { size: 10 }, stepSize: 1 }, grid: { color: gridColor }, beginAtZero: true }
       }
     }
+  });
+
+  // ── 2. PIE STATUS ────────────────────────────────────────────
+  destroyChart('status');
+  const statuses = ['poslato','primljeno','u-toku','zavrseno','prekoraceno'];
+  const statusLabels = ['Poslato','Primljeno','U toku','Završeno','Prekoračeno'];
+  const statusData = statuses.map(s => {
+    if (s === 'prekoraceno') return tasks.filter(t => isOverdue(t)).length;
+    return tasks.filter(t => t.status === s).length;
+  });
+  const statusColors = ['#4c7ec9','#4caa6e','#c97a4c','rgba(76,170,110,0.8)','#c94c4c'];
+  const ctxStatus = document.getElementById('chartStatus').getContext('2d');
+  charts.status = new Chart(ctxStatus, {
+    type: 'doughnut',
+    data: { labels: statusLabels, datasets: [{ data: statusData, backgroundColor: statusColors, borderColor: '#0a0c10', borderWidth: 2 }] },
+    options: { ...chartDefaults, cutout: '62%' }
+  });
+
+  // ── 3. BAR: PO IZVRŠIOCU ─────────────────────────────────────
+  destroyChart('directors');
+  const dirNames = state.directors.map(d => d.name.split(' ')[0]);
+  const dirColors = state.directors.map(d => d.color);
+  const dirCreated = state.directors.map(d => tasks.filter(t => t.recipients.includes(d.id)).length);
+  const dirDone = state.directors.map(d => tasks.filter(t => t.recipients.includes(d.id) && t.status==='zavrseno').length);
+  const ctxDir = document.getElementById('chartDirectors').getContext('2d');
+  charts.directors = new Chart(ctxDir, {
+    type: 'bar',
+    data: {
+      labels: dirNames,
+      datasets: [
+        { label: 'Zadato', data: dirCreated, backgroundColor: dirColors.map(c => c + '66'), borderColor: dirColors, borderWidth: 1, borderRadius: 3 },
+        { label: 'Završeno', data: dirDone, backgroundColor: dirColors.map(c => c + 'cc'), borderColor: dirColors, borderWidth: 1, borderRadius: 3 },
+      ]
+    },
+    options: {
+      ...chartDefaults,
+      scales: {
+        x: { ticks: { color: axisColor, font: { size: 10, family: "'IBM Plex Mono', monospace" } }, grid: { color: gridColor } },
+        y: { ticks: { color: axisColor, font: { size: 10 }, stepSize: 1 }, grid: { color: gridColor }, beginAtZero: true }
+      }
+    }
+  });
+
+  // ── 4. PIE PRIORITET ─────────────────────────────────────────
+  destroyChart('priority');
+  const prioLabels = ['Urgentno','Visoko','Normalno','Nisko'];
+  const prioVals = ['urgentno','visoko','normalno','nisko'].map(p => tasks.filter(t=>t.priority===p).length);
+  const prioColors = ['#c94c4c','#c97a4c','#4c7ec9','#4a4845'];
+  const ctxPrio = document.getElementById('chartPriority').getContext('2d');
+  charts.priority = new Chart(ctxPrio, {
+    type: 'pie',
+    data: { labels: prioLabels, datasets: [{ data: prioVals, backgroundColor: prioColors, borderColor: '#0a0c10', borderWidth: 2 }] },
+    options: { ...chartDefaults }
+  });
+
+  // ── 5. COMPLETION RATE horizontal bar ────────────────────────
+  destroyChart('completion');
+  const compPct = state.directors.map(d => {
+    const tot = tasks.filter(t=>t.recipients.includes(d.id)).length;
+    const done = tasks.filter(t=>t.recipients.includes(d.id)&&t.status==='zavrseno').length;
+    return tot > 0 ? Math.round((done/tot)*100) : 0;
+  });
+  const compColors = compPct.map(p => p>=80?'#4caa6e':p>=60?'#c97a4c':'#c94c4c');
+  const ctxComp = document.getElementById('chartCompletion').getContext('2d');
+  charts.completion = new Chart(ctxComp, {
+    type: 'bar',
+    data: {
+      labels: dirNames,
+      datasets: [{ label: '% završenosti', data: compPct, backgroundColor: compColors.map(c=>c+'aa'), borderColor: compColors, borderWidth: 1, borderRadius: 4 }]
+    },
+    options: {
+      ...chartDefaults,
+      indexAxis: 'y',
+      scales: {
+        x: { max: 100, ticks: { color: axisColor, font: { size: 10 }, callback: v => v + '%' }, grid: { color: gridColor } },
+        y: { ticks: { color: '#e8e6df', font: { size: 11, family: "'IBM Plex Mono', monospace" } }, grid: { color: gridColor } }
+      }
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// DEMO PODACI
+// ═══════════════════════════════════════════════════════════
+function seedDemoData() {
+  const titles = [
+    'Sanacija deponije u ulici Braće Jovanovića',
+    'Pregled saobraćajne signalizacije centar',
+    'Rekonstrukcija trotoara — Ulica cara Lazara',
+    'Montaža klupa u parku Sunčica',
+    'Čišćenje kanalizacije blok 5',
+    'Obezbeđivanje radova na mostu',
+    'Ispitivanje kvaliteta vode za piće',
+    'Ugradnja novog osvetljenja — Primorska',
+    'Godišnji izveštaj — komunalne usluge',
+    'Vanredni obilazak zelenih površina',
+    'Popravka ograde sportskog terena',
+    'Kontrola divljih deponija — obilazak',
+    'Priprema za zimsko održavanje puteva',
+    'Postavljanje info-table kod pijace',
+  ];
+  const priorities = ['urgentno','urgentno','visoko','visoko','visoko','normalno','normalno','normalno','normalno','nisko'];
+  const statuses = ['zavrseno','zavrseno','zavrseno','poslato','u-toku','primljeno','prekoraceno'];
+  state.tasks = [];
+  for (let i = 0; i < 28; i++) {
+    const daysAgo = Math.floor(Math.random() * 30);
+    const createdAt = new Date(Date.now() - daysAgo * 86400000).toISOString();
+    const status = statuses[Math.floor(Math.random() * statuses.length)];
+    const recs = [];
+    const numRec = Math.random() > 0.5 ? 1 : 2;
+    while (recs.length < numRec) {
+      const pick = state.directors[Math.floor(Math.random() * state.directors.length)].id;
+      if (!recs.includes(pick)) recs.push(pick);
+    }
+    const dueOffset = Math.floor(Math.random() * 20) - 5;
+    const dueDate = new Date(Date.now() + dueOffset * 86400000);
+    state.tasks.push({
+      id: state.nextId++,
+      title: titles[i % titles.length],
+      desc: 'Demo zadatak automatski generisan radi prikaza statistike.',
+      priority: priorities[Math.floor(Math.random() * priorities.length)],
+      due: dueDate.toISOString().split('T')[0],
+      recipients: recs,
+      status,
+      createdAt,
+      closedAt: status === 'zavrseno' ? new Date(new Date(createdAt).getTime() + Math.random() * 86400000 * 3).toISOString() : null,
+      timeline: [{ text: 'Zadatak kreiran', time: '09:00', color: 'blue' }]
+    });
+  }
+  saveState();
+  render();
+  showToast('28 demo zadataka učitano', 'success');
+}
+
+// ═══════════════════════════════════════════════════════════
+// POMOĆNE FUNKCIJE
+// ═══════════════════════════════════════════════════════════
+function isOverdue(t) {
+  if (!t.due || t.status === 'zavrseno') return false;
+  return new Date(t.due) < new Date(new Date().toDateString());
+}
+function formatDate(iso) {
+  if (!iso) return 'Bez roka';
+  return new Date(iso).toLocaleDateString('sr-Latn', {day:'2-digit',month:'2-digit',year:'numeric'});
+}
+function buildTelegramMsg(title, desc, priority, due, dirName, taskId, dirId) {
+  const sender = state.settings.senderName || 'Kabinet predsednika';
+  const em = { urgentno:'🔴', visoko:'🟠', normalno:'🔵', nisko:'⚪' }[priority] || '🔵';
+  let msg = `📋 *NOVI ZADATAK*\n_od: ${sender}_\n\n${em} *${title}*`;
+  if (desc) msg += `\n\n${desc}`;
+  if (due) msg += `\n\n📅 Rok: *${formatDate(due)}*`;
+  // Link ka stranici za potvrdu
+  if (taskId && dirId) {
+    const base = window.location.origin + window.location.pathname.replace('index.html','').replace(/\/?$/, '/');
+    const link = `${base}izvestaj.html?z=${taskId}&i=${dirId}`;
+    msg += `\n\n👆 *Potvrdite prijem ili prijavite problem:*\n${link}`;
   } else {
-    // Normal games
-    spawnFloat(isHit ? '+1' : '−1', isHit ? 'var(--green)' : 'var(--red)');
-    flashScreen(isHit ? 'rgba(0,230,118,.10)' : 'rgba(255,61,90,.13)');
-    if(isHit) flashPanels('hit');
-    else      flashPanels('miss');
+    msg += `\n\nPotvrdite prijem odgovorom ✅`;
   }
+  return msg;
 }
 
-// Red Alert: extinguish one infected panel visually
-// infected = number of currently infected panels AFTER extinguish
-function alertExtinguishOne(infectedCount) {
-  // Find first infected panel in our state and extinguish it
-  for(let i=0;i<6;i++){
-    if(alertPanelState[i]){
-      alertPanelState[i]=false;
-      setPanel(i,'extinguished');
-      setTimeout(()=>setPanel(i,''),400);
-      break;
-    }
-  }
-  // Sync count — mark excess as cleared
-  if(infectedCount!==null){
-    let cnt=alertPanelState.filter(Boolean).length;
-    // If count mismatch, re-sync
-    if(cnt>infectedCount){
-      for(let i=5;i>=0&&cnt>infectedCount;i--){
-        if(alertPanelState[i]){alertPanelState[i]=false;cnt--;}
-      }
-    }
-    syncAlertPanels();
-  }
+// ═══════════════════════════════════════════════════════════
+// PREGLED TELEGRAM PORUKE
+// ═══════════════════════════════════════════════════════════
+function updatePreview(inModal) {
+  const p = inModal ? 'm-' : 'q';
+  const title = document.getElementById(p + (inModal ? 'title' : 'Title')).value;
+  const desc  = document.getElementById(p + (inModal ? 'desc'  : 'Desc')).value;
+  const prio  = document.getElementById(p + (inModal ? 'priority' : 'Priority')).value;
+  const due   = document.getElementById(p + (inModal ? 'due' : 'Due')).value;
+  const prevEl = document.getElementById(inModal ? 'm-tgPreview' : 'tgMsgPreview');
+  if (!prevEl) return;
+  if (!title.trim()) { prevEl.textContent = 'Unesite naslov...'; return; }
+  prevEl.textContent = buildTelegramMsg(title, desc, prio, due, '').replace(/\*/g,'').replace(/_/g,'');
 }
 
-function alertWrongHit(){
-  // Flash all non-infected briefly orange
-  for(let i=0;i<6;i++){
-    if(!alertPanelState[i]){
-      setPanel(i,'miss');
-      setTimeout(()=>setPanel(i,''),200);
-    }
+// ═══════════════════════════════════════════════════════════
+// KREIRANJE ZADATKA — Supabase
+// ═══════════════════════════════════════════════════════════
+async function makeTask(title, desc, priority, due, recipients) {
+  // 1. Upiši zadatak
+  const z = await sbInsert('zadaci', {
+    naslov: title, opis: desc || null,
+    prioritet: priority, rok: due || null,
+    status: 'poslato'
+  });
+  if (!z) { showToast('Greška pri kreiranju zadatka', 'error'); return null; }
+
+  // 2. Upiši primaoci
+  for (const rid of recipients) {
+    await sbInsert('primaoci', { zadatak_id: z.id, izvršilac_id: rid });
   }
+
+  // 3. Upiši u timeline
+  await sbInsert('izvestaji', {
+    zadatak_id: z.id, izvršilac_id: 0,
+    tip: 'kreiran', poruka: 'Zadatak kreiran i poruka poslata'
+  });
+
+  // 4. Napravi lokalni objekat
+  const task = {
+    id: z.id, title, desc, priority, due: due || null,
+    recipients, status: 'poslato',
+    createdAt: z.created_at, closedAt: null,
+    timeline: [{ text:'Zadatak kreiran i poruka poslata', time: new Date().toLocaleTimeString('sr-Latn',{hour:'2-digit',minute:'2-digit'}), color:'blue' }]
+  };
+  return task;
 }
 
-function alertSpreadInfection(infectedCount){
-  // Light up a new panel
-  let set=0;
-  // Try to find an uninfected panel and mark it
-  const free=[];
-  for(let i=0;i<6;i++) if(!alertPanelState[i]) free.push(i);
-  if(free.length){
-    const pick=free[Math.floor(Math.random()*free.length)];
-    alertPanelState[pick]=true;
-    set++;
-  }
-  // Sync total count to match ESP32
-  if(infectedCount!==null){
-    let cnt=alertPanelState.filter(Boolean).length;
-    // If under, mark more
-    while(cnt<infectedCount){
-      for(let i=0;i<6;i++){
-        if(!alertPanelState[i]){alertPanelState[i]=true;cnt++;break;}
-      }
-    }
-  }
-  syncAlertPanels();
+async function createTask() {
+  const title = document.getElementById('qTitle').value.trim();
+  if (!title) { showToast('Unesite naslov zadatka', 'error'); return; }
+  const recs = getCheckedDirs('dirCheckboxes');
+  if (!recs.length) { showToast('Odaberite najmanje jednog izvršioca', 'error'); return; }
+  const task = await makeTask(title, document.getElementById('qDesc').value.trim(), document.getElementById('qPriority').value, document.getElementById('qDue').value, recs);
+  if (!task) return;
+  sendTelegram(task);
+  state.tasks.unshift(task);
+  clearForm(); render();
+  showToast(`Zadatak poslan ${recs.length} izvršiocu/ima`, 'success');
+}
+async function createTaskFromModal() {
+  const title = document.getElementById('m-title').value.trim();
+  if (!title) { showToast('Unesite naslov zadatka', 'error'); return; }
+  const recs = getCheckedDirs('m-dirCheckboxes');
+  if (!recs.length) { showToast('Odaberite najmanje jednog izvršioca', 'error'); return; }
+  const task = await makeTask(title, document.getElementById('m-desc').value.trim(), document.getElementById('m-priority').value, document.getElementById('m-due').value, recs);
+  if (!task) return;
+  sendTelegram(task);
+  state.tasks.unshift(task);
+  closeModal('newTask'); render();
+  showToast(`Zadatak poslan ${recs.length} izvršiocu/ima`, 'success');
+}
+function clearForm() {
+  ['qTitle','qDesc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('qPriority').value = 'normalno';
+  document.getElementById('qDue').value = '';
+  document.getElementById('dirCheckboxes').querySelectorAll('.dir-check.checked').forEach(el => el.classList.remove('checked'));
+  document.getElementById('tgMsgPreview').textContent = 'Unesite naslov i odaberite izvršioce...';
+  calClear('qDue');
 }
 
-function syncAlertPanels(){
-  for(let i=0;i<6;i++){
-    const cur=document.getElementById('p'+i);
-    if(!cur) continue;
-    if(alertPanelState[i]){
-      if(!cur.classList.contains('infected')) setPanel(i,'infected');
-    } else {
-      if(cur.classList.contains('infected')) setPanel(i,'');
-    }
-  }
-}
-
-function refreshScoreDisplay(instant) {
-  document.getElementById('svSkor').innerText=hudSkor>=0?'+'+hudSkor:hudSkor;
-  document.getElementById('svHits').innerText=hudHits;
-  document.getElementById('svMiss').innerText=hudMisses;
-  if(!instant) {
-    // pulse animation on score
-    const el=document.getElementById('svSkor');
-    el.classList.remove('pulse');
-    void el.offsetWidth;
-    el.classList.add('pulse');
-    el.style.color=hudSkor>=0?'var(--accent)':'var(--red)';
-  }
-}
-
-function stopHUD(disconnected, skor, hits, misses) {
-  hudActive=false;
-  clearInterval(timerHandle);
-
-  if(!disconnected) {
-    hudSkor=skor??hudSkor;
-    hudHits=hits??hudHits;
-    hudMisses=misses??hudMisses;
-  }
-
-  alertPanelState=[false,false,false,false,false,false];
-  for(let i=0;i<6;i++) setPanel(i,'');
-
-  document.getElementById('hudOverlay').classList.remove('show');
-  document.getElementById('hudOverlay').style.background='rgba(7,8,13,.97)';
-
-  // Re-enable dugme za sledeću igru
-  if(bleChar) document.getElementById('btnStart').disabled=false;
-
-  if(!disconnected) {
-    showResult(hudSkor, hudHits, hudMisses);
-  }
-}
-
-async function showResult(skor, hits, misses) {
-  const b=document.getElementById('rezBox');
-  document.getElementById('rezSkor').innerText= skor>=0 ? '+'+skor : skor;
-  document.getElementById('rezSkor').style.color = skor>=0 ? 'var(--accent)' : 'var(--red)';
-  document.getElementById('rezSub').innerText = `${hits} pogodaka  ·  ${misses} promasaja`;
-  document.getElementById('rezSave').innerText='';
-  b.style.display='block';
-  setSt('Igra završena!','c');
-
-  // Save to Supabase
-  if(user && typeof skor==='number') {
+// ═══════════════════════════════════════════════════════════
+// TELEGRAM SLANJE
+// ═══════════════════════════════════════════════════════════
+async function sendTelegram(task) {
+  const token = state.settings.botToken;
+  if (!token) { console.warn('[KOM] Bot token nije podešen.'); return; }
+  for (const rid of task.recipients) {
+    const dir = state.directors.find(d => d.id === rid);
+    if (!dir) continue;
+    const text = buildTelegramMsg(task.title, task.desc, task.priority, task.due, dir.name, task.id, dir.id);
     try {
-      const {error}=await sb.from('rezultati').insert({
-        korisnik_id: user.id,
-        email: user.email,
-        igra: selGame,
-        nivo: selLevel,
-        skor,
-        pogodaka: hits,
-        promasaja: misses
+      const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ chat_id: dir.phone, text, parse_mode: 'Markdown' })
       });
-      document.getElementById('rezSave').innerText = error ? '⚠️ Greška pri čuvanju.' : '✅ Rezultat sačuvan!';
-    } catch {
-      document.getElementById('rezSave').innerText='⚠️ Greška pri čuvanju.';
+      const d = await r.json();
+      if (!d.ok) showToast(`Greška za ${dir.name}: ${d.description}`, 'error');
+    } catch(e) { console.error(e); }
+  }
+}
+async function sendReminderTelegram(task, dirId) {
+  const token = state.settings.botToken;
+  if (!token) return;
+  const dir = state.directors.find(d => d.id === dirId);
+  if (!dir) return;
+  const text = `⚠️ *PODSETNIK* ⚠️\n\nZadatak čeka Vašu potvrdu:\n\n*${task.title}*${task.due?`\nRok: ${formatDate(task.due)}`:''}\n\nMolimo potvrdite prijem ✅`;
+  try {
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ chat_id: dir.phone, text, parse_mode: 'Markdown' })
+    });
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════════
+// SELEKCIJA / DETALJ ZADATKA
+// ═══════════════════════════════════════════════════════════
+function selectTask(id) {
+  state.selectedTask = id;
+  const task = state.tasks.find(t => t.id === id);
+  if (!task) return;
+  document.getElementById('rp-form').classList.add('hidden');
+  document.getElementById('rp-detail').classList.remove('hidden');
+  document.getElementById('detail-title').textContent = task.title;
+  document.getElementById('detail-desc').textContent = task.desc || 'Bez opisa';
+  document.getElementById('detail-due').textContent = formatDate(task.due);
+  document.getElementById('detail-recipients').textContent = task.recipients.map(id => { const d=state.directors.find(d=>d.id===id); return d?d.name:'?'; }).join(', ');
+  const sc = isOverdue(task) && task.status !== 'zavrseno' ? 'prekoraceno' : task.status;
+  const sl = { poslato:'Poslato', primljeno:'Primljeno', 'u-toku':'U toku', zavrseno:'Završeno', prekoraceno:'Prekoračeno', ceka:'Čeka' }[sc] || sc;
+  const sp = document.getElementById('detail-status');
+  sp.className = `status-pill ${sc}`;
+  sp.innerHTML = `<span class="status-dot"></span> <span id="detail-status-text">${sl}</span>`;
+  document.getElementById('detail-priority').className = `priority-badge ${task.priority}`;
+  document.getElementById('detail-priority').textContent = task.priority;
+  const escSection = document.getElementById('detail-escalation-section');
+  if (isOverdue(task) && task.status !== 'zavrseno') {
+    escSection.style.display = 'block';
+    document.getElementById('detail-escalation-msg').innerHTML = `<strong>Prekoračen rok!</strong> Zadatak nije završen do ${formatDate(task.due)}. Automatski podsetnici su aktivni.`;
+  } else { escSection.style.display = 'none'; }
+  document.getElementById('detail-timeline').innerHTML = (task.timeline||[]).map(item =>
+    `<div class="timeline-item">
+      <div class="timeline-dot ${item.color}"></div>
+      <div style="flex:1;">
+        <div class="timeline-text">${item.text}</div>
+        <div class="timeline-time">${item.time}</div>
+      </div>
+    </div>`).join('');
+  renderTaskList();
+}
+function closeDetail() {
+  state.selectedTask = null;
+  document.getElementById('rp-form').classList.remove('hidden');
+  document.getElementById('rp-detail').classList.add('hidden');
+  renderTaskList();
+}
+async function markDone() {
+  const task = state.tasks.find(t => t.id === state.selectedTask);
+  if (!task) return;
+  await sbUpdate('zadaci', task.id, { status:'zavrseno', closed_at: new Date().toISOString() });
+  await sbInsert('izvestaji', { zadatak_id:task.id, izvršilac_id:0, tip:'zatvoren', poruka:'Zadatak zatvorio kabinet' });
+  await refreshTasks();
+  selectTask(state.selectedTask);
+  showToast('Zadatak zatvoren ✓', 'success');
+}
+async function sendReminder() {
+  const task = state.tasks.find(t => t.id === state.selectedTask);
+  if (!task) return;
+  task.recipients.forEach(id => sendReminderTelegram(task, id));
+  await sbInsert('izvestaji', { zadatak_id:task.id, izvršilac_id:0, tip:'podsetnik', poruka:'Ručni podsetnik poslan' });
+  await refreshTasks();
+  selectTask(state.selectedTask);
+  showToast('Podsetnik poslan svim primaocima', 'info');
+}
+async function deleteTask() {
+  if (!state.selectedTask) return;
+  if (!confirm('Obrisati zadatak?')) return;
+  await sbDelete('zadaci', state.selectedTask);
+  state.tasks = state.tasks.filter(t => t.id !== state.selectedTask);
+  state.selectedTask = null;
+  closeDetail(); render();
+  showToast('Zadatak obrisan', 'info');
+}
+
+// ═══════════════════════════════════════════════════════════
+// FILTRIRANJE / SORTIRANJE
+// ═══════════════════════════════════════════════════════════
+function filterTasks(filter) {
+  state.currentFilter = filter;
+  const lbl = { all:'Svi aktivni zadaci', urgentno:'Samo urgentni zadaci', prekoraceno:'Prekoračeni zadaci' };
+  document.getElementById('filterLabel').textContent = lbl[filter] || 'Filtrirano';
+  renderTaskList();
+}
+function filterByDirector(id) {
+  state.currentFilter = id;
+  const dir = state.directors.find(d => d.id === id);
+  document.getElementById('filterLabel').textContent = dir ? `Zadaci za: ${dir.name}` : '';
+  switchView('tasks'); renderTaskList();
+}
+function sortTasks(by) {
+  const order = { urgentno:0, visoko:1, normalno:2, nisko:3 };
+  const sorder = { prekoraceno:0, poslato:1, 'u-toku':2, primljeno:3, zavrseno:4 };
+  if (by === 'priority') state.tasks.sort((a,b) => (order[a.priority]||2) - (order[b.priority]||2));
+  else if (by === 'date') state.tasks.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+  else if (by === 'status') state.tasks.sort((a,b) => (sorder[a.status]||1) - (sorder[b.status]||1));
+  renderTaskList();
+}
+
+// ═══════════════════════════════════════════════════════════
+// NAVIGACIJA IZMEĐU PRIKAZA
+// ═══════════════════════════════════════════════════════════
+function switchView(view) {
+  state.currentView = view;
+  ['tasks','statistika','scoreboard','settings'].forEach(v => {
+    const el = document.getElementById(`view-${v}`);
+    if (el) el.classList.toggle('hidden', v !== view);
+  });
+  if (view === 'statistika') { setTimeout(renderCharts, 50); }
+}
+function switchNav(btn) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════════
+// ESKALACIJA
+// ═══════════════════════════════════════════════════════════
+function checkEscalation() {
+  if (!state.settings.escalation) return;
+  const escalHours = parseInt(state.settings.escalTime1) || 12;
+  const now = new Date();
+  state.tasks.forEach(t => {
+    if (t.status === 'poslato') {
+      const hoursOld = (now - new Date(t.createdAt)) / 3600000;
+      if (hoursOld > escalHours && !t.escalated) {
+        t.escalated = true;
+        t.timeline.push({ text: `Automatski podsetnik poslan (${Math.round(hoursOld)}č bez potvrde)`, time: new Date().toLocaleTimeString('sr-Latn',{hour:'2-digit',minute:'2-digit'}), color: 'red' });
+        saveState();
+      }
     }
+  });
+}
+setInterval(checkEscalation, 5 * 60 * 1000);
+
+// ═══════════════════════════════════════════════════════════
+// PODEŠAVANJA
+// ═══════════════════════════════════════════════════════════
+function saveSettings() {
+  state.settings.botToken = document.getElementById('botToken').value.trim();
+  state.settings.senderName = document.getElementById('senderName').value.trim();
+  state.settings.presPhone = document.getElementById('presPhone').value.trim();
+  saveState();
+  showToast('Podešavanja sačuvana', 'success');
+}
+function toggleSetting(key) {
+  state.settings[key] = !state.settings[key];
+  document.getElementById(`toggle-${key}`).classList.toggle('on', state.settings[key]);
+  saveState();
+}
+
+// ═══════════════════════════════════════════════════════════
+// IZVRŠIOCI
+// ═══════════════════════════════════════════════════════════
+async function addDirector() {
+  const name = document.getElementById('d-name').value.trim();
+  const role = document.getElementById('d-role').value.trim();
+  const phone = document.getElementById('d-phone').value.trim();
+  if (!name || !phone) { showToast('Ime i broj/Chat ID su obavezni', 'error'); return; }
+  const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().substring(0,2);
+  const d = await sbInsert('direktori', { ime:name, uloga:role||'Izvršilac', telefon:phone, boja:state.selectedColor, inicijali:initials });
+  if (!d) return;
+  state.directors.push({ id:d.id, name:d.ime, role:d.uloga, phone:d.telefon, color:d.boja, initials:d.inicijali });
+  closeModal('addDirector'); render();
+  showToast(`Izvršilac ${name} dodan`, 'success');
+}
+async function removeDirector(id) {
+  if (!confirm('Obrisati izvršioca?')) return;
+  await sbDelete('direktori', id);
+  state.directors = state.directors.filter(d => d.id !== id);
+  render();
+  showToast('Izvršilac obrisan', 'info');
+}
+function selectColor(color, el) {
+  state.selectedColor = color;
+  document.querySelectorAll('.color-opt').forEach(o => o.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+// ═══════════════════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════════════════
+function openModal(name) {
+  document.getElementById(`modal-${name}`).classList.add('open');
+  if (name === 'newTask') {
+    renderDirCheckboxes('m-dirCheckboxes');
+    document.getElementById('m-title').value = '';
+    document.getElementById('m-desc').value = '';
+    document.getElementById('m-tgPreview').textContent = 'Unesite naslov...';
+  }
+}
+function closeModal(name) {
+  document.getElementById(`modal-${name}`).classList.remove('open');
+}
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+// ═══════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════
+function showToast(msg, type='info') {
+  const icons = { success:'✓', error:'✕', info:'◈' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span style="flex-shrink:0;">${icons[type]}</span><span style="color:var(--text);">${msg}</span>`;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// ═══════════════════════════════════════════════════════════
+// MOBILNE FUNKCIJE
+// ═══════════════════════════════════════════════════════════
+function isMobile() { return window.innerWidth <= 768; }
+
+// ── Bottom nav navigacija ──
+function mobileNav(view, btn) {
+  document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  document.getElementById('rp-detail-mobile').classList.remove('open');
+
+  if (view === 'izvrsoci') {
+    ['tasks','statistika','scoreboard','settings'].forEach(v => {
+      const el = document.getElementById(`view-${v}`);
+      if (el) el.classList.add('hidden');
+    });
+    const vd = document.getElementById('view-izvrsoci');
+    if (vd) vd.classList.remove('hidden');
+    renderMobileIzvrsociList();
+  } else {
+    const vd = document.getElementById('view-izvrsoci');
+    if (vd) vd.classList.add('hidden');
+    switchView(view);
   }
 }
 
-// ═══════════════ PANEL HELPERS ════════════════
-function setPanel(idx, cls) {
-  const p=document.getElementById('p'+idx);
-  if(!p) return;
-  p.className='panel'+(cls?' '+cls:'');
+// ── Lista izvršioca na mobu ──
+function renderMobileIzvrsociList() {
+  const el = document.getElementById('mobileIzvrsociList');
+  if (!el) return;
+  el.innerHTML = state.directors.map(d => {
+    const total = state.tasks.filter(t => t.recipients.includes(d.id)).length;
+    const done = state.tasks.filter(t => t.recipients.includes(d.id) && t.status === 'zavrseno').length;
+    const active = state.tasks.filter(t => t.recipients.includes(d.id) && t.status !== 'zavrseno').length;
+    return `
+    <div onclick="filterByDirector(${d.id});mobileNav('tasks',document.getElementById('bn-tasks'));"
+      style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius-lg);cursor:pointer;active:opacity:0.8;">
+      <div style="width:40px;height:40px;border-radius:50%;background:${d.color}22;color:${d.color};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;font-family:'IBM Plex Mono',monospace;flex-shrink:0;">${d.initials}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:500;color:var(--text);">${d.name}</div>
+        <div style="font-size:11px;color:var(--muted);">${d.role}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:${active > 0 ? 'var(--orange)' : 'var(--muted)'};">${active}</div>
+        <div style="font-size:10px;color:var(--muted);">aktivnih</div>
+      </div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>`;
+  }).join('');
 }
 
-function flashPanels(cls) {
-  for(let i=0;i<6;i++) setPanel(i,cls);
-  setTimeout(()=>{for(let i=0;i<6;i++){
-    if(!alertPanelState[i]) setPanel(i,'');
-  }}, 300);
+// ── Drawer (novi zadatak na mobu) ──
+function openDrawer() {
+  renderDirCheckboxes('mob-dirCheckboxes');
+  document.getElementById('mobileDrawer').classList.add('open');
+  document.getElementById('drawerOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDrawer() {
+  document.getElementById('mobileDrawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  // Reset forme
+  ['mob-title','mob-desc'].forEach(id => { const e = document.getElementById(id); if(e) e.value=''; });
+  const mc = document.getElementById('mob-dirCheckboxes');
+  if (mc) mc.querySelectorAll('.dir-check.checked').forEach(el => el.classList.remove('checked'));
+  document.getElementById('mob-tgPreview').textContent = 'Unesite naslov...';
 }
 
-// ═══════════════ VISUAL FX ════════════════
-function spawnFloat(text, color) {
-  const pool=document.getElementById('floatPool');
-  const chip=document.createElement('div');
-  chip.className='float-chip';
-  chip.innerText=text;
-  chip.style.color=color;
-  chip.style.left=(30+Math.random()*40)+'%';
-  chip.style.top =(40+Math.random()*20)+'%';
-  pool.appendChild(chip);
-  chip.addEventListener('animationend',()=>chip.remove());
+function updatePreviewMob() {
+  const title = document.getElementById('mob-title').value;
+  const desc  = document.getElementById('mob-desc').value;
+  const prio  = document.getElementById('mob-priority').value;
+  const due   = document.getElementById('mob-due').value;
+  const el = document.getElementById('mob-tgPreview');
+  if (!title.trim()) { el.textContent = 'Unesite naslov...'; return; }
+  el.textContent = buildTelegramMsg(title, desc, prio, due, '').replace(/\*/g,'').replace(/_/g,'');
 }
 
-function flashScreen(rgba) {
-  const el=document.getElementById('flashOverlay');
-  el.style.background=rgba;
-  el.style.opacity='1';
-  setTimeout(()=>el.style.opacity='0', 120);
+async function createTaskMob() {
+  const title = document.getElementById('mob-title').value.trim();
+  if (!title) { showToast('Unesite naslov zadatka', 'error'); return; }
+  const recs = getCheckedDirs('mob-dirCheckboxes');
+  if (!recs.length) { showToast('Odaberite najmanje jednog izvršioca', 'error'); return; }
+  const task = await makeTask(title,
+    document.getElementById('mob-desc').value.trim(),
+    document.getElementById('mob-priority').value,
+    document.getElementById('mob-due').value,
+    recs);
+  if (!task) return;
+  sendTelegram(task);
+  state.tasks.unshift(task);
+  closeDrawer(); render();
+  showToast(`Zadatak poslan ${recs.length} izvršiocu/ima`, 'success');
 }
 
-// ═══════════════ INIT ════════════════
-(async()=>{
-  const {data:{session}}=await sb.auth.getSession();
-  if(session?.user) afterLogin(session.user);
-  sb.auth.onAuthStateChange((_,s)=>{ if(s?.user) afterLogin(s.user); else showLoggedOut(); });
+// ── Mobilni detalj zadatka ──
+function selectTaskMob(id) {
+  if (!isMobile()) { selectTask(id); return; }
+  state.selectedTask = id;
+  const task = state.tasks.find(t => t.id === id);
+  if (!task) return;
+
+  document.getElementById('mob-detail-title').textContent = task.title;
+  document.getElementById('mob-detail-desc').textContent = task.desc || 'Bez opisa';
+  document.getElementById('mob-detail-due').textContent = formatDate(task.due);
+  document.getElementById('mob-detail-recipients').textContent =
+    task.recipients.map(id => { const d=state.directors.find(d=>d.id===id); return d?d.name:'?'; }).join(', ');
+
+  const sc = isOverdue(task) && task.status !== 'zavrseno' ? 'prekoraceno' : task.status;
+  const sl = { poslato:'Poslato', primljeno:'Primljeno', 'u-toku':'U toku', zavrseno:'Završeno', prekoraceno:'Prekoračeno', ceka:'Čeka' }[sc] || sc;
+  const sp = document.getElementById('mob-detail-status');
+  sp.className = `status-pill ${sc}`;
+  sp.innerHTML = `<span class="status-dot"></span> <span id="mob-detail-status-text">${sl}</span>`;
+  document.getElementById('mob-detail-priority').className = `priority-badge ${task.priority}`;
+  document.getElementById('mob-detail-priority').textContent = task.priority;
+
+  const escEl = document.getElementById('mob-detail-escal');
+  if (isOverdue(task) && task.status !== 'zavrseno') {
+    escEl.style.display = 'block';
+    document.getElementById('mob-detail-escal-msg').innerHTML = `<strong>Prekoračen rok!</strong> Zadatak nije završen do ${formatDate(task.due)}.`;
+  } else { escEl.style.display = 'none'; }
+
+  document.getElementById('mob-detail-timeline').innerHTML = (task.timeline||[]).map(item =>
+    `<div class="timeline-item">
+      <div class="timeline-dot ${item.color}"></div>
+      <div style="flex:1;">
+        <div class="timeline-text">${item.text}</div>
+        <div class="timeline-time">${item.time}</div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('rp-detail-mobile').classList.add('open');
+  window.scrollTo(0, 0);
+}
+
+function closeMobileDetail() {
+  document.getElementById('rp-detail-mobile').classList.remove('open');
+  state.selectedTask = null;
+}
+
+async function markDoneMob() {
+  const task = state.tasks.find(t => t.id === state.selectedTask);
+  if (!task) return;
+  await sbUpdate('zadaci', task.id, { status:'zavrseno', closed_at: new Date().toISOString() });
+  await sbInsert('izvestaji', { zadatak_id:task.id, izvršilac_id:0, tip:'zatvoren', poruka:'Zadatak zatvorio kabinet' });
+  await refreshTasks();
+  closeMobileDetail();
+  showToast('Zadatak zatvoren ✓', 'success');
+}
+async function sendReminderMob() {
+  const task = state.tasks.find(t => t.id === state.selectedTask);
+  if (!task) return;
+  task.recipients.forEach(id => sendReminderTelegram(task, id));
+  await sbInsert('izvestaji', { zadatak_id:task.id, izvršilac_id:0, tip:'podsetnik', poruka:'Ručni podsetnik poslan' });
+  await refreshTasks();
+  showToast('Podsetnik poslan', 'info');
+}
+async function deleteTaskMob() {
+  if (!state.selectedTask) return;
+  if (!confirm('Obrisati zadatak?')) return;
+  await sbDelete('zadaci', state.selectedTask);
+  state.tasks = state.tasks.filter(t => t.id !== state.selectedTask);
+  state.selectedTask = null;
+  closeMobileDetail(); render();
+  showToast('Zadatak obrisan', 'info');
+}
+
+// ── Presreći klik na task kartici za mob ──
+function selectTask(id) {
+  if (isMobile()) { selectTaskMob(id); return; }
+  state.selectedTask = id;
+  const task = state.tasks.find(t => t.id === id);
+  if (!task) return;
+  document.getElementById('rp-form').classList.add('hidden');
+  document.getElementById('rp-detail').classList.remove('hidden');
+  document.getElementById('detail-title').textContent = task.title;
+  document.getElementById('detail-desc').textContent = task.desc || 'Bez opisa';
+  document.getElementById('detail-due').textContent = formatDate(task.due);
+  document.getElementById('detail-recipients').textContent = task.recipients.map(id => { const d=state.directors.find(d=>d.id===id); return d?d.name:'?'; }).join(', ');
+  const sc = isOverdue(task) && task.status !== 'zavrseno' ? 'prekoraceno' : task.status;
+  const sl = { poslato:'Poslato', primljeno:'Primljeno', 'u-toku':'U toku', zavrseno:'Završeno', prekoraceno:'Prekoračeno', ceka:'Čeka' }[sc] || sl;
+  const sp = document.getElementById('detail-status');
+  sp.className = `status-pill ${sc}`;
+  sp.innerHTML = `<span class="status-dot"></span> <span id="detail-status-text">${sl}</span>`;
+  document.getElementById('detail-priority').className = `priority-badge ${task.priority}`;
+  document.getElementById('detail-priority').textContent = task.priority;
+  const escSection = document.getElementById('detail-escalation-section');
+  if (isOverdue(task) && task.status !== 'zavrseno') {
+    escSection.style.display = 'block';
+    document.getElementById('detail-escalation-msg').innerHTML = `<strong>Prekoračen rok!</strong> Zadatak nije završen do ${formatDate(task.due)}.`;
+  } else { escSection.style.display = 'none'; }
+  document.getElementById('detail-timeline').innerHTML = (task.timeline||[]).map(item =>
+    `<div class="timeline-item">
+      <div class="timeline-dot ${item.color}"></div>
+      <div style="flex:1;">
+        <div class="timeline-text">${item.text}</div>
+        <div class="timeline-time">${item.time}</div>
+      </div>
+    </div>`).join('');
+  renderTaskList();
+}
+
+// ── Ažuriraj mob badge ──
+function updateMobBadge() {
+  const n = state.tasks.filter(t=>t.status!=='zavrseno').length;
+  const badge = document.getElementById('mbn-badge-total');
+  if (badge) { badge.textContent = n; badge.style.display = n > 0 ? 'flex' : 'none'; }
+}
+
+// ── Prikaži view-izvršioci unutar main na mobu ──
+const origSwitchView = switchView;
+// (switchView je već definisan gore — mob navigacija ga koristi direktno)
+
+// Pozovi updateMobBadge pri svakom renderu
+const origRender = render;
+render = function() { origRender(); updateMobBadge(); };
+
+// ═══════════════════════════════════════════════════════════
+// CUSTOM KALENDAR
+// ═══════════════════════════════════════════════════════════
+const calState = {};
+const calDefs = [
+  { id:'qDue',   inputId:'qDue',   onSelect:()=>updatePreview(false) },
+  { id:'mDue',   inputId:'m-due',  onSelect:()=>updatePreview(true) },
+  { id:'mobDue', inputId:'mob-due',onSelect:()=>updatePreviewMob() },
+];
+
+function calInit(id) {
+  if (calState[id]) return;
+  const t = new Date();
+  calState[id] = { year:t.getFullYear(), month:t.getMonth(), selected:null };
+}
+
+function toggleCal(id) {
+  calInit(id);
+  const drop = document.getElementById(`cal-drop-${id}`);
+  const trig = document.getElementById(`cal-trigger-${id}`);
+  const isOpen = drop.classList.contains('open');
+  document.querySelectorAll('.cal-dropdown.open').forEach(d=>d.classList.remove('open'));
+  document.querySelectorAll('.cal-trigger.open').forEach(t=>t.classList.remove('open'));
+  if (!isOpen) { renderCalDrop(id); drop.classList.add('open'); trig.classList.add('open'); }
+}
+
+function renderCalDrop(id) {
+  calInit(id);
+  const s = calState[id];
+  const drop = document.getElementById(`cal-drop-${id}`);
+  const today = new Date();
+  const meseci = ['Januar','Februar','Mart','April','Maj','Jun','Jul','Avgust','Septembar','Oktobar','Novembar','Decembar'];
+  const daniNaz = ['Po','Ut','Sr','Če','Pe','Su','Ne'];
+  const daysInMonth = new Date(s.year, s.month+1, 0).getDate();
+  let startDay = new Date(s.year, s.month, 1).getDay();
+  startDay = startDay===0 ? 6 : startDay-1;
+
+  let cells = daniNaz.map(d=>`<div class="cal-day-name">${d}</div>`).join('');
+  for (let i=0; i<startDay; i++) {
+    const pd = new Date(s.year, s.month, -startDay+i+1);
+    cells += `<button class="cal-day other-month disabled" disabled>${pd.getDate()}</button>`;
+  }
+  for (let d=1; d<=daysInMonth; d++) {
+    const ds = `${s.year}-${String(s.month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = today.getFullYear()===s.year && today.getMonth()===s.month && today.getDate()===d;
+    const isSel = s.selected===ds;
+    const cls = ['cal-day', isToday?'today':'', isSel?'selected':''].filter(Boolean).join(' ');
+    cells += `<button class="${cls}" onclick="calPickDay('${id}','${ds}')">${d}</button>`;
+  }
+  const rem = (startDay+daysInMonth)%7===0 ? 0 : 7-((startDay+daysInMonth)%7);
+  for (let i=1; i<=rem; i++) cells += `<button class="cal-day other-month disabled" disabled>${i}</button>`;
+
+  drop.innerHTML = `
+    <div class="cal-header">
+      <button class="cal-nav" onclick="calMove('${id}',-1)">&#8249;</button>
+      <div class="cal-month-year">${meseci[s.month]} ${s.year}</div>
+      <button class="cal-nav" onclick="calMove('${id}',1)">&#8250;</button>
+    </div>
+    <div class="cal-grid">${cells}</div>
+    <div class="cal-footer">
+      <button class="cal-clear" onclick="calClear('${id}')">Obriši datum</button>
+      <button class="cal-today-btn" onclick="calToday('${id}')">Danas</button>
+    </div>`;
+}
+
+function calMove(id, delta) {
+  calInit(id);
+  calState[id].month += delta;
+  if (calState[id].month>11) { calState[id].month=0; calState[id].year++; }
+  if (calState[id].month<0)  { calState[id].month=11; calState[id].year--; }
+  renderCalDrop(id);
+}
+
+function calPickDay(id, ds) {
+  calInit(id);
+  calState[id].selected = ds;
+  const def = calDefs.find(c=>c.id===id);
+  if (def) {
+    document.getElementById(def.inputId).value = ds;
+    const p = ds.split('-');
+    const textEl = document.getElementById(`cal-text-${id}`);
+    textEl.textContent = `${p[2]}.${p[1]}.${p[0]}.`;
+    textEl.classList.remove('placeholder');
+    def.onSelect();
+  }
+  renderCalDrop(id);
+  setTimeout(() => {
+    document.getElementById(`cal-drop-${id}`).classList.remove('open');
+    document.getElementById(`cal-trigger-${id}`).classList.remove('open');
+  }, 100);
+}
+
+function calToday(id) {
+  const t = new Date();
+  calInit(id);
+  calState[id].year = t.getFullYear();
+  calState[id].month = t.getMonth();
+  const ds = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+  calPickDay(id, ds);
+}
+
+function calClear(id) {
+  calInit(id);
+  calState[id].selected = null;
+  const def = calDefs.find(c=>c.id===id);
+  if (def) {
+    document.getElementById(def.inputId).value = '';
+    const textEl = document.getElementById(`cal-text-${id}`);
+    textEl.textContent = 'Odaberi datum';
+    textEl.classList.add('placeholder');
+    def.onSelect();
+  }
+  renderCalDrop(id);
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.cal-wrap')) {
+    document.querySelectorAll('.cal-dropdown.open').forEach(d=>d.classList.remove('open'));
+    document.querySelectorAll('.cal-trigger.open').forEach(t=>t.classList.remove('open'));
+  }
+});
+
+// Init
+document.getElementById('toggle-escalation').classList.toggle('on', state.settings.escalation);
+
+// Provjeri sesiju pa prikaži login ili sistem
+(async () => {
+  const ok = await checkSession();
+  if (ok) {
+    document.getElementById('loginScreen').classList.add('gone');
+    prikaziPoUlozi();
+    await loadFromSupabase();
+  }
 })();
 </script>
 </body>
