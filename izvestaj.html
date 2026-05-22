@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Operativni centar — Potvrda zadatka</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#06080f;--bg2:#0d1117;--bg3:#141a24;--bg4:#1a2235;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#dde3ee;--muted:#5a6a82;--muted2:#2e3d52;
+  --gold:#c9a84c;--gold2:#e8c96a;--gold-bg:rgba(201,168,76,0.09);
+  --red:#c94c4c;--red-bg:rgba(201,76,76,0.09);
+  --orange:#c97a4c;--orange-bg:rgba(201,122,76,0.09);
+  --green:#4caa6e;--green-bg:rgba(76,170,110,0.09);
+  --blue:#4c7ec9;--blue-bg:rgba(76,126,201,0.09);
+  --radius:8px;--radius-lg:14px;
+}
+html,body{
+  background:var(--bg);color:var(--text);
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:15px;line-height:1.6;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── HEADER ── */
+.header{
+  padding:1.1rem 1.25rem 1rem;
+  border-bottom:0.5px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+  background:rgba(6,8,15,0.95);
+  backdrop-filter:blur(10px);
+  position:sticky;top:0;z-index:50;
+}
+.header-hex{
+  width:32px;height:32px;
+  background:var(--gold);
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  flex-shrink:0;
+}
+.header-text{
+  flex:1;
+}
+.header-title{
+  font-family:'Playfair Display',serif;
+  font-size:15px;font-weight:700;
+  letter-spacing:0.06em;color:var(--gold);
+}
+.header-sub{
+  font-size:10px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--muted);
+  font-family:'IBM Plex Mono',monospace;
+}
+
+/* ── MAIN ── */
+.main{
+  padding:1.5rem 1.25rem 3rem;
+  max-width:520px;margin:0 auto;
+}
+
+/* ── LOADING / ERROR ── */
+.screen{
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  min-height:60vh;gap:1rem;text-align:center;
+  padding:2rem;
+}
+.screen-icon{font-size:40px;opacity:0.5;}
+.screen-title{font-size:16px;font-weight:500;color:var(--text);}
+.screen-sub{font-size:13px;color:var(--muted);}
+.spinner{
+  width:36px;height:36px;
+  border:2.5px solid var(--border2);
+  border-top-color:var(--gold);
+  border-radius:50%;
+  animation:spin 0.8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── ZADATAK KARTICA ── */
+.task-card{
+  background:var(--bg2);
+  border:0.5px solid var(--border2);
+  border-radius:var(--radius-lg);
+  padding:1.4rem 1.25rem;
+  margin-bottom:1.25rem;
+  position:relative;overflow:hidden;
+}
+.task-card::before{
+  content:'';position:absolute;
+  left:0;top:0;bottom:0;width:3.5px;
+  border-radius:3px 0 0 3px;
+}
+.task-card.urgentno::before{background:var(--red);}
+.task-card.visoko::before{background:var(--orange);}
+.task-card.normalno::before{background:var(--blue);}
+.task-card.nisko::before{background:var(--muted2);}
+.task-card::after{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,168,76,0.15),transparent);
+}
+
+.task-from{
+  font-size:10px;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--muted);font-family:'IBM Plex Mono',monospace;
+  margin-bottom:0.65rem;
+  display:flex;align-items:center;gap:6px;
+}
+.task-from::before{
+  content:'';width:6px;height:6px;border-radius:50%;
+  background:var(--green);flex-shrink:0;
+  animation:pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+.task-title{
+  font-family:'Playfair Display',serif;
+  font-size:19px;font-weight:600;
+  color:var(--text);line-height:1.35;
+  margin-bottom:0.85rem;
+}
+.task-desc{
+  font-size:14px;color:rgba(221,227,238,0.75);
+  line-height:1.65;margin-bottom:1.1rem;
+  padding-bottom:1rem;
+  border-bottom:0.5px solid var(--border);
+}
+
+.task-meta{
+  display:flex;flex-wrap:wrap;gap:10px;
+}
+.meta-item{
+  display:flex;align-items:center;gap:6px;
+  font-size:12px;color:var(--muted);
+  font-family:'IBM Plex Mono',monospace;
+}
+.meta-item svg{opacity:0.6;flex-shrink:0;}
+.priority-badge{
+  font-size:10px;font-weight:600;
+  padding:3px 9px;border-radius:20px;
+  font-family:'IBM Plex Mono',monospace;
+  text-transform:uppercase;letter-spacing:0.06em;
+}
+.priority-badge.urgentno{background:var(--red-bg);color:var(--red);border:0.5px solid rgba(201,76,76,0.3);}
+.priority-badge.visoko{background:var(--orange-bg);color:var(--orange);border:0.5px solid rgba(201,122,76,0.3);}
+.priority-badge.normalno{background:var(--blue-bg);color:var(--blue);border:0.5px solid rgba(76,126,201,0.3);}
+.priority-badge.nisko{background:var(--bg3);color:var(--muted);border:0.5px solid var(--border2);}
+
+/* ── AKCIJA PANEL ── */
+.action-section{
+  background:var(--bg2);
+  border:0.5px solid var(--border2);
+  border-radius:var(--radius-lg);
+  overflow:hidden;
+  margin-bottom:1.25rem;
+}
+.action-header{
+  padding:1rem 1.25rem 0.75rem;
+  border-bottom:0.5px solid var(--border);
+  font-size:11px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--muted);
+  font-family:'IBM Plex Mono',monospace;
+  font-weight:500;
+}
+
+/* Potvrdi dugme */
+.btn-confirm{
+  width:100%;padding:1.1rem 1.25rem;
+  background:linear-gradient(135deg,rgba(76,170,110,0.14),rgba(76,170,110,0.07));
+  border:none;border-bottom:0.5px solid var(--border);
+  display:flex;align-items:center;gap:14px;
+  cursor:pointer;transition:all 0.2s;
+  text-align:left;
+}
+.btn-confirm:hover:not(:disabled){
+  background:linear-gradient(135deg,rgba(76,170,110,0.22),rgba(76,170,110,0.12));
+}
+.btn-confirm:disabled{opacity:0.45;cursor:not-allowed;}
+.btn-confirm-icon{
+  width:42px;height:42px;border-radius:50%;
+  background:rgba(76,170,110,0.15);
+  border:1px solid rgba(76,170,110,0.3);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.btn-confirm-text{flex:1;}
+.btn-confirm-label{
+  font-size:15px;font-weight:600;color:var(--green);
+  display:block;margin-bottom:2px;
+}
+.btn-confirm-sub{
+  font-size:12px;color:var(--muted);
+}
+
+/* Problem dugme */
+.btn-problem{
+  width:100%;padding:1.1rem 1.25rem;
+  background:transparent;
+  border:none;
+  display:flex;align-items:center;gap:14px;
+  cursor:pointer;transition:all 0.2s;
+  text-align:left;
+}
+.btn-problem:hover{background:rgba(255,255,255,0.02);}
+.btn-problem-icon{
+  width:42px;height:42px;border-radius:50%;
+  background:rgba(201,122,76,0.12);
+  border:1px solid rgba(201,122,76,0.25);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.btn-problem-label{
+  font-size:15px;font-weight:600;color:var(--orange);
+  display:block;margin-bottom:2px;
+}
+.btn-problem-sub{font-size:12px;color:var(--muted);}
+
+/* ── FORMA ZA IZVEŠTAJ ── */
+.report-form{
+  background:var(--bg2);
+  border:0.5px solid var(--border2);
+  border-radius:var(--radius-lg);
+  padding:1.4rem 1.25rem;
+  margin-bottom:1.25rem;
+  display:none;
+}
+.report-form.open{display:block;}
+.form-label{
+  display:block;font-size:10px;
+  letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--muted);font-family:'IBM Plex Mono',monospace;
+  font-weight:500;margin-bottom:8px;
+}
+
+/* Tip problema dugmad */
+.problem-types{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:8px;margin-bottom:1.1rem;
+}
+.type-btn{
+  padding:10px 8px;
+  background:var(--bg3);
+  border:0.5px solid var(--border2);
+  border-radius:var(--radius);
+  cursor:pointer;transition:all 0.18s;
+  text-align:center;
+}
+.type-btn:hover{border-color:var(--border2);background:var(--bg4);}
+.type-btn.sel{
+  background:var(--orange-bg);
+  border-color:rgba(201,122,76,0.45);
+}
+.type-icon{font-size:20px;display:block;margin-bottom:4px;}
+.type-label{
+  font-size:11px;font-weight:500;color:var(--text);
+  font-family:'IBM Plex Mono',monospace;
+}
+
+.form-textarea{
+  width:100%;background:var(--bg3);
+  border:0.5px solid var(--border2);
+  border-radius:var(--radius);
+  color:var(--text);
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:14px;padding:12px;
+  outline:none;resize:vertical;
+  min-height:110px;line-height:1.6;
+  transition:border-color 0.18s;
+  margin-bottom:1rem;
+}
+.form-textarea:focus{
+  border-color:rgba(201,122,76,0.4);
+  background:var(--bg4);
+}
+.form-textarea::placeholder{color:var(--muted2);}
+
+/* Hitnost slider */
+.hitnost-wrap{margin-bottom:1.1rem;}
+.hitnost-labels{
+  display:flex;justify-content:space-between;
+  font-size:10px;color:var(--muted);
+  font-family:'IBM Plex Mono',monospace;
+  margin-top:4px;
+}
+input[type="range"]{
+  width:100%;accent-color:var(--orange);
+  cursor:pointer;
+}
+
+/* Submit dugme */
+.btn-submit{
+  width:100%;padding:13px;
+  background:linear-gradient(135deg,rgba(201,122,76,0.16),rgba(201,122,76,0.08));
+  border:0.5px solid rgba(201,122,76,0.4);
+  border-radius:var(--radius);
+  color:var(--orange);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;font-weight:600;
+  letter-spacing:0.18em;text-transform:uppercase;
+  cursor:pointer;transition:all 0.2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-submit:hover:not(:disabled){
+  background:linear-gradient(135deg,rgba(201,122,76,0.24),rgba(201,122,76,0.14));
+}
+.btn-submit:disabled{opacity:0.45;cursor:not-allowed;}
+
+/* ── STATUS PORUKE ── */
+.status-banner{
+  border-radius:var(--radius-lg);
+  padding:1.1rem 1.25rem;
+  display:flex;align-items:flex-start;gap:12px;
+  margin-bottom:1.25rem;
+}
+.status-banner.success{
+  background:var(--green-bg);
+  border:0.5px solid rgba(76,170,110,0.3);
+}
+.status-banner.error{
+  background:var(--red-bg);
+  border:0.5px solid rgba(201,76,76,0.3);
+}
+.status-banner.info{
+  background:var(--blue-bg);
+  border:0.5px solid rgba(76,126,201,0.3);
+}
+.status-banner.warning{
+  background:var(--orange-bg);
+  border:0.5px solid rgba(201,122,76,0.3);
+}
+.status-icon{font-size:20px;flex-shrink:0;margin-top:1px;}
+.status-title{font-size:14px;font-weight:600;margin-bottom:3px;}
+.status-banner.success .status-title{color:var(--green);}
+.status-banner.error .status-title{color:var(--red);}
+.status-banner.info .status-title{color:var(--blue);}
+.status-banner.warning .status-title{color:var(--orange);}
+.status-text{font-size:13px;color:var(--muted);line-height:1.55;}
+
+/* ── TIMELINE ── */
+.timeline-section{
+  background:var(--bg2);
+  border:0.5px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:1.1rem 1.25rem;
+  margin-bottom:1.25rem;
+}
+.section-label{
+  font-size:10px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--muted);
+  font-family:'IBM Plex Mono',monospace;
+  margin-bottom:1rem;
+}
+.tl-item{
+  display:flex;gap:12px;
+  padding-bottom:14px;
+  position:relative;
+}
+.tl-item:last-child{padding-bottom:0;}
+.tl-dot{
+  width:8px;height:8px;border-radius:50%;
+  flex-shrink:0;margin-top:5px;
+  position:relative;z-index:1;
+}
+.tl-item:not(:last-child) .tl-dot::after{
+  content:'';position:absolute;
+  left:3px;top:12px;width:1px;
+  height:calc(100% + 6px);
+  background:var(--border2);
+}
+.tl-dot.blue{background:var(--blue);}
+.tl-dot.green{background:var(--green);}
+.tl-dot.orange{background:var(--orange);}
+.tl-dot.red{background:var(--red);}
+.tl-dot.gold{background:var(--gold);}
+.tl-text{font-size:13px;color:var(--text);line-height:1.5;flex:1;}
+.tl-time{font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
+
+/* ── ALREADY DONE ── */
+.done-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--green-bg);
+  border:0.5px solid rgba(76,170,110,0.3);
+  color:var(--green);
+  font-size:11px;font-weight:600;
+  padding:4px 12px;border-radius:20px;
+  font-family:'IBM Plex Mono',monospace;
+  text-transform:uppercase;letter-spacing:0.08em;
+}
+
+/* ── FOOTER ── */
+.footer{
+  text-align:center;margin-top:2rem;
+  font-size:11px;color:var(--muted2);
+  font-family:'IBM Plex Mono',monospace;
+  letter-spacing:0.12em;
+}
+
+/* ── ANIMACIJE ── */
+.fade-in{animation:fadeIn 0.3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{
+  height:2px;background:var(--border);
+  position:fixed;top:0;left:0;right:0;z-index:100;
+}
+.progress-fill{
+  height:100%;background:var(--gold);
+  transition:width 0.3s ease;width:0%;
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-hex" aria-hidden="true"></div>
+  <div class="header-text">
+    <div class="header-title">Operativni centar</div>
+    <div class="header-sub">Potvrda zadatka</div>
+  </div>
+</header>
+
+<!-- MAIN CONTENT -->
+<main class="main" id="mainContent">
+
+  <!-- LOADING -->
+  <div class="screen" id="screenLoading">
+    <div class="spinner"></div>
+    <div class="screen-title">Učitavanje zadatka...</div>
+    <div class="screen-sub">Molimo sačekajte</div>
+  </div>
+
+  <!-- ERROR -->
+  <div class="screen hidden" id="screenError">
+    <div class="screen-icon">⚠️</div>
+    <div class="screen-title" id="errorTitle">Greška</div>
+    <div class="screen-sub" id="errorText">Zadatak nije pronađen.</div>
+  </div>
+
+  <!-- SADRŽAJ -->
+  <div class="hidden fade-in" id="screenContent">
+
+    <!-- STATUS BANNER (prikazuje se kad treba) -->
+    <div id="statusBanner" style="display:none;"></div>
+
+    <!-- ZADATAK KARTICA -->
+    <div class="task-card normalno" id="taskCard">
+      <div class="task-from">
+        <span id="taskFrom">Kabinet predsednika</span>
+      </div>
+      <div class="task-title" id="taskTitle">—</div>
+      <div class="task-desc" id="taskDesc" style="display:none;"></div>
+      <div class="task-meta">
+        <span class="priority-badge normalno" id="taskPriority">normalno</span>
+        <div class="meta-item" id="taskDueWrap" style="display:none;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <span id="taskDue"></span>
+        </div>
+        <div class="meta-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+          <span id="taskRecipient">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AKCIJA: Potvrdi ili Prijavi problem -->
+    <div class="action-section" id="actionSection">
+      <div class="action-header">Vaša akcija</div>
+      <button class="btn-confirm" id="btnConfirm" onclick="potvrdiPrijem()">
+        <div class="btn-confirm-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4caa6e" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <div class="btn-confirm-text">
+          <span class="btn-confirm-label">Potvrdite prijem</span>
+          <span class="btn-confirm-sub">Kabinet će biti obavešten da ste primili zadatak</span>
+        </div>
+      </button>
+      <button class="btn-problem" onclick="toggleProblemForm()">
+        <div class="btn-problem-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c97a4c" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <div>
+          <span class="btn-problem-label">Prijavite problem</span>
+          <span class="btn-problem-sub">Opišite prepreku ili kašnjenje</span>
+        </div>
+      </button>
+    </div>
+
+    <!-- FORMA ZA PROBLEM -->
+    <div class="report-form" id="reportForm">
+      <div class="form-label" style="margin-bottom:12px;">Tip problema</div>
+      <div class="problem-types">
+        <div class="type-btn" onclick="selectType('resursi', this)">
+          <span class="type-icon">🔧</span>
+          <span class="type-label">Nedostaju resursi</span>
+        </div>
+        <div class="type-btn" onclick="selectType('vreme', this)">
+          <span class="type-icon">⏱️</span>
+          <span class="type-label">Kašnjenje</span>
+        </div>
+        <div class="type-btn" onclick="selectType('dozvola', this)">
+          <span class="type-icon">📋</span>
+          <span class="type-label">Problem s dozvolom</span>
+        </div>
+        <div class="type-btn" onclick="selectType('drugo', this)">
+          <span class="type-icon">💬</span>
+          <span class="type-label">Drugo</span>
+        </div>
+      </div>
+
+      <label class="form-label">Opis problema <span style="color:var(--red);">*</span></label>
+      <textarea class="form-textarea" id="problemText"
+        placeholder="Opišite problem sa kojim ste se susreli. Što više detalja — lakše ćemo rešiti situaciju..."></textarea>
+
+      <div class="hitnost-wrap">
+        <label class="form-label">Hitnost problema</label>
+        <input type="range" id="hitnostRange" min="1" max="5" value="3" oninput="updateHitnost(this.value)" />
+        <div class="hitnost-labels">
+          <span>Nije hitno</span>
+          <span id="hitnostLabel" style="color:var(--orange);font-weight:600;">Srednje</span>
+          <span>Veoma hitno</span>
+        </div>
+      </div>
+
+      <button class="btn-submit" id="btnSubmit" onclick="posaljiIzvestaj()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+        Pošalji izveštaj
+      </button>
+    </div>
+
+    <!-- AKTIVNOST / TIMELINE -->
+    <div class="timeline-section" id="timelineSection" style="display:none;">
+      <div class="section-label">Aktivnost</div>
+      <div id="timelineContent"></div>
+    </div>
+
+  </div>
+
+</main>
+
+<div class="footer">Operativni centar · Vrnjačka Banja</div>
+
+<script>
+// ═══════════════════════════════════════
+// SUPABASE KONFIGURACIJA
+// ═══════════════════════════════════════
+const SB_URL = 'https://zmuvzdqewcrvnfyaxzhk.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptdXZ6ZHFld2Nydm5meWF4emhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MzY2OTEsImV4cCI6MjA5NTAxMjY5MX0.rcQUsaCQepblF6MzuP_FN5aWHfMjEgYHszx1MaX8Ad4';
+const HDR = { 'Content-Type':'application/json', 'apikey':SB_KEY, 'Authorization':`Bearer ${SB_KEY}` };
+
+// ═══════════════════════════════════════
+// STANJE
+// ═══════════════════════════════════════
+let zadatak = null;
+let izvrsioac = null;
+let zadatakId = null;
+let izvrsiolacId = null;
+let odabraniTip = null;
+
+// ═══════════════════════════════════════
+// URL PARAMETRI
+// ?z=ZADATAK_ID&i=IZVRSIOLAC_ID
+// ═══════════════════════════════════════
+function getParam(name) {
+  return new URLSearchParams(window.location.search).get(name);
+}
+
+// ═══════════════════════════════════════
+// SUPABASE HELPERS
+// ═══════════════════════════════════════
+async function sbGet(table, query) {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${query}`, { headers: HDR });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function sbInsert(table, data) {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
+    method:'POST', headers:{ ...HDR, 'Prefer':'return=representation' },
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) throw new Error(await r.text());
+  const d = await r.json();
+  return Array.isArray(d) ? d[0] : d;
+}
+async function sbUpdate(table, id, data) {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {
+    method:'PATCH', headers:{ ...HDR, 'Prefer':'return=representation' },
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) throw new Error(await r.text());
+  const d = await r.json();
+  return Array.isArray(d) ? d[0] : d;
+}
+
+// ═══════════════════════════════════════
+// INIT — učitaj zadatak
+// ═══════════════════════════════════════
+async function init() {
+  setProgress(15);
+  zadatakId   = getParam('z');
+  izvrsiolacId = parseInt(getParam('i'));
+
+  if (!zadatakId || !izvrsiolacId) {
+    showError('Neispravan link', 'Ovaj link je neispravan ili je istekao. Molimo kontaktirajte kabinet predsednika.');
+    return;
+  }
+
+  try {
+    setProgress(40);
+
+    // Učitaj zadatak
+    const zadaci = await sbGet('zadaci', `id=eq.${zadatakId}&select=*`);
+    if (!zadaci.length) { showError('Zadatak nije pronađen', 'Zadatak možda više ne postoji u sistemu.'); return; }
+    zadatak = zadaci[0];
+
+    setProgress(65);
+
+    // Učitaj izvršioca
+    const dirs = await sbGet('direktori', `id=eq.${izvrsiolacId}&select=*`);
+    if (!dirs.length) { showError('Korisnik nije pronađen', 'Vaš nalog nije pronađen u sistemu.'); return; }
+    izvrsioac = dirs[0];
+
+    // Učitaj izveštaje za ovaj zadatak
+    const izvestaji = await sbGet('izvestaji', `zadatak_id=eq.${zadatakId}&select=*&order=created_at.asc`);
+
+    setProgress(90);
+
+    prikaziZadatak(zadatak, izvrsioac, izvestaji);
+    setProgress(100);
+    setTimeout(() => setProgress(0), 600);
+
+  } catch(e) {
+    console.error(e);
+    showError('Greška pri učitavanju', 'Proverite internet vezu i pokušajte ponovo.');
+  }
+}
+
+// ═══════════════════════════════════════
+// PRIKAZ ZADATKA
+// ═══════════════════════════════════════
+function prikaziZadatak(z, dir, izvestaji) {
+  // Sakrij loading, prikaži sadržaj
+  document.getElementById('screenLoading').classList.add('hidden');
+  document.getElementById('screenContent').classList.remove('hidden');
+
+  // Popuni karticu
+  document.getElementById('taskFrom').textContent = 'Kabinet predsednika';
+  document.getElementById('taskTitle').textContent = z.naslov;
+  document.getElementById('taskRecipient').textContent = dir.ime;
+
+  const card = document.getElementById('taskCard');
+  card.className = `task-card ${z.prioritet || 'normalno'}`;
+
+  const badge = document.getElementById('taskPriority');
+  badge.className = `priority-badge ${z.prioritet || 'normalno'}`;
+  const prioritetLabel = { urgentno:'Urgentno', visoko:'Visoko', normalno:'Normalno', nisko:'Nisko' }[z.prioritet] || z.prioritet;
+  badge.textContent = prioritetLabel;
+
+  if (z.opis) {
+    document.getElementById('taskDesc').style.display = 'block';
+    document.getElementById('taskDesc').textContent = z.opis;
+  }
+
+  if (z.rok) {
+    document.getElementById('taskDueWrap').style.display = 'flex';
+    document.getElementById('taskDue').textContent = formatDate(z.rok);
+  }
+
+  // Provjeri da li je već potvrđeno od ovog izvršioca
+  const vecPotvrdio = izvestaji.some(i => i.direktor_id === izvrsiolacId && i.tip === 'primljeno');
+  const vecPrijavio = izvestaji.some(i => i.direktor_id === izvrsiolacId && i.tip === 'izvestaj');
+  const zadatakZavrsen = z.status === 'zavrseno';
+
+  if (zadatakZavrsen) {
+    showStatusBanner('info', '✓', 'Zadatak zatvoren', 'Ovaj zadatak je označen kao završen od strane kabineta.');
+    document.getElementById('actionSection').style.display = 'none';
+  } else if (vecPotvrdio && vecPrijavio) {
+    showStatusBanner('success', '✓', 'Već ste potvrdili i prijavili problem', 'Kabinet je obavešten o Vašem izveštaju.');
+    document.getElementById('actionSection').style.display = 'none';
+  } else if (vecPotvrdio) {
+    showStatusBanner('success', '✓', 'Prijem potvrđen', 'Možete i dalje prijaviti problem ako postoji.');
+    // Sakrij samo dugme za potvrdu
+    document.getElementById('btnConfirm').style.display = 'none';
+  }
+
+  // Timeline
+  if (izvestaji.length > 0) {
+    document.getElementById('timelineSection').style.display = 'block';
+    renderTimeline(izvestaji, dir.id);
+  }
+}
+
+function renderTimeline(izvestaji, mojaId) {
+  const tipBoja = { kreiran:'blue', primljeno:'green', podsetnik:'orange', izvestaj:'gold', zatvoren:'green' };
+  const tipLabel = { kreiran:'Zadatak kreiran', primljeno:'Prijem potvrđen', podsetnik:'Podsetnik poslan', izvestaj:'Izveštaj podnet', zatvoren:'Zadatak zatvoren' };
+
+  document.getElementById('timelineContent').innerHTML = izvestaji.map(i => `
+    <div class="tl-item">
+      <div class="tl-dot ${tipBoja[i.tip] || 'blue'}"></div>
+      <div style="flex:1;">
+        <div class="tl-text">${i.poruka || tipLabel[i.tip] || i.tip}</div>
+        <div class="tl-time">${formatDateTime(i.created_at)}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════
+// AKCIJE
+// ═══════════════════════════════════════
+async function potvrdiPrijem() {
+  const btn = document.getElementById('btnConfirm');
+  btn.disabled = true;
+
+  try {
+    setProgress(30);
+    await sbInsert('izvestaji', {
+      zadatak_id: zadatakId,
+      direktor_id: izvrsiolacId,
+      tip: 'primljeno',
+      poruka: `${izvrsioac.ime} potvrdio prijem zadatka`
+    });
+
+    // Ažuriraj status zadatka na 'primljeno' ako je bio 'poslato'
+    if (zadatak.status === 'poslato') {
+      await sbUpdate('zadaci', zadatakId, { status: 'primljeno' });
+    }
+
+    setProgress(100);
+    setTimeout(() => setProgress(0), 500);
+
+    showStatusBanner('success', '✓', 'Prijem potvrđen!', `Kabinet je obavešten da ste preuzeli zadatak. Vreme: ${new Date().toLocaleTimeString('sr-Latn',{hour:'2-digit',minute:'2-digit'})}`);
+    btn.style.display = 'none';
+
+    // Osvježi timeline
+    const izvestaji = await sbGet('izvestaji', `zadatak_id=eq.${zadatakId}&select=*&order=created_at.asc`);
+    document.getElementById('timelineSection').style.display = 'block';
+    renderTimeline(izvestaji, izvrsiolacId);
+
+  } catch(e) {
+    btn.disabled = false;
+    showStatusBanner('error', '✕', 'Greška', 'Nije moguće potvrditi prijem. Pokušajte ponovo.');
+    setProgress(0);
+  }
+}
+
+function toggleProblemForm() {
+  const form = document.getElementById('reportForm');
+  form.classList.toggle('open');
+  if (form.classList.contains('open')) {
+    setTimeout(() => form.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
+  }
+}
+
+function selectType(tip, el) {
+  odabraniTip = tip;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+const hitnostNazivi = { 1:'Nije hitno', 2:'Mala hitnost', 3:'Srednje', 4:'Hitno', 5:'Veoma hitno' };
+function updateHitnost(val) {
+  document.getElementById('hitnostLabel').textContent = hitnostNazivi[val] || 'Srednje';
+}
+
+async function posaljiIzvestaj() {
+  const text = document.getElementById('problemText').value.trim();
+  if (!text) {
+    document.getElementById('problemText').focus();
+    document.getElementById('problemText').style.borderColor = 'rgba(201,76,76,0.5)';
+    setTimeout(() => document.getElementById('problemText').style.borderColor = '', 2000);
+    return;
+  }
+
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true;
+  btn.textContent = 'Slanje...';
+  setProgress(40);
+
+  const hitnost = document.getElementById('hitnostRange').value;
+  const tipTekst = { resursi:'Nedostaju resursi', vreme:'Kašnjenje', dozvola:'Problem s dozvolom', drugo:'Ostalo' }[odabraniTip] || 'Prijava problema';
+  const poruka = `⚠️ ${tipTekst} (hitnost ${hitnost}/5)\n${text}`;
+
+  try {
+    // Ako nije potvrdio prijem — automatski potvrdi
+    const izvestajiCheck = await sbGet('izvestaji', `zadatak_id=eq.${zadatakId}&direktor_id=eq.${izvrsiolacId}&tip=eq.primljeno&select=id`);
+    if (!izvestajiCheck.length) {
+      await sbInsert('izvestaji', {
+        zadatak_id: zadatakId,
+        direktor_id: izvrsiolacId,
+        tip: 'primljeno',
+        poruka: `${izvrsioac.ime} potvrdio prijem zadatka (automatski)`
+      });
+    }
+
+    // Upiši izveštaj
+    await sbInsert('izvestaji', {
+      zadatak_id: zadatakId,
+      direktor_id: izvrsiolacId,
+      tip: 'izvestaj',
+      poruka: poruka
+    });
+
+    // Ažuriraj status
+    await sbUpdate('zadaci', zadatakId, { status: 'u-toku' });
+
+    setProgress(100);
+    setTimeout(() => setProgress(0), 500);
+
+    document.getElementById('reportForm').classList.remove('open');
+    document.getElementById('actionSection').style.display = 'none';
+
+    showStatusBanner('warning', '⚠️', 'Izveštaj poslan!', 'Kabinet predsednika je obavešten o problemu. Očekujte povratnu informaciju.');
+
+    // Osvježi timeline
+    const izvestaji = await sbGet('izvestaji', `zadatak_id=eq.${zadatakId}&select=*&order=created_at.asc`);
+    document.getElementById('timelineSection').style.display = 'block';
+    renderTimeline(izvestaji, izvrsiolacId);
+
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Pošalji izveštaj';
+    showStatusBanner('error', '✕', 'Greška pri slanju', 'Proverite internet vezu i pokušajte ponovo.');
+    setProgress(0);
+  }
+}
+
+// ═══════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════
+function showError(title, text) {
+  document.getElementById('screenLoading').classList.add('hidden');
+  document.getElementById('screenError').classList.remove('hidden');
+  document.getElementById('errorTitle').textContent = title;
+  document.getElementById('errorText').textContent = text;
+}
+
+function showStatusBanner(type, icon, title, text) {
+  const el = document.getElementById('statusBanner');
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div class="status-banner ${type} fade-in">
+      <div class="status-icon">${icon}</div>
+      <div>
+        <div class="status-title">${title}</div>
+        <div class="status-text">${text}</div>
+      </div>
+    </div>`;
+  el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function setProgress(pct) {
+  document.getElementById('progress').style.width = pct + '%';
+}
+
+function formatDate(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('sr-Latn', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
+
+function formatDateTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('sr-Latn',{day:'2-digit',month:'2-digit'}) + ' ' +
+         d.toLocaleTimeString('sr-Latn',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ═══════════════════════════════════════
+// START
+// ═══════════════════════════════════════
+init();
+</script>
+</body>
+</html>
