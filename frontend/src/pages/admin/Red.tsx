@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../../lib/supabase";
 import {
   getObavestenja,
+  getPorudzbinaSvgUrl,
   getRedZaIzradu,
   markObavestenjePoslato,
   setPorudzbinaStatus,
@@ -29,6 +29,14 @@ const NEXT_STATUS: Record<string, string | null> = {
   preuzeta: null,
 };
 
+const FILTERS = [
+  { key: "", label: "Sve aktivne" },
+  { key: "kreirana", label: "Čeka uplatu" },
+  { key: "placena", label: "Plaćeno" },
+  { key: "u_proizvodnji", label: "U izradi" },
+  { key: "spremna_za_preuzimanje", label: "Za preuzimanje" },
+];
+
 function buildMessage(tip: Obavestenje["tip"], o: Obavestenje["porudzbine"]): string {
   const tekst = Object.values(o.polja).filter(Boolean).join(", ");
   if (tip === "u_proizvodnji") {
@@ -42,10 +50,11 @@ export default function AdminRed() {
   const [obavestenja, setObavestenja] = useState<Obavestenje[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [filter, setFilter] = useState("");
 
   async function refresh() {
     try {
-      const [q, o] = await Promise.all([getRedZaIzradu(), getObavestenja()]);
+      const [q, o] = await Promise.all([getRedZaIzradu(filter || undefined), getObavestenja()]);
       setOrders(q.porudzbine);
       setObavestenja(o.obavestenja);
     } catch (err) {
@@ -55,7 +64,8 @@ export default function AdminRed() {
 
   useEffect(() => {
     refresh();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter]);
 
   async function advance(kod: string, current: string) {
     const next = NEXT_STATUS[current];
@@ -66,6 +76,15 @@ export default function AdminRed() {
       await refresh();
     } finally {
       setBusy(null);
+    }
+  }
+
+  async function downloadSvg(kod: string) {
+    try {
+      const { url } = await getPorudzbinaSvgUrl(kod);
+      window.open(url, "_blank");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Greška pri preuzimanju");
     }
   }
 
@@ -91,23 +110,27 @@ export default function AdminRed() {
   }
 
   return (
-    <div className="min-h-screen bg-[#EEF0F2] font-sans text-ink flex flex-col">
-      <header className="flex items-center justify-between px-8 py-3.5 bg-[#16191D] text-white">
-        <div className="flex items-center gap-7">
-          <span className="font-display font-extrabold text-lg">MaestroVolta · Proizvodnja</span>
-        </div>
-        <button onClick={() => supabase.auth.signOut()} className="text-sm text-[#C9CED4]">
-          Odjava
-        </button>
-      </header>
+    <div className="p-6 lg:p-8">
+      <h1 className="font-display font-bold text-2xl mb-5">Red za izradu</h1>
 
-      {error && <p className="mx-8 mt-4 text-red-600 text-sm">{error}</p>}
+      {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
 
-      <div className="flex-1 flex gap-5 p-6 lg:p-8 min-h-0">
+      <div className="flex gap-2 mb-5 flex-wrap">
+        {FILTERS.map((f) => (
+          <button
+            key={f.key}
+            onClick={() => setFilter(f.key)}
+            className={`text-xs font-medium px-3.5 py-1.5 rounded-full border transition-colors ${
+              filter === f.key ? "bg-ink text-white border-ink" : "bg-white text-muted border-line hover:border-accent"
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex gap-5 min-h-0">
         <section className="flex-1 min-w-0 bg-white border border-line rounded-2xl overflow-hidden flex flex-col">
-          <div className="flex justify-between items-center px-4.5 py-3.5 border-b border-[#E3E6EA]">
-            <h2 className="m-0 text-base font-bold">Red za izradu</h2>
-          </div>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">
               <thead>
@@ -134,7 +157,10 @@ export default function AdminRed() {
                         {STATUS_LABEL[o.status]}
                       </span>
                     </td>
-                    <td className="px-4.5 py-3 text-right">
+                    <td className="px-4.5 py-3 text-right whitespace-nowrap">
+                      <button onClick={() => downloadSvg(o.kod)} className="h-9 px-3 rounded-lg border border-line bg-white text-xs font-semibold mr-2">
+                        SVG
+                      </button>
                       {NEXT_STATUS[o.status] && (
                         <button
                           onClick={() => advance(o.kod, o.status)}
@@ -149,7 +175,7 @@ export default function AdminRed() {
                 ))}
               </tbody>
             </table>
-            {orders?.length === 0 && <p className="p-4.5 text-sm text-muted">Nema aktivnih porudžbina.</p>}
+            {orders?.length === 0 && <p className="p-4.5 text-sm text-muted">Nema porudžbina u ovoj listi.</p>}
           </div>
         </section>
 

@@ -196,3 +196,62 @@ export async function getObavestenja() {
 export async function markObavestenjePoslato(id: string) {
   return handle<{ ok: true }>(await adminFetch(`/admin/obavestenja/${id}/poslato`, { method: "POST" }));
 }
+
+export interface AdminProdavnica {
+  id: string;
+  naziv: string;
+  slug: string;
+  grad: string;
+  adresa: string | null;
+  radno_vreme: string | null;
+  udeo_prodavnice: number;
+  aktivna: boolean;
+  broj_radnika: number;
+  broj_porudzbina: number;
+  created_at: string;
+}
+
+export async function getAdminProdavnice() {
+  return handle<{ prodavnice: AdminProdavnica[] }>(await adminFetch("/admin/prodavnice"));
+}
+
+export async function createAdminProdavnica(input: {
+  naziv: string;
+  slug: string;
+  grad: string;
+  adresa?: string;
+  radno_vreme?: string;
+  udeo_prodavnice?: number;
+}) {
+  return handle<{ prodavnica: AdminProdavnica }>(
+    await adminFetch("/admin/prodavnice", { method: "POST", body: JSON.stringify(input) })
+  );
+}
+
+export async function updateAdminProdavnica(id: string, patch: Partial<Pick<AdminProdavnica, "naziv" | "grad" | "adresa" | "radno_vreme" | "udeo_prodavnice" | "aktivna">>) {
+  return handle<{ prodavnica: AdminProdavnica }>(
+    await adminFetch(`/admin/prodavnice/${id}`, { method: "PATCH", body: JSON.stringify(patch) })
+  );
+}
+
+export interface AdminRadnik {
+  id: string;
+  ime: string;
+  aktivan: boolean;
+  last_login_at: string | null;
+  created_at: string;
+}
+
+export async function getAdminProdavnicaDetail(id: string) {
+  return handle<{ prodavnica: AdminProdavnica; radnici: AdminRadnik[] }>(await adminFetch(`/admin/prodavnice/${id}`));
+}
+
+export async function createAdminRadnik(prodavnicaId: string, input: { ime: string; pin: string }) {
+  return handle<{ radnik: AdminRadnik }>(
+    await adminFetch(`/admin/prodavnice/${prodavnicaId}/radnici`, { method: "POST", body: JSON.stringify(input) })
+  );
+}
+
+export async function updateAdminRadnik(id: string, patch: { aktivan?: boolean; pin?: string }) {
+  return handle<{ radnik: AdminRadnik }>(await adminFetch(`/admin/radnici/${id}`, { method: "PATCH", body: JSON.stringify(patch) }));
+}

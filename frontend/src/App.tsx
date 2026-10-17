@@ -9,6 +9,9 @@ import RadnikPrijava from "./pages/radnik/Prijava";
 import RadnikPanel from "./pages/radnik/Panel";
 import AdminPrijava from "./pages/admin/Prijava";
 import AdminRed from "./pages/admin/Red";
+import AdminStores from "./pages/admin/Stores";
+import AdminStoreDetail from "./pages/admin/StoreDetail";
+import AdminLayout from "./components/admin/AdminLayout";
 
 function Pocetna() {
   return (
@@ -45,16 +48,20 @@ export default function App() {
       <Route path="/prodavnica/:slug" element={<RadnikPrijava />} />
       <Route path="/prodavnica/:slug/panel" element={<RadnikPanel />} />
 
-      <Route path="/admin" element={<Navigate to="/admin/red" replace />} />
       <Route path="/admin/prijava" element={<AdminPrijava />} />
       <Route
-        path="/admin/red"
+        path="/admin"
         element={
           <AdminGuard>
-            <AdminRed />
+            <AdminLayout />
           </AdminGuard>
         }
-      />
+      >
+        <Route index element={<Navigate to="red" replace />} />
+        <Route path="red" element={<AdminRed />} />
+        <Route path="prodavnice" element={<AdminStores />} />
+        <Route path="prodavnice/:id" element={<AdminStoreDetail />} />
+      </Route>
 
       <Route path="/:slug/konfigurator/:proizvodId" element={<Konfigurator />} />
       <Route path="/:slug/potvrda/:kod" element={<Potvrda />} />
