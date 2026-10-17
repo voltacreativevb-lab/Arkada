@@ -27,7 +27,7 @@ export interface Proizvod {
   slug: string;
   opis: string | null;
   osnovna_cena: number;
-  slika_glavna: string | null;
+  slike: string[];
   modeli: Model[];
 }
 
@@ -266,7 +266,7 @@ export interface AdminProizvod {
   slug: string;
   opis: string | null;
   osnovna_cena: number;
-  slika_glavna: string | null;
+  slike: string[];
   aktivan: boolean;
   sort_order: number;
   broj_modela: number;
@@ -291,28 +291,25 @@ export async function getAdminProizvodi() {
   return handle<{ proizvodi: AdminProizvod[] }>(await adminFetch("/admin/proizvodi"));
 }
 
-export async function createAdminProizvod(input: { naziv: string; slug: string; opis?: string; osnovna_cena: number; slika?: File }) {
-  const fd = new FormData();
-  fd.append("naziv", input.naziv);
-  fd.append("slug", input.slug);
-  if (input.opis) fd.append("opis", input.opis);
-  fd.append("osnovna_cena", String(input.osnovna_cena));
-  if (input.slika) fd.append("slika", input.slika);
-  return handle<{ proizvod: AdminProizvod }>(await adminFetch("/admin/proizvodi", { method: "POST", body: fd }));
+export async function createAdminProizvod(input: { naziv: string; slug: string; opis?: string; osnovna_cena: number }) {
+  return handle<{ proizvod: AdminProizvod }>(await adminFetch("/admin/proizvodi", { method: "POST", body: JSON.stringify(input) }));
 }
 
 export async function updateAdminProizvod(
   id: string,
-  patch: { naziv?: string; opis?: string | null; osnovna_cena?: number; aktivan?: boolean; sort_order?: number; slika?: File }
+  patch: { naziv?: string; opis?: string | null; osnovna_cena?: number; aktivan?: boolean; sort_order?: number }
 ) {
+  return handle<{ proizvod: AdminProizvod }>(await adminFetch(`/admin/proizvodi/${id}`, { method: "PATCH", body: JSON.stringify(patch) }));
+}
+
+export async function addProductImage(productId: string, file: File) {
   const fd = new FormData();
-  if (patch.naziv !== undefined) fd.append("naziv", patch.naziv);
-  if (patch.opis !== undefined) fd.append("opis", patch.opis ?? "");
-  if (patch.osnovna_cena !== undefined) fd.append("osnovna_cena", String(patch.osnovna_cena));
-  if (patch.aktivan !== undefined) fd.append("aktivan", String(patch.aktivan));
-  if (patch.sort_order !== undefined) fd.append("sort_order", String(patch.sort_order));
-  if (patch.slika) fd.append("slika", patch.slika);
-  return handle<{ proizvod: AdminProizvod }>(await adminFetch(`/admin/proizvodi/${id}`, { method: "PATCH", body: fd }));
+  fd.append("slika", file);
+  return handle<{ proizvod: AdminProizvod }>(await adminFetch(`/admin/proizvodi/${productId}/slike`, { method: "POST", body: fd }));
+}
+
+export async function removeProductImage(productId: string, index: number) {
+  return handle<{ proizvod: AdminProizvod }>(await adminFetch(`/admin/proizvodi/${productId}/slike/${index}`, { method: "DELETE" }));
 }
 
 export async function getAdminProizvodDetail(id: string) {

@@ -20,7 +20,6 @@ export default function AdminCatalog() {
   const [slugTouched, setSlugTouched] = useState(false);
   const [opis, setOpis] = useState("");
   const [cena, setCena] = useState("");
-  const [slika, setSlika] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -47,7 +46,6 @@ export default function AdminCatalog() {
         slug: slug || slugify(naziv),
         opis: opis || undefined,
         osnovna_cena: Number(cena),
-        slika: slika ?? undefined,
       });
       setShowForm(false);
       setNaziv("");
@@ -55,7 +53,6 @@ export default function AdminCatalog() {
       setSlugTouched(false);
       setOpis("");
       setCena("");
-      setSlika(null);
       refresh();
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Greška pri kreiranju");
@@ -110,15 +107,7 @@ export default function AdminCatalog() {
             value={opis}
             onChange={(e) => setOpis(e.target.value)}
           />
-          <label className="col-span-2 text-xs font-medium text-muted">
-            Slika proizvoda (nije obavezno — ako je izostaviš, prikazuje se teksturirani pregled šablona)
-            <input
-              type="file"
-              accept="image/*"
-              className="block w-full text-sm mt-1"
-              onChange={(e) => setSlika(e.target.files?.[0] ?? null)}
-            />
-          </label>
+          <p className="col-span-2 text-xs text-muted m-0">Slike dodaješ posle kreiranja, na stranici proizvoda (do 3 slike).</p>
           {formError && <p className="col-span-2 text-red-600 text-sm m-0">{formError}</p>}
           <button disabled={submitting} className="col-span-2 h-11 rounded-lg bg-accent text-white text-sm font-semibold disabled:opacity-50">
             {submitting ? "Kreiranje…" : "Kreiraj proizvod"}
@@ -133,7 +122,7 @@ export default function AdminCatalog() {
         {products?.map((p) => (
           <Link key={p.id} to={`/admin/katalog/${p.id}`} className="bg-white border border-line rounded-xl overflow-hidden flex flex-col">
             <div className="h-32 bg-[#EEF0F2] flex items-center justify-center">
-              {p.slika_glavna ? <img src={p.slika_glavna} alt={p.naziv} className="w-full h-full object-cover" /> : <span className="text-xs text-muted">Bez slike</span>}
+              {p.slike[0] ? <img src={p.slike[0]} alt={p.naziv} className="w-full h-full object-cover" /> : <span className="text-xs text-muted">Bez slike</span>}
             </div>
             <div className="p-3.5 flex items-center justify-between">
               <div>

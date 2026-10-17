@@ -278,32 +278,15 @@ const createProizvodSchema = z.object({
   osnovna_cena: z.coerce.number().positive(),
 });
 
-/** POST /admin/proizvodi — creates a product, optionally with a cover photo ("slika" field). */
-adminRouter.post("/admin/proizvodi", upload.single("slika"), async (req, res) => {
+/** POST /admin/proizvodi — creates a product. Images are added afterward via the dedicated gallery panel. */
+adminRouter.post("/admin/proizvodi", async (req, res) => {
   const parsed = createProizvodSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
 
   const { data: existing } = await supabaseAdmin.from("proizvodi").select("id").eq("slug", parsed.data.slug).maybeSingle();
   if (existing) return res.status(409).json({ error: "Slug je već zauzet" });
 
-  let slika_glavna: string | null = null;
-  if (req.file) {
-    const ext = (req.file.originalname.split(".").pop() || "jpg").toLowerCase();
-    const path = `${parsed.data.slug}-${Date.now()}.${ext}`;
-    try {
-      await uploadBuffer("slike", path, req.file.buffer, req.file.mimetype);
-      slika_glavna = publicUrl("slike", path);
-    } catch (err) {
-      return res.status(500).json({ error: err instanceof Error ? err.message : "Greška pri otpremanju slike" });
-    }
-  }
-
-  const { data, error } = await supabaseAdmin
-    .from("proizvodi")
-    .insert({ ...parsed.data, slika_glavna })
-    .select()
-    .single();
-
+  const { data, error } = await supabaseAdmin.from("proizvodi").insert(parsed.data).select().single();
   if (error) return res.status(500).json({ error: error.message });
   res.status(201).json({ proizvod: data });
 });
@@ -318,25 +301,55 @@ const updateProizvodSchema = z
   })
   .partial();
 
-/** PATCH /admin/proizvodi/:id — edit product fields, optionally replacing the cover photo. */
-adminRouter.patch("/admin/proizvodi/:id", upload.single("slika"), async (req, res) => {
+/** PATCH /admin/proizvodi/:id — edit product fields. */
+adminRouter.patch("/admin/proizvodi/:id", async (req, res) => {
   const parsed = updateProizvodSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+  if (Object.keys(parsed.data).length === 0) return res.status(400).json({ error: "Nema izmena" });
 
-  const update: Record<string, unknown> = { ...parsed.data };
-  if (req.file) {
-    const ext = (req.file.originalname.split(".").pop() || "jpg").toLowerCase();
-    const path = `${req.params.id}-${Date.now()}.${ext}`;
-    try {
-      await uploadBuffer("slike", path, req.file.buffer, req.file.mimetype);
-      update.slika_glavna = publicUrl("slike", path);
-    } catch (err) {
-      return res.status(500).json({ error: err instanceof Error ? err.message : "Greška pri otpremanju slike" });
-    }
+  const { data, error } = await supabaseAdmin.from("proizvodi").update(parsed.data).eq("id", req.params.id).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ proizvod: data });
+});
+
+const MAX_PRODUCT_IMAGES = 3;
+
+/** POST /admin/proizvodi/:id/slike — appends one image to the product's gallery (max 3). */
+adminRouter.post("/admin/proizvodi/:id/slike", upload.single("slika"), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "Slika nije poslata" });
+
+  const { data: proizvod, error: fetchError } = await supabaseAdmin.from("proizvodi").select("slike").eq("id", req.params.id).maybeSingle();
+  if (fetchError) return res.status(500).json({ error: fetchError.message });
+  if (!proizvod) return res.status(404).json({ error: "Proizvod nije pronađen" });
+
+  const current: string[] = proizvod.slike ?? [];
+  if (current.length >= MAX_PRODUCT_IMAGES) return res.status(400).json({ error: `Najviše ${MAX_PRODUCT_IMAGES} slike po proizvodu` });
+
+  const ext = (req.file.originalname.split(".").pop() || "jpg").toLowerCase();
+  const path = `${req.params.id}-${Date.now()}.${ext}`;
+  try {
+    await uploadBuffer("slike", path, req.file.buffer, req.file.mimetype);
+  } catch (err) {
+    return res.status(500).json({ error: err instanceof Error ? err.message : "Greška pri otpremanju slike" });
   }
-  if (Object.keys(update).length === 0) return res.status(400).json({ error: "Nema izmena" });
 
-  const { data, error } = await supabaseAdmin.from("proizvodi").update(update).eq("id", req.params.id).select().single();
+  const slike = [...current, publicUrl("slike", path)];
+  const { data, error } = await supabaseAdmin.from("proizvodi").update({ slike }).eq("id", req.params.id).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json({ proizvod: data });
+});
+
+/** DELETE /admin/proizvodi/:id/slike/:index — removes one image from the gallery by its position. */
+adminRouter.delete("/admin/proizvodi/:id/slike/:index", async (req, res) => {
+  const index = Number(req.params.index);
+  if (!Number.isInteger(index) || index < 0) return res.status(400).json({ error: "Neispravan indeks" });
+
+  const { data: proizvod, error: fetchError } = await supabaseAdmin.from("proizvodi").select("slike").eq("id", req.params.id).maybeSingle();
+  if (fetchError) return res.status(500).json({ error: fetchError.message });
+  if (!proizvod) return res.status(404).json({ error: "Proizvod nije pronađen" });
+
+  const slike: string[] = (proizvod.slike ?? []).filter((_: string, i: number) => i !== index);
+  const { data, error } = await supabaseAdmin.from("proizvodi").update({ slike }).eq("id", req.params.id).select().single();
   if (error) return res.status(500).json({ error: error.message });
   res.json({ proizvod: data });
 });

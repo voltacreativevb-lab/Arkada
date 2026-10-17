@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import QRCode from "qrcode";
 import {
   createAdminRadnik,
   getAdminProdavnicaDetail,
@@ -20,7 +21,8 @@ export default function AdminStoreDetail() {
   const [grad, setGrad] = useState("");
   const [adresa, setAdresa] = useState("");
   const [radnoVreme, setRadnoVreme] = useState("");
-  const [udeo, setUdeo] = useState(0.4);
+  const [udeoPercent, setUdeoPercent] = useState(40);
+  const [qr, setQr] = useState<string | null>(null);
 
   const [newIme, setNewIme] = useState("");
   const [newPin, setNewPin] = useState("");
@@ -37,7 +39,9 @@ export default function AdminStoreDetail() {
       setGrad(p.grad);
       setAdresa(p.adresa ?? "");
       setRadnoVreme(p.radno_vreme ?? "");
-      setUdeo(p.udeo_prodavnice);
+      setUdeoPercent(Math.round(p.udeo_prodavnice * 100));
+      const link = `${window.location.origin}/${p.slug}`;
+      QRCode.toDataURL(link, { margin: 1, width: 220, color: { dark: "#16191D", light: "#FFFFFF" } }).then(setQr);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Greška");
     }
@@ -53,7 +57,7 @@ export default function AdminStoreDetail() {
     setSaving(true);
     setError(null);
     try {
-      await updateAdminProdavnica(id, { naziv, grad, adresa: adresa || null, radno_vreme: radnoVreme || null, udeo_prodavnice: udeo });
+      await updateAdminProdavnica(id, { naziv, grad, adresa: adresa || null, radno_vreme: radnoVreme || null, udeo_prodavnice: udeoPercent / 100 });
       load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Greška pri čuvanju");
@@ -125,9 +129,26 @@ export default function AdminStoreDetail() {
         </span>
       </div>
 
-      <div className="bg-white border border-line rounded-xl p-5 mb-6">
-        <h2 className="font-semibold mb-1">QR link za kupce</h2>
-        <code className="block bg-[#EEF0F2] text-sm px-3 py-2.5 rounded-lg mt-2 break-all">{bookingLink}</code>
+      <div className="bg-white border border-line rounded-xl p-5 mb-6 flex gap-5 items-center flex-wrap">
+        {qr && <img src={qr} alt={`QR kod za ${prodavnica.naziv}`} width={140} height={140} className="rounded-lg border border-line shrink-0" />}
+        <div className="flex-1 min-w-[200px]">
+          <h2 className="font-semibold mb-1">QR kod za kupce</h2>
+          <p className="text-xs text-muted mb-3">Odštampaj i postavi na stalak u prodavnici — kupac skenira i stiže direktno na konfigurator.</p>
+          <code className="block bg-[#EEF0F2] text-sm px-3 py-2.5 rounded-lg break-all mb-3">{bookingLink}</code>
+          <div className="flex gap-2">
+            {qr && (
+              <a href={qr} download={`qr-${prodavnica.slug}.png`} className="h-9 px-3 rounded-lg bg-accent text-white text-xs font-semibold flex items-center">
+                Preuzmi QR (PNG)
+              </a>
+            )}
+            <button
+              onClick={() => navigator.clipboard.writeText(bookingLink)}
+              className="h-9 px-3 rounded-lg border border-line bg-white text-xs font-semibold"
+            >
+              Kopiraj link
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="bg-white border border-line rounded-xl p-5 mb-6">
@@ -142,16 +163,19 @@ export default function AdminStoreDetail() {
             <input className="w-full h-11 px-3 border border-line rounded-lg text-sm mt-1" value={grad} onChange={(e) => setGrad(e.target.value)} />
           </label>
           <label className="text-xs font-medium text-muted">
-            Udeo prodavnice (0-1)
-            <input
-              type="number"
-              min={0}
-              max={1}
-              step={0.01}
-              className="w-full h-11 px-3 border border-line rounded-lg text-sm mt-1"
-              value={udeo}
-              onChange={(e) => setUdeo(Number(e.target.value))}
-            />
+            Udeo prodavnice (%)
+            <div className="relative mt-1">
+              <input
+                type="number"
+                min={0}
+                max={100}
+                step={1}
+                className="w-full h-11 px-3 pr-8 border border-line rounded-lg text-sm"
+                value={udeoPercent}
+                onChange={(e) => setUdeoPercent(Math.min(100, Math.max(0, Number(e.target.value))))}
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted">%</span>
+            </div>
           </label>
           <label className="text-xs font-medium text-muted col-span-2">
             Adresa

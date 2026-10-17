@@ -2,14 +2,18 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { PoljeDef } from "@maestrovolta/sablon-core";
 import {
+  addProductImage,
   createAdminModel,
   getAdminProizvodDetail,
   parseSablon,
+  removeProductImage,
   updateAdminModel,
   updateAdminProizvod,
   type AdminModel,
   type AdminProizvod,
 } from "../../lib/api";
+
+const MAX_PRODUCT_IMAGES = 3;
 
 type FieldDraft = Omit<PoljeDef, "key" | "placeholder" | "default_x" | "default_y"> & {
   key: string;
@@ -80,6 +84,35 @@ export default function AdminProductDetail() {
     if (!id || !proizvod) return;
     await updateAdminProizvod(id, { aktivan: !proizvod.aktivan });
     load();
+  }
+
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
+
+  async function handleAddImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!id || !file) return;
+    setImageError(null);
+    setUploadingImage(true);
+    try {
+      await addProductImage(id, file);
+      load();
+    } catch (err) {
+      setImageError(err instanceof Error ? err.message : "Greška pri otpremanju slike");
+    } finally {
+      setUploadingImage(false);
+    }
+  }
+
+  async function handleRemoveImage(index: number) {
+    if (!id) return;
+    try {
+      await removeProductImage(id, index);
+      load();
+    } catch (err) {
+      setImageError(err instanceof Error ? err.message : "Greška pri brisanju slike");
+    }
   }
 
   async function analyzeTemplate() {
@@ -192,6 +225,35 @@ export default function AdminProductDetail() {
             {proizvod.aktivan ? "Deaktiviraj" : "Aktiviraj"}
           </button>
         </div>
+      </div>
+
+      <div className="bg-white border border-line rounded-xl p-5 mb-6">
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="font-semibold m-0">Slike proizvoda</h2>
+          <span className="text-xs text-muted">{proizvod.slike.length}/{MAX_PRODUCT_IMAGES}</span>
+        </div>
+        <p className="text-xs text-muted mt-0 mb-4">Prikazuju se na naslovnoj strani kupca. Prva slika je glavna.</p>
+        <div className="grid grid-cols-3 gap-3">
+          {proizvod.slike.map((url, i) => (
+            <div key={url} className="relative aspect-square rounded-lg overflow-hidden border border-line group">
+              <img src={url} alt={`Slika ${i + 1}`} className="w-full h-full object-cover" />
+              <button
+                onClick={() => handleRemoveImage(i)}
+                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                title="Ukloni sliku"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+          {proizvod.slike.length < MAX_PRODUCT_IMAGES && (
+            <label className="aspect-square rounded-lg border-2 border-dashed border-line flex items-center justify-center text-xs text-muted cursor-pointer hover:border-accent hover:text-accent">
+              {uploadingImage ? "Otpremanje…" : "+ Dodaj sliku"}
+              <input type="file" accept="image/*" className="hidden" onChange={handleAddImage} disabled={uploadingImage} />
+            </label>
+          )}
+        </div>
+        {imageError && <p className="text-red-600 text-sm mt-3">{imageError}</p>}
       </div>
 
       <div className="bg-white border border-line rounded-xl p-5">

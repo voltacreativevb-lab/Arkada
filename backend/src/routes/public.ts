@@ -56,7 +56,7 @@ publicRouter.get("/prodavnice/:slug/proizvodi", async (req, res) => {
   const { data: proizvodi, error } = await supabaseAdmin
     .from("proizvodi")
     .select(
-      "id, naziv, slug, opis, osnovna_cena, slika_glavna, sort_order, modeli(id, naziv, kod, cena, sablon_config, polja, slika_pregled, sort_order, aktivan)"
+      "id, naziv, slug, opis, osnovna_cena, slike, sort_order, modeli(id, naziv, kod, cena, sablon_config, polja, slika_pregled, sort_order, aktivan)"
     )
     .eq("aktivan", true)
     .order("sort_order");
