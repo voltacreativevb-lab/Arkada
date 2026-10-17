@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="sr-Latn">
+<head>
+<meta charset="utf-8">
+<title>Personalizacija</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1F4E6B}a:hover{color:#163A50}
+</style>
+</helmet>
+<div style="width: 390px; height: 1200px; box-sizing: border-box; background: #EEF0F2; font-family: 'IBM Plex Sans', sans-serif; color: #16191D; display: flex; flex-direction: column">
+  <header style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #FFFFFF; border-bottom: 1px solid #D5D9DE">
+    <a href="Main.dc.html" style="display: flex; align-items: center; gap: 6px; padding: 12px 8px; font-size: 14px; font-weight: 600; text-decoration: none">
+      <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>
+      Svi proizvodi
+    </a>
+  </header>
+
+  <section style="padding: 20px 20px 0; display: flex; flex-direction: column; gap: 4px">
+    <h1 style="margin: 0; font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 28px; letter-spacing: -0.01em">Kućni broj</h1>
+    <span style="font-size: 14px; color: #545B64">Gvožđara [NAZIV] · [GRAD]</span>
+  </section>
+
+  <div style="margin: 16px 20px 0; height: 250px; border-radius: 14px; background: #D9DDE2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px">
+    <div style="{{plaqueStyle}}">
+      <span style="font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 64px; line-height: 1">{{numberShown}}</span>
+      <span style="font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 18px; text-align: center">{{surnameShown}}</span>
+      <sc-if value="{{hasDedication}}" hint-placeholder-val="{{ true }}">
+        <span style="font-size: 13px; font-style: italic; text-align: center">{{dedication}}</span>
+      </sc-if>
+    </div>
+    <span style="font-size: 12px; color: #3F454C">Pregled uživo · {{modelName}}</span>
+  </div>
+
+  <section style="padding: 20px 20px 0; display: flex; flex-direction: column; gap: 10px">
+    <h2 style="margin: 0; font-size: 15px; font-weight: 600">1. Izaberite model</h2>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+      <sc-for list="{{models}}" as="item" hint-placeholder-count="3">
+        <button type="button" onClick="{{item.pick}}" aria-pressed="{{item.pressed}}" style="{{item.btnStyle}}">
+          <span style="{{item.swatchStyle}}"></span>
+          <span style="font-size: 13px; font-weight: 600">{{item.code}}</span>
+          <span style="font-size: 12px; color: #3F454C">{{item.label}}</span>
+        </button>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="padding: 22px 20px 0; display: flex; flex-direction: column; gap: 14px">
+    <h2 style="margin: 0; font-size: 15px; font-weight: 600">2. Upišite tekst</h2>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <div style="display: flex; justify-content: space-between">
+        <label for="f-number" style="font-size: 14px; font-weight: 500">Broj kuće</label>
+        <span style="font-size: 12px; color: #545B64">{{numberCount}}</span>
+      </div>
+      <input id="f-number" type="text" value="{{number}}" onChange="{{onNumber}}" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 1px solid #A9B0B8; border-radius: 10px; font-size: 16px; font-family: 'IBM Plex Sans', sans-serif; background: #FFFFFF; color: #16191D">
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <div style="display: flex; justify-content: space-between">
+        <label for="f-surname" style="font-size: 14px; font-weight: 500">Prezime ili natpis</label>
+        <span style="font-size: 12px; color: #545B64">{{surnameCount}}</span>
+      </div>
+      <input id="f-surname" type="text" value="{{surname}}" onChange="{{onSurname}}" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 1px solid #A9B0B8; border-radius: 10px; font-size: 16px; font-family: 'IBM Plex Sans', sans-serif; background: #FFFFFF; color: #16191D">
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <div style="display: flex; justify-content: space-between">
+        <label for="f-dedication" style="font-size: 14px; font-weight: 500">Posveta (nije obavezno)</label>
+        <span style="font-size: 12px; color: #545B64">{{dedicationCount}}</span>
+      </div>
+      <input id="f-dedication" type="text" value="{{dedication}}" onChange="{{onDedication}}" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 1px solid #A9B0B8; border-radius: 10px; font-size: 16px; font-family: 'IBM Plex Sans', sans-serif; background: #FFFFFF; color: #16191D">
+    </div>
+    <span style="font-size: 12px; line-height: 1.5; color: #545B64">Dozvoljena slova uključuju Č, Ć, Š, Ž i Đ. Tekst se izrađuje tačno kako je upisan.</span>
+  </section>
+
+  <section style="padding: 22px 20px 0; display: flex; flex-direction: column; gap: 6px">
+    <h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600">3. Kontakt za obaveštenje</h2>
+    <label for="f-phone" style="font-size: 14px; font-weight: 500">Broj telefona</label>
+    <input id="f-phone" type="tel" placeholder="06x xxx xxxx" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 1px solid #A9B0B8; border-radius: 10px; font-size: 16px; font-family: 'IBM Plex Sans', sans-serif; background: #FFFFFF; color: #16191D">
+    <span style="font-size: 12px; color: #545B64">Na ovaj broj stiže SMS kada je proizvod spreman.</span>
+  </section>
+
+  <section style="margin: 22px 20px 0; padding: 16px; background: #FFFFFF; border: 1px solid #D5D9DE; border-radius: 12px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; justify-content: space-between; align-items: baseline">
+      <span style="font-size: 15px; font-weight: 600">Cena</span>
+      <span style="font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 22px">[CENA] din</span>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: flex-start">
+      <input id="f-agree" type="checkbox" checked="{{agreed}}" onChange="{{onAgree}}" style="width: 22px; height: 22px; margin: 2px 0 0; accent-color: #1F4E6B">
+      <label for="f-agree" style="font-size: 13px; line-height: 1.45; color: #3F454C">Proverio/la sam tekst. Razumem da se personalizovan proizvod ne može vratiti.</label>
+    </div>
+    <sc-if value="{{agreed}}" hint-placeholder-val="{{ true }}">
+      <a href="Potvrda.dc.html" style="height: 52px; border-radius: 12px; background: #F2B705; color: #16191D; font-weight: 700; font-size: 16px; text-decoration: none; display: flex; align-items: center; justify-content: center">Potvrdi porudžbinu</a>
+    </sc-if>
+    <sc-if value="{{notAgreed}}" hint-placeholder-val="{{ false }}">
+      <button type="button" disabled style="height: 52px; border-radius: 12px; border: none; background: #D5D9DE; color: #3F454C; font-weight: 700; font-size: 16px; font-family: 'IBM Plex Sans', sans-serif">Potvrdi porudžbinu</button>
+    </sc-if>
+    <span style="font-size: 12px; color: #545B64; text-align: center">Plaćate na kasi prodavnice, ne na sajtu.</span>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1200}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { model: 'A', number: '27', surname: 'Porodica Petrović', dedication: '', agreed: false };
+  }
+  renderVals() {
+    const s = this.state;
+    const looks = {
+      A: { name: 'Crni metal', bg: '#1E2226', fg: '#F4F4F4', border: '#1E2226' },
+      B: { name: 'Hrast', bg: '#9C6A3A', fg: '#FFF4E6', border: '#7A5230' },
+      C: { name: 'Bela pleksi', bg: '#FFFFFF', fg: '#16191D', border: '#C9CED4' }
+    };
+    const look = looks[s.model];
+    const plaqueStyle = 'width: 270px; box-sizing: border-box; padding: 20px 22px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; background: ' + look.bg + '; color: ' + look.fg + '; border: 1px solid ' + look.border + '; box-shadow: 0 10px 24px rgba(0,0,0,0.18)';
+    const models = ['A', 'B', 'C'].map((id) => {
+      const sel = s.model === id;
+      return {
+        code: 'Model ' + id,
+        label: looks[id].name,
+        pressed: sel ? 'true' : 'false',
+        pick: () => this.setState({ model: id }),
+        btnStyle: 'min-height: 96px; padding: 10px 6px; border-radius: 10px; background: #FFFFFF; cursor: pointer; font-family: inherit; color: #16191D; display: flex; flex-direction: column; align-items: center; gap: 4px; border: ' + (sel ? '2px solid #1F4E6B' : '1px solid #D5D9DE'),
+        swatchStyle: 'width: 40px; height: 26px; border-radius: 5px; background: ' + looks[id].bg + '; border: 1px solid ' + looks[id].border
+      };
+    });
+    return {
+      plaqueStyle,
+      modelName: 'Model ' + s.model + ' · ' + look.name,
+      models,
+      number: s.number,
+      surname: s.surname,
+      dedication: s.dedication,
+      numberShown: s.number || '00',
+      surnameShown: s.surname || 'Vaše prezime',
+      hasDedication: s.dedication.length > 0,
+      numberCount: s.number.length + '/5',
+      surnameCount: s.surname.length + '/22',
+      dedicationCount: s.dedication.length + '/40',
+      agreed: s.agreed,
+      notAgreed: !s.agreed,
+      onNumber: (e) => this.setState({ number: e.target.value.slice(0, 5) }),
+      onSurname: (e) => this.setState({ surname: e.target.value.slice(0, 22) }),
+      onDedication: (e) => this.setState({ dedication: e.target.value.slice(0, 40) }),
+      onAgree: (e) => this.setState({ agreed: e.target.checked })
+    };
+  }
+}
+</script>
+</body>
+</html>

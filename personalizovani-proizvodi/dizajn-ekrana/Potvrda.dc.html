@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="sr-Latn">
+<head>
+<meta charset="utf-8">
+<title>Kod za kasu</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1F4E6B}a:hover{color:#163A50}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #EEF0F2; font-family: 'IBM Plex Sans', sans-serif; color: #16191D; display: flex; flex-direction: column">
+  <header style="padding: 18px 20px; background: #FFFFFF; border-bottom: 1px solid #D5D9DE; display: flex; align-items: center; gap: 10px">
+    <span style="width: 28px; height: 28px; border-radius: 14px; background: #1E6B45; display: flex; align-items: center; justify-content: center">
+      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+    </span>
+    <span style="font-size: 16px; font-weight: 600">Porudžbina je kreirana</span>
+  </header>
+
+  <section style="margin: 20px 20px 0; padding: 24px 20px; background: #FFFFFF; border: 1px solid #D5D9DE; border-radius: 16px; display: flex; flex-direction: column; align-items: center; gap: 14px">
+    <span style="font-size: 14px; color: #3F454C">Pokažite ovaj kod na kasi</span>
+    <span style="font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 46px; letter-spacing: 0.06em">K7F-42</span>
+    <svg role="img" aria-label="QR kod porudžbine K7F-42" width="150" height="150" viewBox="0 0 15 15" shape-rendering="crispEdges">
+      <rect width="15" height="15" fill="#FFFFFF"></rect>
+      <path fill="#16191D" d="M0 0h5v5H0zM1 1v3h3V1zM2 2h1v1H2zM10 0h5v5h-5zM11 1v3h3V1zM12 2h1v1h-1zM0 10h5v5H0zM1 11v3h3v-3zM2 12h1v1H2zM6 0h1v2H6zM8 1h1v3H8zM6 3h2v1H6zM6 6h3v1H6zM10 6h2v2h-2zM13 6h2v1h-2zM0 6h2v1H0zM3 6h2v2H3zM1 8h2v1H1zM6 8h1v3H6zM8 8h2v1H8zM12 9h3v1h-3zM9 10h2v2H9zM12 11h1v2h-1zM14 11h1v4h-1zM6 12h2v1H6zM8 13h3v1H8zM10 14h3v1h-3zM6 14h1v1H6z"></path>
+    </svg>
+    <span style="font-size: 12px; color: #545B64">Kod je poslat i SMS-om na 06x xxx xx67</span>
+  </section>
+
+  <section style="margin: 16px 20px 0; padding: 16px; background: #FFFFFF; border: 1px solid #D5D9DE; border-radius: 12px; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; justify-content: space-between; font-size: 14px">
+      <span style="color: #3F454C">Proizvod</span>
+      <span style="font-weight: 600">Kućni broj · Model A</span>
+    </div>
+    <div style="display: flex; justify-content: space-between; font-size: 14px">
+      <span style="color: #3F454C">Tekst</span>
+      <span style="font-weight: 600">27 · Porodica Petrović</span>
+    </div>
+    <div style="height: 1px; background: #E3E6EA"></div>
+    <div style="display: flex; justify-content: space-between; align-items: baseline">
+      <span style="font-size: 15px; font-weight: 600">Za plaćanje na kasi</span>
+      <span style="font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 20px">[CENA] din</span>
+    </div>
+  </section>
+
+  <ol style="margin: 16px 20px 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px">
+    <li style="display: flex; gap: 10px; font-size: 14px; line-height: 1.45"><span style="font-weight: 700; color: #1F4E6B">1</span><span>Platite na kasi Gvožđare [NAZIV]. Radnik potvrđuje uplatu.</span></li>
+    <li style="display: flex; gap: 10px; font-size: 14px; line-height: 1.45"><span style="font-weight: 700; color: #1F4E6B">2</span><span>Dobićete SMS sa datumom kada je proizvod spreman.</span></li>
+    <li style="display: flex; gap: 10px; font-size: 14px; line-height: 1.45"><span style="font-weight: 700; color: #1F4E6B">3</span><span>Preuzmite ga u ovoj prodavnici uz isti kod.</span></li>
+  </ol>
+
+  <p style="margin: 16px 20px 0; padding: 12px 14px; border-radius: 10px; background: #FFF3C4; font-size: 13px; line-height: 1.45; color: #4A3B00">Neplaćena porudžbina se automatski poništava posle 48 sati.</p>
+
+  <a href="Status.dc.html" style="margin: 16px 20px 0; height: 50px; border-radius: 12px; border: 1px solid #1F4E6B; color: #1F4E6B; font-weight: 600; font-size: 15px; text-decoration: none; display: flex; align-items: center; justify-content: center">Prati porudžbinu</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

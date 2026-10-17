@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="600mm" height="400mm" viewBox="0 0 60000 40000">
+ <style>.str0{stroke:#F50000;stroke-width:7.62;stroke-linecap:round;stroke-linejoin:round} .zona{fill:none;stroke:#00FF00;stroke-width:7.62} .fil0{fill:none} .fil1{fill:black} .fnt0{font-size:846.67px;font-family:'Arial'}</style>
+ <rect class="fil0 str0" x="15736.26" y="8758.43" width="28515.74" height="16703.15"/>
+ <ellipse class="fil0 str0" cx="42182.91" cy="12219.45" rx="1391.93" ry="1956.22"/>
+ <ellipse class="fil0 str0" cx="18294.4" cy="23091.54" rx="1354.31" ry="1692.88"/>
+ <rect id="zona" class="zona" x="20200" y="9400" width="20000" height="15400"/>
+ <text id="broj" x="29994.13" y="11412.98" text-anchor="middle" class="fil1 fnt0">{BROJ}</text>
+ <text id="prezime" x="29994.13" y="14250.59" text-anchor="middle" class="fil1 fnt0">{PREZIME}</text>
+ <text id="posveta" x="29994.13" y="18979.94" text-anchor="middle" class="fil1 fnt0">{POSVETA}</text>
+</svg>

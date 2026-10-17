@@ -1,0 +1,357 @@
+<title>Proba šablona hrast</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&family=Montserrat:wght@600&family=Oswald:wght@500&family=PT+Serif:wght@700&family=Playfair+Display:wght@700&family=Comfortaa:wght@700&family=Lobster&family=Marck+Script&display=swap">
+<style>
+/* Layout: alat u dve kolone, podešavanja levo i pregled table desno; na telefonu jedno ispod drugog */
+:root {
+  --bg: #EEF0F2; --surface: #FFFFFF; --fg: #16191D; --muted: #4F565E;
+  --line: #D3D8DE; --accent: #1F4E6B; --accent-fg: #FFFFFF; --warn-bg: #FFF3C4; --warn-fg: #4A3B00;
+  --stage: #D9DDE2; --chip: #E4E8EC;
+  --display: 'Archivo', 'Arial Narrow', sans-serif;
+  --body: 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121519; --surface: #1B1F24; --fg: #E9ECEF; --muted: #A4ACB5;
+  --line: #2E343B; --accent: #7FB3D5; --accent-fg: #0E1A22; --warn-bg: #3A3110; --warn-fg: #F3E3A6;
+  --stage: #252A30; --chip: #262B31; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121519; --surface: #1B1F24; --fg: #E9ECEF; --muted: #A4ACB5;
+  --line: #2E343B; --accent: #7FB3D5; --accent-fg: #0E1A22; --warn-bg: #3A3110; --warn-fg: #F3E3A6;
+  --stage: #252A30; --chip: #262B31; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 40px; }
+.wrap { max-width: 1160px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+header { display: flex; flex-direction: column; gap: 4px; }
+h1 { margin: 0; font-family: var(--display); font-weight: 800; font-size: 28px; letter-spacing: -0.01em; text-wrap: balance; }
+header p { margin: 0; color: var(--muted); max-width: 65ch; }
+.grid { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+.form { flex: 1 1 320px; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+.stage { flex: 999 1 520px; min-width: 0; background: var(--stage); border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 12px; position: sticky; top: env(safe-area-inset-top, 0px); }
+.stage svg { width: 100%; height: auto; display: block; filter: drop-shadow(0 10px 18px rgba(0,0,0,0.22)); }
+.group { display: flex; flex-direction: column; gap: 8px; }
+.group > .lbl { font-weight: 600; font-size: 14px; }
+.field { display: flex; flex-direction: column; gap: 6px; padding-top: 14px; border-top: 1px solid var(--line); }
+.row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+label { font-weight: 600; font-size: 14px; }
+.count { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+input[type=text], select { height: 46px; box-sizing: border-box; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--fg); font: inherit; font-size: 16px; width: 100%; }
+.size { display: flex; align-items: center; gap: 10px; }
+.size label { font-weight: 500; font-size: 13px; color: var(--muted); white-space: nowrap; }
+.size input[type=range] { flex: 1; min-width: 0; accent-color: var(--accent); height: 32px; }
+.size output { font-size: 13px; font-variant-numeric: tabular-nums; min-width: 52px; text-align: right; }
+input:focus-visible, select:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.seg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; padding: 4px; background: var(--chip); border-radius: 12px; }
+.seg button { height: 40px; border-radius: 9px; border: none; background: transparent; color: var(--fg); font: inherit; font-weight: 600; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+.fonts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.fonts button { min-height: 56px; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; gap: 0; text-align: left; }
+.fonts button[aria-pressed="true"] { border: 2px solid var(--accent); padding: 5px 9px; }
+.fonts .sample { font-size: 19px; line-height: 1.2; }
+.fonts .fname { font-family: var(--body); font-size: 11px; color: var(--muted); }
+.hint { margin: 0; font-size: 13px; color: var(--muted); }
+.note { margin: 0; padding: 10px 12px; border-radius: 10px; background: var(--warn-bg); color: var(--warn-fg); font-size: 13px; }
+.cap { font-size: 13px; color: var(--muted); }
+.code { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.code h2 { margin: 0; font-size: 16px; font-weight: 600; }
+.code .bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; }
+.btn { height: 42px; padding: 0 16px; border-radius: 10px; border: none; background: var(--accent); color: var(--accent-fg); font: inherit; font-weight: 600; cursor: pointer; }
+.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+pre { margin: 0; max-height: 260px; overflow: auto; background: var(--bg); border-radius: 10px; padding: 12px; font-family: var(--mono); font-size: 12px; line-height: 1.55; white-space: pre; }
+@media (max-width: 860px) { .stage { position: static; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Proba šablona: tabla od hrasta</h1>
+    <p>Vaš SVG iz Corela. Izaberite font i pismo, upišite tekst, podesite veličinu slova i pomerite tekst prstom ili mišem po tabli. Ovako bi kupac video pregled, a ispod je fajl za proizvodnju.</p>
+  </header>
+
+  <div class="grid">
+    <form class="form" id="f" autocomplete="off">
+      <div class="group">
+        <span class="lbl" id="lbl-script">Pismo</span>
+        <div class="seg" role="group" aria-labelledby="lbl-script">
+          <button type="button" id="s-lat" aria-pressed="true">Latinica</button>
+          <button type="button" id="s-cyr" aria-pressed="false">Ћирилица</button>
+        </div>
+        <p class="hint">Kupac kuca latinicom, a za ćirilicu sajt sam preslovi tekst (lj, nj i dž postaju љ, њ, џ).</p>
+      </div>
+
+      <div class="group">
+        <span class="lbl" id="lbl-font">Font</span>
+        <div class="fonts" id="fonts" role="group" aria-labelledby="lbl-font"></div>
+      </div>
+
+      <div class="field">
+        <div class="row"><label for="broj">Broj</label><span class="count" id="c-broj"></span></div>
+        <input type="text" id="broj" value="27" maxlength="6">
+        <div class="size"><label for="z-broj">Veličina slova</label><input type="range" id="z-broj" min="5" max="40" step="1" value="26"><output id="o-broj" for="z-broj"></output></div>
+      </div>
+      <div class="field">
+        <div class="row"><label for="prezime">Prezime</label><span class="count" id="c-prezime"></span></div>
+        <input type="text" id="prezime" value="Porodica Petrović" maxlength="28">
+        <div class="size"><label for="z-prezime">Veličina slova</label><input type="range" id="z-prezime" min="5" max="30" step="1" value="16"><output id="o-prezime" for="z-prezime"></output></div>
+      </div>
+      <div class="field">
+        <div class="row"><label for="posveta">Posveta (nije obavezno)</label><span class="count" id="c-posveta"></span></div>
+        <input type="text" id="posveta" value="Dobro došli" maxlength="40">
+        <div class="size"><label for="z-posveta">Veličina slova</label><input type="range" id="z-posveta" min="5" max="25" step="1" value="11"><output id="o-posveta" for="z-posveta"></output></div>
+      </div>
+      <div class="group">
+        <p class="hint">Povucite bilo koji red teksta na pregledu. Tekst se pomera samo unutar zelenog polja iz šablona, koje se vidi dok vučete. Kod sredine table tekst se sam centrira.</p>
+        <button type="button" class="btn ghost" id="reset">Vrati tekst na početni položaj</button>
+      </div>
+      <p class="note" id="shrunk" hidden>Neki red je duži od table, pa je automatski smanjen da stane.</p>
+    </form>
+
+    <div class="stage">
+      <div id="preview" role="img" aria-label="Pregled table sa upisanim tekstom"></div>
+      <span class="cap" id="cap">Šper ploča, hrast · 285 × 167 mm</span>
+    </div>
+  </div>
+
+  <section class="code">
+    <div class="bar">
+      <h2>Fajl za proizvodnju (SVG)</h2>
+      <button type="button" class="btn" id="copy">Kopiraj SVG</button>
+    </div>
+    <pre id="out"></pre>
+    <span class="cap" id="copied" aria-live="polite"></span>
+  </section>
+</div>
+
+<script>
+(function () {
+  var FONTS = [
+    { name: 'Montserrat', weight: 600, stack: "'Montserrat', Arial, sans-serif" },
+    { name: 'Oswald', weight: 500, stack: "'Oswald', 'Arial Narrow', sans-serif" },
+    { name: 'PT Serif', weight: 700, stack: "'PT Serif', Georgia, serif" },
+    { name: 'Playfair Display', weight: 700, stack: "'Playfair Display', Georgia, serif" },
+    { name: 'Comfortaa', weight: 700, stack: "'Comfortaa', Arial, sans-serif" },
+    { name: 'Lobster', weight: 400, stack: "'Lobster', cursive" },
+    { name: 'Marck Script', weight: 400, stack: "'Marck Script', cursive" },
+    { name: 'Arial', weight: 400, stack: "Arial, Helvetica, sans-serif" }
+  ];
+  var state = { font: 0, cyr: false };
+
+  // 1 jedinica u fajlu = 0,01 mm (viewBox 60000 = 600 mm)
+  var MM = 100;
+  var RECT = { x: 15736.26, y: 8758.43, w: 28515.74, h: 16703.15 };
+  var CENTER_X = RECT.x + RECT.w / 2;
+  // Zeleno polje iz šablona: zona u kojoj kupac sme da pomera tekst (zaobilazi rupe)
+  var ZONE = { x: 20200, y: 9400, w: 20000, h: 15400 };
+  var MAX_W = ZONE.w;
+  var NS = 'http://www.w3.org/2000/svg';
+  var ids = ['broj', 'prezime', 'posveta'];
+  var limits = { broj: 6, prezime: 28, posveta: 40 };
+  var ys = { broj: 11412.98, prezime: 14250.59, posveta: 18979.94 };
+  var pos = {};
+  function resetPos() { ids.forEach(function (id) { pos[id] = { x: CENTER_X, y: ys[id] }; }); }
+  resetPos();
+
+  // Preslovljavanje latinica → ćirilica (srpski)
+  var DIG = { 'lj': 'љ', 'nj': 'њ', 'dž': 'џ', 'Lj': 'Љ', 'LJ': 'Љ', 'Nj': 'Њ', 'NJ': 'Њ', 'Dž': 'Џ', 'DŽ': 'Џ' };
+  var ONE = { a:'а',b:'б',c:'ц',č:'ч',ć:'ћ',d:'д',đ:'ђ',e:'е',f:'ф',g:'г',h:'х',i:'и',j:'ј',k:'к',l:'л',m:'м',n:'н',o:'о',p:'п',r:'р',s:'с',š:'ш',t:'т',u:'у',v:'в',z:'з',ž:'ж' };
+  function toCyr(s) {
+    var out = '';
+    for (var i = 0; i < s.length; i++) {
+      var two = s.substr(i, 2);
+      if (DIG[two]) { out += DIG[two]; i++; continue; }
+      var ch = s[i], low = ch.toLowerCase();
+      if (ONE[low]) { out += ch === low ? ONE[low] : ONE[low].toUpperCase(); }
+      else out += ch;
+    }
+    return out;
+  }
+
+  // Pregled: Corelove konture + drvena podloga
+  var svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', (RECT.x - 600) + ' ' + (RECT.y - 600) + ' ' + (RECT.w + 1200) + ' ' + (RECT.h + 1200));
+  svg.innerHTML =
+    '<defs>' +
+    '<linearGradient id="oak" x1="0" y1="0" x2="1" y2="0.18">' +
+    '<stop offset="0" stop-color="#C69A62"/><stop offset="0.3" stop-color="#D4AA70"/>' +
+    '<stop offset="0.55" stop-color="#BF8F55"/><stop offset="0.8" stop-color="#D1A56B"/><stop offset="1" stop-color="#B98A50"/></linearGradient>' +
+    '<clipPath id="plate"><rect x="' + RECT.x + '" y="' + RECT.y + '" width="' + RECT.w + '" height="' + RECT.h + '"/></clipPath>' +
+    '<mask id="holes"><rect x="0" y="0" width="60000" height="40000" fill="white"/>' +
+    '<ellipse cx="42182.91" cy="12219.45" rx="1391.93" ry="1956.22" fill="black"/>' +
+    '<ellipse cx="18294.4" cy="23091.54" rx="1354.31" ry="1692.88" fill="black"/></mask>' +
+    '</defs>' +
+    '<g mask="url(#holes)" clip-path="url(#plate)" id="wood"><rect x="' + RECT.x + '" y="' + RECT.y + '" width="' + RECT.w + '" height="' + RECT.h + '" fill="url(#oak)"/></g>' +
+    '<rect x="15736.26" y="8758.43" width="28515.74" height="16703.15" fill="none" stroke="#7A5230" stroke-width="40"/>' +
+    '<ellipse cx="42182.91" cy="12219.45" rx="1391.93" ry="1956.22" fill="none" stroke="#7A5230" stroke-width="40"/>' +
+    '<ellipse cx="18294.4" cy="23091.54" rx="1354.31" ry="1692.88" fill="none" stroke="#7A5230" stroke-width="40"/>' +
+    '<rect id="zone" x="20200" y="9400" width="20000" height="15400" fill="rgba(0,160,60,0.10)" stroke="#00A03C" stroke-width="45" stroke-dasharray="260 160" style="display:none;pointer-events:none"/>';
+  var wood = svg.querySelector('#wood');
+  var seed = 7;
+  function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+  for (var i = 0; i < 26; i++) {
+    var y = RECT.y + (i + 0.5) * RECT.h / 26 + (rnd() - 0.5) * 300;
+    var d = 'M' + RECT.x + ' ' + y.toFixed(0);
+    for (var k = 1; k <= 6; k++) {
+      var x = RECT.x + k * RECT.w / 6;
+      d += ' Q' + (x - RECT.w / 12).toFixed(0) + ' ' + (y + (rnd() - 0.5) * 520).toFixed(0) + ' ' + x.toFixed(0) + ' ' + (y + (rnd() - 0.5) * 160).toFixed(0);
+    }
+    var p = document.createElementNS(NS, 'path');
+    p.setAttribute('d', d); p.setAttribute('fill', 'none');
+    p.setAttribute('stroke', i % 3 === 0 ? '#8E6234' : '#A87843');
+    p.setAttribute('stroke-width', (40 + rnd() * 90).toFixed(0));
+    p.setAttribute('opacity', (0.18 + rnd() * 0.22).toFixed(2));
+    wood.appendChild(p);
+  }
+  var texts = {};
+  ids.forEach(function (id) {
+    var t = document.createElementNS(NS, 'text');
+    t.setAttribute('x', CENTER_X.toFixed(2));
+    t.setAttribute('y', ys[id]);
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('fill', '#3B2412');
+    t.style.cursor = 'grab';
+    t.style.touchAction = 'none';
+    t.style.userSelect = 'none';
+    svg.appendChild(t);
+    texts[id] = t;
+    makeDraggable(t, id);
+  });
+  document.getElementById('preview').appendChild(svg);
+
+  var zoneEl = svg.querySelector('#zone');
+  var guide = document.createElementNS(NS, 'line');
+  guide.setAttribute('x1', CENTER_X); guide.setAttribute('x2', CENTER_X);
+  guide.setAttribute('y1', RECT.y); guide.setAttribute('y2', RECT.y + RECT.h);
+  guide.setAttribute('stroke', '#1F4E6B'); guide.setAttribute('stroke-width', '45'); guide.setAttribute('stroke-dasharray', '200 140');
+  guide.style.display = 'none'; guide.style.pointerEvents = 'none';
+  svg.appendChild(guide);
+
+  function toSvg(evt) {
+    var pt = svg.createSVGPoint(); pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(svg.getScreenCTM().inverse());
+  }
+  function makeDraggable(t, id) {
+    var start = null;
+    t.addEventListener('pointerdown', function (e) {
+      e.preventDefault();
+      var p = toSvg(e);
+      start = { dx: pos[id].x - p.x, dy: pos[id].y - p.y };
+      try { t.setPointerCapture(e.pointerId); } catch (err) {}
+      t.style.cursor = 'grabbing';
+      zoneEl.style.display = '';
+    });
+    t.addEventListener('pointermove', function (e) {
+      if (!start) return;
+      var p = toSvg(e);
+      var x = p.x + start.dx, y = p.y + start.dy;
+      var half = t.getComputedTextLength() / 2;
+      var fs = parseFloat(t.style.fontSize) || 1000;
+      x = Math.max(ZONE.x + half, Math.min(ZONE.x + ZONE.w - half, x));
+      y = Math.max(ZONE.y + fs * 0.75, Math.min(ZONE.y + ZONE.h - fs * 0.2, y));
+      var snap = Math.abs(x - CENTER_X) < 350;
+      if (snap) x = CENTER_X;
+      guide.style.display = snap ? '' : 'none';
+      pos[id] = { x: x, y: y };
+      t.setAttribute('x', x.toFixed(2)); t.setAttribute('y', y.toFixed(2));
+    });
+    function end() { if (!start) return; start = null; t.style.cursor = 'grab'; guide.style.display = 'none'; zoneEl.style.display = 'none'; update(); }
+    t.addEventListener('pointerup', end);
+    t.addEventListener('pointercancel', end);
+  }
+
+  // Dugmad za fontove
+  var fontsBox = document.getElementById('fonts');
+  FONTS.forEach(function (f, idx) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('aria-pressed', idx === state.font ? 'true' : 'false');
+    var s = document.createElement('span'); s.className = 'sample'; s.style.fontFamily = f.stack; s.style.fontWeight = f.weight;
+    s.textContent = 'Petrović 27';
+    var n = document.createElement('span'); n.className = 'fname'; n.textContent = f.name;
+    b.appendChild(s); b.appendChild(n);
+    b.addEventListener('click', function () { state.font = idx; refreshButtons(); loadAndUpdate(); });
+    fontsBox.appendChild(b);
+  });
+  function refreshButtons() {
+    Array.prototype.forEach.call(fontsBox.children, function (b, idx) { b.setAttribute('aria-pressed', idx === state.font ? 'true' : 'false'); });
+    document.getElementById('s-lat').setAttribute('aria-pressed', state.cyr ? 'false' : 'true');
+    document.getElementById('s-cyr').setAttribute('aria-pressed', state.cyr ? 'true' : 'false');
+    Array.prototype.forEach.call(fontsBox.querySelectorAll('.sample'), function (s) { s.textContent = state.cyr ? 'Петровић 27' : 'Petrović 27'; });
+  }
+  document.getElementById('s-lat').addEventListener('click', function () { state.cyr = false; refreshButtons(); loadAndUpdate(); });
+  document.getElementById('s-cyr').addEventListener('click', function () { state.cyr = true; refreshButtons(); loadAndUpdate(); });
+
+  function escapeXml(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function value(id) { var v = document.getElementById(id).value; return state.cyr ? toCyr(v) : v; }
+
+  function update() {
+    var f = FONTS[state.font];
+    var shrunk = false, sizes = {};
+    ids.forEach(function (id) {
+      var raw = document.getElementById(id).value;
+      document.getElementById('c-' + id).textContent = raw.length + '/' + limits[id];
+      var mm = +document.getElementById('z-' + id).value;
+      document.getElementById('o-' + id).textContent = mm + ' mm';
+      var t = texts[id];
+      t.textContent = value(id);
+      t.setAttribute('x', pos[id].x.toFixed(2));
+      t.setAttribute('y', pos[id].y.toFixed(2));
+      t.style.fontFamily = f.stack;
+      t.style.fontWeight = f.weight;
+      var size = mm * MM;
+      t.style.fontSize = size + 'px';
+      var w = raw ? t.getComputedTextLength() : 0;
+      if (w > MAX_W) { size = size * MAX_W / w; shrunk = true; t.style.fontSize = size.toFixed(1) + 'px'; }
+      sizes[id] = size;
+    });
+    document.getElementById('shrunk').hidden = !shrunk;
+    document.getElementById('cap').textContent = 'Šper ploča, hrast · 285 × 167 mm · ' + f.name + ' · ' + (state.cyr ? 'ćirilica' : 'latinica');
+
+    var lines = [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<svg xmlns="http://www.w3.org/2000/svg" width="600mm" height="400mm" viewBox="0 0 60000 40000">',
+      ' <style>.str0{stroke:#F50000;stroke-width:7.62;stroke-linecap:round;stroke-linejoin:round} .fil0{fill:none} .fil1{fill:black} .fnt0{font-family:\'' + f.name + '\';font-weight:' + f.weight + '}</style>',
+      ' <rect class="fil0 str0" x="15736.26" y="8758.43" width="28515.74" height="16703.15"/>',
+      ' <ellipse class="fil0 str0" cx="42182.91" cy="12219.45" rx="1391.93" ry="1956.22"/>',
+      ' <ellipse class="fil0 str0" cx="18294.4" cy="23091.54" rx="1354.31" ry="1692.88"/>'
+    ];
+    ids.forEach(function (id) {
+      var v = value(id);
+      if (!v) return;
+      lines.push(' <text id="' + id + '" x="' + pos[id].x.toFixed(2) + '" y="' + pos[id].y.toFixed(2) + '" text-anchor="middle" class="fil1 fnt0" style="font-size:' + sizes[id].toFixed(2) + 'px">' + escapeXml(v) + '</text>');
+    });
+    lines.push('</svg>');
+    document.getElementById('out').textContent = lines.join('\n');
+  }
+
+  function loadAndUpdate() {
+    update();
+    var f = FONTS[state.font];
+    if (document.fonts && document.fonts.load && f.name !== 'Arial') {
+      var sample = ids.map(value).join(' ');
+      document.fonts.load(f.weight + ' 40px "' + f.name + '"', sample || 'Aa').then(update, function () {});
+    }
+  }
+
+  ids.forEach(function (id) {
+    document.getElementById(id).addEventListener('input', update);
+    document.getElementById('z-' + id).addEventListener('input', update);
+  });
+  document.getElementById('f').addEventListener('submit', function (e) { e.preventDefault(); });
+  document.getElementById('reset').addEventListener('click', function () { resetPos(); update(); });
+
+  document.getElementById('copy').addEventListener('click', function () {
+    var txt = document.getElementById('out').textContent;
+    var msg = document.getElementById('copied');
+    function fallback() {
+      var r = document.createRange(); r.selectNodeContents(document.getElementById('out'));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      msg.textContent = 'Tekst je označen. Kopirajte ga sa Ctrl+C.';
+    }
+    try { navigator.clipboard.writeText(txt).then(function () { msg.textContent = 'SVG je kopiran.'; }, fallback); }
+    catch (e) { fallback(); }
+  });
+
+  refreshButtons();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(update);
+  loadAndUpdate();
+})();
+</script>

@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="sr-Latn">
+<head>
+<meta charset="utf-8">
+<title>Panel proizvodnje</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1F4E6B}a:hover{color:#163A50}
+</style>
+</helmet>
+<div style="width: 1280px; height: 1060px; box-sizing: border-box; background: #EEF0F2; font-family: 'IBM Plex Sans', sans-serif; color: #16191D; display: flex; flex-direction: column">
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 14px 32px; background: #16191D; color: #FFFFFF">
+    <div style="display: flex; align-items: center; gap: 28px">
+      <span style="font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 18px">[BREND] · Proizvodnja</span>
+      <nav style="display: flex; gap: 6px">
+        <a href="#" style="padding: 10px 14px; border-radius: 8px; background: #2B3138; color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 600">Red za izradu</a>
+        <a href="#" style="padding: 10px 14px; color: #C9CED4; text-decoration: none; font-size: 14px">Isporuke</a>
+        <a href="#" style="padding: 10px 14px; color: #C9CED4; text-decoration: none; font-size: 14px">Prodavnice</a>
+        <a href="#" style="padding: 10px 14px; color: #C9CED4; text-decoration: none; font-size: 14px">Obračun</a>
+      </nav>
+    </div>
+    <span style="font-size: 14px; color: #C9CED4">16. oktobar</span>
+  </header>
+
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; padding: 22px 32px 0">
+    <div style="background: #FFFFFF; border: 1px solid #D5D9DE; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px">
+      <span style="font-size: 13px; color: #545B64">Plaćeno, čeka izradu</span>
+      <span style="font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 28px">23</span>
+    </div>
+    <div style="background: #FFFFFF; border: 1px solid #D5D9DE; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px">
+      <span style="font-size: 13px; color: #545B64">U izradi</span>
+      <span style="font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 28px">6</span>
+    </div>
+    <div style="background: #FFFFFF; border: 1px solid #D5D9DE; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px">
+      <span style="font-size: 13px; color: #545B64">Spremno za turu</span>
+      <span style="font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 28px">41</span>
+    </div>
+    <div style="background: #FFFFFF; border: 1px solid #D5D9DE; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px">
+      <span style="font-size: 13px; color: #545B64">Neplaćeno (ističe uskoro)</span>
+      <span style="font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 28px">4</span>
+    </div>
+  </div>
+
+  <div style="flex: 1; display: flex; gap: 20px; padding: 18px 32px 24px; min-height: 0">
+    <section style="flex: 1; min-width: 0; background: #FFFFFF; border: 1px solid #D5D9DE; border-radius: 14px; display: flex; flex-direction: column; overflow: hidden">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid #E3E6EA">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 700">Red za izradu</h2>
+        <div style="display: flex; gap: 8px">
+          <button type="button" style="height: 40px; padding: 0 14px; border-radius: 8px; border: 1px solid #A9B0B8; background: #FFFFFF; font-family: inherit; font-size: 13px; color: #16191D">Svi proizvodi</button>
+          <button type="button" style="height: 40px; padding: 0 14px; border-radius: 8px; border: none; background: #1F4E6B; color: #FFFFFF; font-family: inherit; font-size: 13px; font-weight: 600">Preuzmi fajlove za laser (8)</button>
+        </div>
+      </div>
+      <div style="overflow-x: auto">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px">
+          <thead>
+            <tr style="text-align: left; color: #545B64; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em">
+              <th style="padding: 10px 18px; font-weight: 600">Kod</th>
+              <th style="padding: 10px 8px; font-weight: 600">Prodavnica</th>
+              <th style="padding: 10px 8px; font-weight: 600">Proizvod</th>
+              <th style="padding: 10px 8px; font-weight: 600">Tekst</th>
+              <th style="padding: 10px 8px; font-weight: 600">Plaćeno</th>
+              <th style="padding: 10px 18px; font-weight: 600">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{rows}}" as="r" hint-placeholder-count="8">
+              <tr style="border-top: 1px solid #E3E6EA">
+                <td style="padding: 12px 18px; font-weight: 700">{{r.code}}</td>
+                <td style="padding: 12px 8px">{{r.store}}</td>
+                <td style="padding: 12px 8px">{{r.product}}</td>
+                <td style="padding: 12px 8px">{{r.text}}</td>
+                <td style="padding: 12px 8px; color: #545B64">{{r.paid}}</td>
+                <td style="padding: 12px 18px"><span style="{{r.badgeStyle}}">{{r.status}}</span></td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <aside style="width: 330px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px">
+      <section style="background: #FFFFFF; border: 1px solid #D5D9DE; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 700">Sledeća tura · utorak</h2>
+        <div style="display: flex; justify-content: space-between; font-size: 14px"><span>Beograd (BG)</span><strong>9 prodavnica · 24 kom</strong></div>
+        <div style="display: flex; justify-content: space-between; font-size: 14px"><span>Novi Sad (NS)</span><strong>5 prodavnica · 11 kom</strong></div>
+        <div style="display: flex; justify-content: space-between; font-size: 14px"><span>Šumadija (KG)</span><strong>3 prodavnice · 6 kom</strong></div>
+        <button type="button" style="height: 46px; border-radius: 10px; border: 1px solid #1F4E6B; background: #FFFFFF; color: #1F4E6B; font-family: inherit; font-size: 14px; font-weight: 600">Štampaj etikete po prodavnici</button>
+      </section>
+      <section style="background: #FFFFFF; border: 1px solid #D5D9DE; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <h2 style="margin: 0; font-size: 16px; font-weight: 700">Za obavestiti</h2>
+          <span style="padding: 3px 10px; border-radius: 20px; background: #16191D; color: #FFFFFF; font-size: 13px; font-weight: 700">4</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <div style="padding: 12px; border-radius: 10px; background: #EEF0F2; display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+              <span style="font-weight: 700; font-size: 14px">K7F-42 · Petrović</span>
+              <span style="padding: 3px 8px; border-radius: 20px; background: #DCEAF3; color: #163A50; font-size: 12px; font-weight: 600">Primljeno</span>
+            </div>
+            <div style="display: flex; gap: 8px">
+              <button type="button" style="flex: 1; height: 44px; border-radius: 9px; border: none; background: #1E6B45; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 700">Pošalji na WhatsApp</button>
+              <button type="button" style="height: 44px; padding: 0 12px; border-radius: 9px; border: 1px solid #A9B0B8; background: #FFFFFF; color: #16191D; font-family: inherit; font-size: 13px; font-weight: 600">Poslato</button>
+            </div>
+          </div>
+          <div style="padding: 12px; border-radius: 10px; background: #EEF0F2; display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+              <span style="font-weight: 700; font-size: 14px">P2N-11 · Jovanović</span>
+              <span style="padding: 3px 8px; border-radius: 20px; background: #DCEAF3; color: #163A50; font-size: 12px; font-weight: 600">Primljeno</span>
+            </div>
+            <div style="display: flex; gap: 8px">
+              <button type="button" style="flex: 1; height: 44px; border-radius: 9px; border: none; background: #5B3E99; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 700">Kopiraj i otvori Viber</button>
+              <button type="button" style="height: 44px; padding: 0 12px; border-radius: 9px; border: 1px solid #A9B0B8; background: #FFFFFF; color: #16191D; font-family: inherit; font-size: 13px; font-weight: 600">Poslato</button>
+            </div>
+          </div>
+          <div style="padding: 12px; border-radius: 10px; background: #EEF0F2; display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+              <span style="font-weight: 700; font-size: 14px">D6R-63 · Ilić</span>
+              <span style="padding: 3px 8px; border-radius: 20px; background: #DDEFE4; color: #134A2F; font-size: 12px; font-weight: 600">Stiglo u radnju</span>
+            </div>
+            <div style="display: flex; gap: 8px">
+              <button type="button" style="flex: 1; height: 44px; border-radius: 9px; border: none; background: #5B3E99; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 700">Kopiraj i otvori Viber</button>
+              <button type="button" style="height: 44px; padding: 0 12px; border-radius: 9px; border: 1px solid #A9B0B8; background: #FFFFFF; color: #16191D; font-family: inherit; font-size: 13px; font-weight: 600">Poslato</button>
+            </div>
+          </div>
+          <div style="padding: 12px; border-radius: 10px; background: #EEF0F2; display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+              <span style="font-weight: 700; font-size: 14px">B5S-18 · Stanić</span>
+              <span style="padding: 3px 8px; border-radius: 20px; background: #DDEFE4; color: #134A2F; font-size: 12px; font-weight: 600">Stiglo u radnju</span>
+            </div>
+            <div style="display: flex; gap: 8px">
+              <button type="button" style="flex: 1; height: 44px; border-radius: 9px; border: none; background: #1E6B45; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 700">Pošalji na WhatsApp</button>
+              <button type="button" style="height: 44px; padding: 0 12px; border-radius: 9px; border: 1px solid #A9B0B8; background: #FFFFFF; color: #16191D; font-family: inherit; font-size: 13px; font-weight: 600">Poslato</button>
+            </div>
+          </div>
+        </div>
+        <span style="font-size: 12px; color: #545B64">Dugme otvara razgovor sa kupcem i gotovom porukom. Viber ne može sam da upiše tekst, pa ga dugme kopira za lepljenje.</span>
+      </section>
+    </aside>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1060}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const badge = {
+      'Čeka izradu': 'background: #FFF3C4; color: #4A3B00',
+      'U izradi': 'background: #DCEAF3; color: #163A50',
+      'Gotovo': 'background: #DDEFE4; color: #134A2F'
+    };
+    const data = [
+      ['K7F-42', 'BG-017', 'Kućni broj · A', '27 · Porodica Petrović', '16.10. 18:51', 'U izradi'],
+      ['P2N-11', 'BG-017', 'Tabla · B', 'Jovanović', '16.10. 17:20', 'U izradi'],
+      ['M3C-90', 'NS-004', 'Pločica za sanduče · C', 'Marković · 14', '16.10. 15:02', 'Čeka izradu'],
+      ['T8A-05', 'BG-022', 'Poklon za useljenje · A', 'Naš dom · Nikolić 2026', '16.10. 13:44', 'Čeka izradu'],
+      ['V1K-27', 'KG-002', 'Natpis za vikendicu · B', 'Vikendica Jović', '16.10. 11:10', 'Čeka izradu'],
+      ['D6R-63', 'NS-009', 'Držač za ključeve · A', 'Dom Ilić', '15.10. 19:31', 'Gotovo'],
+      ['B5S-18', 'BG-031', 'Kućni broj · C', '112a', '15.10. 16:05', 'Gotovo'],
+      ['L2H-44', 'BG-017', 'Tabla · A', 'Porodica Stojanović', '15.10. 12:48', 'Gotovo']
+    ];
+    const rows = data.map((d) => ({
+      code: d[0], store: d[1], product: d[2], text: d[3], paid: d[4], status: d[5],
+      badgeStyle: 'display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; ' + badge[d[5]]
+    }));
+    return { rows };
+  }
+}
+</script>
+</body>
+</html>
