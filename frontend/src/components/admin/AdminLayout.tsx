@@ -5,6 +5,7 @@ const navItems = [
   { to: "/admin/red", label: "Red za izradu" },
   { to: "/admin/prodavnice", label: "Prodavnice" },
   { to: "/admin/katalog", label: "Katalog" },
+  { to: "/admin/finansije", label: "Finansije" },
 ];
 
 export default function AdminLayout() {

@@ -340,3 +340,45 @@ export async function createAdminModel(proizvodId: string, input: { naziv: strin
 export async function updateAdminModel(id: string, patch: { naziv?: string; cena?: number | null; aktivan?: boolean }) {
   return handle<{ model: AdminModel }>(await adminFetch(`/admin/modeli/${id}`, { method: "PATCH", body: JSON.stringify(patch) }));
 }
+
+// ---------- Admin: finansije ----------
+
+export interface Finansije {
+  period: { od: string; do: string };
+  ukupno: { broj_porudzbina: number; prihod: number };
+  po_danu: { datum: string; prihod: number; broj: number }[];
+  po_prodavnici: {
+    prodavnica_id: string;
+    naziv: string;
+    udeo_prodavnice: number;
+    broj_porudzbina: number;
+    prihod: number;
+    zarada_prodavnice: number;
+    zarada_platforme: number;
+  }[];
+  po_proizvodu: { proizvod_id: string; naziv: string; broj_porudzbina: number; prihod: number }[];
+}
+
+export async function getFinansije(od?: string, doDate?: string) {
+  const qs = new URLSearchParams();
+  if (od) qs.set("od", od);
+  if (doDate) qs.set("do", doDate);
+  const query = qs.toString();
+  return handle<Finansije>(await adminFetch(`/admin/finansije${query ? `?${query}` : ""}`));
+}
+
+export async function downloadFinansijeCsv(od?: string, doDate?: string) {
+  const qs = new URLSearchParams();
+  if (od) qs.set("od", od);
+  if (doDate) qs.set("do", doDate);
+  const query = qs.toString();
+  const res = await adminFetch(`/admin/finansije/izvoz${query ? `?${query}` : ""}`);
+  if (!res.ok) throw new Error("Greška pri izvozu");
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `obracun-${od ?? "period"}-${doDate ?? "sada"}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}

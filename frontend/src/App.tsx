@@ -13,6 +13,7 @@ import AdminStores from "./pages/admin/Stores";
 import AdminStoreDetail from "./pages/admin/StoreDetail";
 import AdminCatalog from "./pages/admin/Catalog";
 import AdminProductDetail from "./pages/admin/ProductDetail";
+import AdminFinance from "./pages/admin/Finance";
 import AdminLayout from "./components/admin/AdminLayout";
 
 function Pocetna() {
@@ -65,6 +66,7 @@ export default function App() {
         <Route path="prodavnice/:id" element={<AdminStoreDetail />} />
         <Route path="katalog" element={<AdminCatalog />} />
         <Route path="katalog/:id" element={<AdminProductDetail />} />
+        <Route path="finansije" element={<AdminFinance />} />
       </Route>
 
       <Route path="/:slug/konfigurator/:proizvodId" element={<Konfigurator />} />

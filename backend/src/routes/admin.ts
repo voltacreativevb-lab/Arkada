@@ -459,3 +459,136 @@ adminRouter.patch("/admin/modeli/:id", async (req, res) => {
   if (error) return res.status(500).json({ error: error.message });
   res.json({ model: data });
 });
+
+// ----------------------------------------------------------------------------
+// Finansije (revenue, per-store payout split, CSV export)
+// "Realized" revenue = any order that was actually paid for at the register —
+// every status except kreirana (unpaid), otkazana, istekla.
+// ----------------------------------------------------------------------------
+
+const PAID_STATUSES = "(kreirana,otkazana,istekla)"; // excluded set, used with .not("status","in",...)
+
+const financeQuerySchema = z.object({ od: z.string().optional(), do: z.string().optional() });
+
+function resolveRange(od?: string, doParam?: string) {
+  const now = new Date();
+  const from = od ? new Date(`${od}T00:00:00.000Z`) : new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 29));
+  const to = doParam ? new Date(`${doParam}T23:59:59.999Z`) : now;
+  return { fromIso: from.toISOString(), toIso: to.toISOString() };
+}
+
+/** GET /admin/finansije?od=YYYY-MM-DD&do=YYYY-MM-DD — revenue + per-store/per-product breakdown. Defaults to the last 30 days. */
+adminRouter.get("/admin/finansije", async (req, res) => {
+  const parsed = financeQuerySchema.safeParse(req.query);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+  const { fromIso, toIso } = resolveRange(parsed.data.od, parsed.data.do);
+
+  const { data: orders, error } = await supabaseAdmin
+    .from("porudzbine")
+    .select("cena, created_at, prodavnica_id, prodavnice(naziv, udeo_prodavnice), modeli(naziv, proizvod_id, proizvodi(naziv))")
+    .gte("created_at", fromIso)
+    .lte("created_at", toIso)
+    .not("status", "in", PAID_STATUSES);
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  let prihod = 0;
+  const poDanu = new Map<string, { prihod: number; broj: number }>();
+  const poProdavnici = new Map<string, { naziv: string; udeo: number; prihod: number; broj: number }>();
+  const poProizvodu = new Map<string, { naziv: string; prihod: number; broj: number }>();
+
+  for (const o of orders ?? []) {
+    const cena = Number(o.cena);
+    prihod += cena;
+
+    const dan = String(o.created_at).slice(0, 10);
+    const d = poDanu.get(dan) ?? { prihod: 0, broj: 0 };
+    d.prihod += cena;
+    d.broj += 1;
+    poDanu.set(dan, d);
+
+    const prodavnica = o.prodavnice as unknown as { naziv: string; udeo_prodavnice: number } | null;
+    if (prodavnica) {
+      const p = poProdavnici.get(o.prodavnica_id) ?? { naziv: prodavnica.naziv, udeo: Number(prodavnica.udeo_prodavnice), prihod: 0, broj: 0 };
+      p.prihod += cena;
+      p.broj += 1;
+      poProdavnici.set(o.prodavnica_id, p);
+    }
+
+    const model = o.modeli as unknown as { proizvod_id: string; proizvodi: { naziv: string } } | null;
+    if (model?.proizvodi) {
+      const pr = poProizvodu.get(model.proizvod_id) ?? { naziv: model.proizvodi.naziv, prihod: 0, broj: 0 };
+      pr.prihod += cena;
+      pr.broj += 1;
+      poProizvodu.set(model.proizvod_id, pr);
+    }
+  }
+
+  res.json({
+    period: { od: fromIso.slice(0, 10), do: toIso.slice(0, 10) },
+    ukupno: { broj_porudzbina: orders?.length ?? 0, prihod },
+    po_danu: [...poDanu.entries()].map(([datum, v]) => ({ datum, ...v })).sort((a, b) => a.datum.localeCompare(b.datum)),
+    po_prodavnici: [...poProdavnici.entries()]
+      .map(([id, v]) => ({
+        prodavnica_id: id,
+        naziv: v.naziv,
+        udeo_prodavnice: v.udeo,
+        broj_porudzbina: v.broj,
+        prihod: v.prihod,
+        zarada_prodavnice: Math.round(v.prihod * v.udeo),
+        zarada_platforme: Math.round(v.prihod * (1 - v.udeo)),
+      }))
+      .sort((a, b) => b.prihod - a.prihod),
+    po_proizvodu: [...poProizvodu.entries()]
+      .map(([id, v]) => ({ proizvod_id: id, naziv: v.naziv, broj_porudzbina: v.broj, prihod: v.prihod }))
+      .sort((a, b) => b.prihod - a.prihod),
+  });
+});
+
+function csvCell(v: unknown): string {
+  const s = String(v ?? "");
+  return /[,"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+/** GET /admin/finansije/izvoz — same range, as a line-item CSV for bookkeeping. */
+adminRouter.get("/admin/finansije/izvoz", async (req, res) => {
+  const parsed = financeQuerySchema.safeParse(req.query);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+  const { fromIso, toIso } = resolveRange(parsed.data.od, parsed.data.do);
+
+  const { data: orders, error } = await supabaseAdmin
+    .from("porudzbine")
+    .select("kod, cena, status, created_at, prodavnice(naziv, udeo_prodavnice), modeli(naziv, proizvodi(naziv))")
+    .gte("created_at", fromIso)
+    .lte("created_at", toIso)
+    .not("status", "in", PAID_STATUSES)
+    .order("created_at");
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  const header = "Kod,Datum,Prodavnica,Udeo prodavnice,Proizvod,Model,Cena,Zarada prodavnice,Zarada platforme,Status\n";
+  const rows = (orders ?? [])
+    .map((o: any) => {
+      const udeo = Number(o.prodavnice?.udeo_prodavnice ?? 0);
+      const cena = Number(o.cena);
+      return [
+        o.kod,
+        String(o.created_at).slice(0, 10),
+        o.prodavnice?.naziv ?? "",
+        udeo,
+        o.modeli?.proizvodi?.naziv ?? "",
+        o.modeli?.naziv ?? "",
+        cena,
+        Math.round(cena * udeo),
+        Math.round(cena * (1 - udeo)),
+        o.status,
+      ]
+        .map(csvCell)
+        .join(",");
+    })
+    .join("\n");
+
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader("Content-Disposition", `attachment; filename="obracun-${fromIso.slice(0, 10)}-${toIso.slice(0, 10)}.csv"`);
+  res.send(`﻿${header}${rows}`);
+});
