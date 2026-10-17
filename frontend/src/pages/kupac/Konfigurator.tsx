@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { FONTS, clampPosition, fitFontSize, parseCutShapes, transliterate, type Pismo } from "@maestrovolta/sablon-core";
+import { FONTS, boundingBoxOf, clampPosition, fitFontSize, parseCutShapes, transliterate, type Pismo } from "@maestrovolta/sablon-core";
 import { createPorudzbina, getKatalog, type Model, type Proizvod } from "../../lib/api";
 import { renderWoodLayer } from "../../lib/materialStage";
 
@@ -78,7 +78,16 @@ export default function Konfigurator() {
         if (svg) {
           svg.style.filter = "drop-shadow(0 14px 28px rgba(45, 30, 10, 0.28))";
           try {
-            renderWoodLayer(svg, parseCutShapes(svgText));
+            const shapes = parseCutShapes(svgText);
+            if (shapes.length > 0) {
+              // The template's viewBox is the full laser sheet, not just the
+              // plate — crop to the plate's own bounds (+ a little margin)
+              // so it fills the preview instead of floating in empty space.
+              const bbox = boundingBoxOf(shapes);
+              const pad = Math.max(bbox.w, bbox.h) * 0.08;
+              svg.setAttribute("viewBox", `${bbox.x - pad} ${bbox.y - pad} ${bbox.w + pad * 2} ${bbox.h + pad * 2}`);
+            }
+            renderWoodLayer(svg, shapes);
           } catch {
             // Decorative only — a product with unexpected geometry just keeps the plain template.
           }

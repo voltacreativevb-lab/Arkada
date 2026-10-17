@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getKatalog, getProdavnica, type Prodavnica, type Proizvod } from "../../lib/api";
+import ProductPreview from "../../components/ProductPreview";
 
 export default function Main() {
   const { slug } = useParams<{ slug: string }>();
@@ -83,8 +84,14 @@ export default function Main() {
             to={`/${slug}/konfigurator/${p.id}`}
             className="no-underline text-ink bg-white border border-line rounded-xl overflow-hidden flex flex-col"
           >
-            <div className="h-28 bg-[#E3E6EA] flex items-center justify-center text-sm text-muted">
-              {p.slika_glavna ? <img src={p.slika_glavna} alt={p.naziv} className="w-full h-full object-cover" /> : p.naziv}
+            <div className="h-28 bg-[#E3E6EA] flex items-center justify-center text-sm text-muted overflow-hidden">
+              {p.slika_glavna ? (
+                <img src={p.slika_glavna} alt={p.naziv} className="w-full h-full object-cover" />
+              ) : p.modeli[0] ? (
+                <ProductPreview modelId={p.modeli[0].id} className="w-full h-full p-3 [&>svg]:w-full [&>svg]:h-full" />
+              ) : (
+                p.naziv
+              )}
             </div>
             <div className="px-3 pt-2.5 pb-3 flex flex-col gap-0.5">
               <span className="font-semibold text-[15px]">{p.naziv}</span>
