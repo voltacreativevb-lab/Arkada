@@ -1,0 +1,13 @@
+{
+  "name": "maestrovolta",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "backend",
+    "frontend",
+    "shared/*"
+  ],
+  "scripts": {
+    "build:shared": "npm run build -w shared/sablon-core"
+  }
+}
