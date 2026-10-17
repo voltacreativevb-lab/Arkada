@@ -261,10 +261,16 @@ export default function Konfigurator() {
         </section>
 
         <div
-          className="mx-5 mt-4 rounded-2xl p-6 flex flex-col items-center gap-3"
+          className="mx-2 sm:mx-5 mt-4 rounded-2xl p-2 sm:p-6 flex flex-col items-center gap-3"
           style={{ background: "radial-gradient(ellipse at 50% 35%, #E6E9EC 0%, #CFD4D9 100%)" }}
         >
           <div ref={stageRef} className="w-full [&>svg]:w-full [&>svg]:h-auto" />
+          <p className="m-0 flex items-center gap-1.5 text-[13px] text-[#3F454C] text-center px-2">
+            <svg aria-hidden viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+              <path d="M9 11.5V5a1.5 1.5 0 0 1 3 0v5.5M12 10.5V4a1.5 1.5 0 0 1 3 0v6.5M15 10.5V6a1.5 1.5 0 0 1 3 0v8c0 3.5-2 7-6 7s-6-2-7.5-5L3.4 13a1.3 1.3 0 0 1 2.2-1.4L7 14" />
+            </svg>
+            Prevucite tekst prstom da ga pomerite po tabli
+          </p>
           {shrunk && (
             <p className="m-0 px-3 py-2 rounded-lg bg-warn text-warn-fg text-[13px]">
               Neki red je duži od table, pa je automatski smanjen da stane.
