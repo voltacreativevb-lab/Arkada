@@ -86,7 +86,7 @@ export default function Main() {
           >
             <div className="h-28 bg-[#E3E6EA] flex items-center justify-center text-sm text-muted overflow-hidden">
               {p.slike[0] ? (
-                <img src={p.slike[0]} alt={p.naziv} className="w-full h-full object-cover" />
+                <img src={p.slike[0]} alt={p.naziv} className="w-full h-full object-contain p-2" />
               ) : p.modeli[0] ? (
                 <ProductPreview modelId={p.modeli[0].id} className="w-full h-full p-3 [&>svg]:w-full [&>svg]:h-full" />
               ) : (

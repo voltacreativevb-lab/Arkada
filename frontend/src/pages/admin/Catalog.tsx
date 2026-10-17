@@ -122,7 +122,7 @@ export default function AdminCatalog() {
         {products?.map((p) => (
           <Link key={p.id} to={`/admin/katalog/${p.id}`} className="bg-white border border-line rounded-xl overflow-hidden flex flex-col">
             <div className="h-32 bg-[#EEF0F2] flex items-center justify-center">
-              {p.slike[0] ? <img src={p.slike[0]} alt={p.naziv} className="w-full h-full object-cover" /> : <span className="text-xs text-muted">Bez slike</span>}
+              {p.slike[0] ? <img src={p.slike[0]} alt={p.naziv} className="w-full h-full object-contain p-2" /> : <span className="text-xs text-muted">Bez slike</span>}
             </div>
             <div className="p-3.5 flex items-center justify-between">
               <div>
