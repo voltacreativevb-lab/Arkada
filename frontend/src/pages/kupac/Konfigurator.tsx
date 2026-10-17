@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { FONTS, clampPosition, fitFontSize, transliterate, type Pismo } from "@maestrovolta/sablon-core";
+import { FONTS, clampPosition, fitFontSize, parseCutShapes, transliterate, type Pismo } from "@maestrovolta/sablon-core";
 import { createPorudzbina, getKatalog, type Model, type Proizvod } from "../../lib/api";
+import { renderWoodLayer } from "../../lib/materialStage";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
 
@@ -29,6 +30,7 @@ export default function Konfigurator() {
   const stageRef = useRef<HTMLDivElement>(null);
   const svgRootRef = useRef<SVGSVGElement | null>(null);
   const textNodes = useRef<Record<string, SVGTextElement>>({});
+  const zoneElRef = useRef<SVGElement | null>(null);
   const dragState = useRef<{ key: string; dx: number; dy: number } | null>(null);
 
   useEffect(() => {
@@ -72,6 +74,26 @@ export default function Konfigurator() {
         const svg = stageRef.current.querySelector("svg");
         svgRootRef.current = svg;
         textNodes.current = {};
+
+        if (svg) {
+          svg.style.filter = "drop-shadow(0 14px 28px rgba(45, 30, 10, 0.28))";
+          try {
+            renderWoodLayer(svg, parseCutShapes(svgText));
+          } catch {
+            // Decorative only — a product with unexpected geometry just keeps the plain template.
+          }
+
+          const zone = svg.querySelector<SVGElement>('[class~="zona"]');
+          if (zone) {
+            zone.style.display = "none";
+            zoneElRef.current = zone;
+          }
+          // Laser cut lines read as a faint reference under the wood, not a technical drawing.
+          svg.querySelectorAll<SVGElement>(".str0").forEach((el) => {
+            if (el !== zone) el.style.opacity = "0.3";
+          });
+        }
+
         for (const polje of model.polja) {
           const node = svg?.querySelector<SVGTextElement>(`text[id="${polje.key}"]`);
           if (node) {
@@ -110,6 +132,7 @@ export default function Konfigurator() {
         dragState.current = { key: polje.key, dx: current.x - p.x, dy: current.y - p.y };
         node.setPointerCapture(e.pointerId);
         node.style.cursor = "grabbing";
+        if (zoneElRef.current) zoneElRef.current.style.display = "";
       };
 
       node.onpointermove = (e) => {
@@ -123,6 +146,7 @@ export default function Konfigurator() {
       const end = () => {
         if (dragState.current?.key === polje.key) dragState.current = null;
         node.style.cursor = "grab";
+        if (zoneElRef.current) zoneElRef.current.style.display = "none";
       };
       node.onpointerup = end;
       node.onpointercancel = end;
@@ -236,8 +260,11 @@ export default function Konfigurator() {
           <span className="text-sm text-muted">{proizvod.opis}</span>
         </section>
 
-        <div className="mx-5 mt-4 rounded-2xl bg-[#D9DDE2] p-4 flex flex-col items-center gap-2">
-          <div ref={stageRef} className="w-full [&>svg]:w-full [&>svg]:h-auto [&>svg]:drop-shadow-lg" />
+        <div
+          className="mx-5 mt-4 rounded-2xl p-6 flex flex-col items-center gap-3"
+          style={{ background: "radial-gradient(ellipse at 50% 35%, #E6E9EC 0%, #CFD4D9 100%)" }}
+        >
+          <div ref={stageRef} className="w-full [&>svg]:w-full [&>svg]:h-auto" />
           {shrunk && (
             <p className="m-0 px-3 py-2 rounded-lg bg-warn text-warn-fg text-[13px]">
               Neki red je duži od table, pa je automatski smanjen da stane.

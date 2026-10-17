@@ -66,6 +66,60 @@ export function parseSablonTemplate(svgText: string): ParsedTemplate {
   return { config: { viewBoxW, viewBoxH, mmScale, zone }, fields };
 }
 
+export interface CutShape {
+  /** Raw element markup (rect or ellipse), used as-is to build an SVG clipPath. */
+  raw: string;
+  /** Bounding box, used to compute the plate's overall extent for decorative rendering. */
+  bbox: Rect;
+}
+
+/**
+ * Extracts every red-stroke cut shape (the laser outline — plate border,
+ * holes, any other cut geometry) from the template, whatever mix of
+ * <rect>/<ellipse> elements a given product's export actually contains.
+ * Purely for decorative rendering (e.g. clipping a wood-grain fill to the
+ * real plate outline in the live preview) — never used for position math,
+ * so a raw-markup + bounding-box pair is enough; no need to model every
+ * possible shape type.
+ */
+export function parseCutShapes(svgText: string): CutShape[] {
+  const shapes: CutShape[] = [];
+
+  const rectRe = /<rect\b[^>]*\bclass="[^"]*\bstr0\b[^"]*"[^>]*\/?>/g;
+  for (const raw of svgText.match(rectRe) ?? []) {
+    shapes.push({
+      raw,
+      bbox: {
+        x: parseFloat(attr(raw, "x") ?? "0"),
+        y: parseFloat(attr(raw, "y") ?? "0"),
+        w: parseFloat(attr(raw, "width") ?? "0"),
+        h: parseFloat(attr(raw, "height") ?? "0"),
+      },
+    });
+  }
+
+  const ellipseRe = /<ellipse\b[^>]*\bclass="[^"]*\bstr0\b[^"]*"[^>]*\/?>/g;
+  for (const raw of svgText.match(ellipseRe) ?? []) {
+    const cx = parseFloat(attr(raw, "cx") ?? "0");
+    const cy = parseFloat(attr(raw, "cy") ?? "0");
+    const rx = parseFloat(attr(raw, "rx") ?? "0");
+    const ry = parseFloat(attr(raw, "ry") ?? "0");
+    shapes.push({ raw, bbox: { x: cx - rx, y: cy - ry, w: rx * 2, h: ry * 2 } });
+  }
+
+  return shapes;
+}
+
+/** Union bounding box across all cut shapes — the plate's overall extent. */
+export function boundingBoxOf(shapes: CutShape[]): Rect {
+  if (shapes.length === 0) return { x: 0, y: 0, w: 0, h: 0 };
+  const minX = Math.min(...shapes.map((s) => s.bbox.x));
+  const minY = Math.min(...shapes.map((s) => s.bbox.y));
+  const maxX = Math.max(...shapes.map((s) => s.bbox.x + s.bbox.w));
+  const maxY = Math.max(...shapes.map((s) => s.bbox.y + s.bbox.h));
+  return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+}
+
 export interface FieldApplication {
   key: string;
   value: string;
