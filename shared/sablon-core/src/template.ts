@@ -1,3 +1,4 @@
+import { LINE_HEIGHT_RATIO } from "./multiline.js";
 import type { Rect, SablonConfig } from "./types.js";
 
 export interface ParsedField {
@@ -122,7 +123,8 @@ export function boundingBoxOf(shapes: CutShape[]): Rect {
 
 export interface FieldApplication {
   key: string;
-  value: string;
+  /** One entry per line — a single-line field is just a one-element array. */
+  lines: string[];
   x: number;
   y: number;
   sizePx: number;
@@ -155,6 +157,9 @@ function escapeXml(s: string): string {
  * ("zelena... izbacuje se iz fajla za laser"). Used identically by the order
  * endpoint (authoritative, server-measured) and can be reused for any
  * server-side re-render of an existing order.
+ *
+ * Multi-line fields render as one <tspan> per line (same x, stacked via dy)
+ * — a single-line field is just the one-tspan case of the same code path.
  */
 export function applyFieldsToTemplate(
   svgText: string,
@@ -172,7 +177,11 @@ export function applyFieldsToTemplate(
     let newAttrs = setAttr(attrs, "x", f.x.toFixed(2));
     newAttrs = setAttr(newAttrs, "y", f.y.toFixed(2));
     newAttrs = setStyle(newAttrs, `font-size:${f.sizePx.toFixed(2)}px;font-family:${font.cssStack};font-weight:${font.weight}`);
-    return `<text${newAttrs}>${escapeXml(f.value)}</text>`;
+    const lineHeight = f.sizePx * LINE_HEIGHT_RATIO;
+    const tspans = f.lines
+      .map((line, i) => `<tspan x="${f.x.toFixed(2)}" dy="${i === 0 ? 0 : lineHeight.toFixed(2)}">${escapeXml(line)}</tspan>`)
+      .join("");
+    return `<text${newAttrs}>${tspans}</text>`;
   });
 
   return out;

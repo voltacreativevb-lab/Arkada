@@ -1,6 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { FONTS, boundingBoxOf, clampPosition, fitFontSize, parseCutShapes, transliterate, type Pismo } from "@maestrovolta/sablon-core";
+import {
+  FONTS,
+  LINE_HEIGHT_RATIO,
+  boundingBoxOf,
+  clampPosition,
+  fitFontSize,
+  fitMultilineText,
+  parseCutShapes,
+  transliterate,
+  type Pismo,
+} from "@maestrovolta/sablon-core";
 import { createPorudzbina, getKatalog, type Model, type Proizvod } from "../../lib/api";
 import { renderWoodLayer } from "../../lib/materialStage";
 
@@ -177,6 +187,18 @@ export default function Konfigurator() {
     return pismo === "cyr" ? transliterate(raw, "cyr") : raw;
   };
 
+  function setMultilineContent(node: SVGTextElement, lines: string[], x: number, lineHeightPx: number) {
+    node.textContent = "";
+    const NS = "http://www.w3.org/2000/svg";
+    lines.forEach((line, i) => {
+      const tspan = document.createElementNS(NS, "tspan");
+      tspan.setAttribute("x", x.toFixed(2));
+      tspan.setAttribute("dy", i === 0 ? "0" : lineHeightPx.toFixed(2));
+      tspan.textContent = line;
+      node.appendChild(tspan);
+    });
+  }
+
   // Re-render all field nodes whenever inputs change.
   useEffect(() => {
     if (!model || !svgRootRef.current) return;
@@ -188,19 +210,34 @@ export default function Konfigurator() {
       if (!node) continue;
       const text = displayValue(polje.key);
       const requestedSizePx = (sizesMm[polje.key] ?? polje.default_mm) * model.sablon_config.mmScale;
-
-      const fit = fitFontSize(text, fontKey, requestedSizePx, zone.w, (t, _k, s) => measureWith(node, t, s));
-      if (fit.shrunk) anyShrunk = true;
-
       const pos = positions[polje.key] ?? { x: polje.default_x, y: polje.default_y };
-      const clamped = clampPosition(pos, zone, fit.widthPx, fit.sizePx);
 
-      node.setAttribute("x", clamped.x.toFixed(2));
-      node.setAttribute("y", clamped.y.toFixed(2));
-      node.style.fontFamily = fontDef.cssStack;
-      node.style.fontWeight = String(fontDef.weight);
-      node.style.fontSize = `${fit.sizePx.toFixed(1)}px`;
-      node.textContent = text;
+      if (polje.multiline) {
+        const maxHeightPx = Math.max(0, zone.y + zone.h - polje.default_y - zone.h * 0.03);
+        const fit = fitMultilineText(text, fontKey, requestedSizePx, zone.w, maxHeightPx, (t, _k, s) => measureWith(node, t, s));
+        const widthPx = Math.max(0, ...fit.lines.map((l) => measureWith(node, l, fit.sizePx)));
+        const extraHeightBelowPx = (fit.lines.length - 1) * fit.sizePx * LINE_HEIGHT_RATIO;
+        const clamped = clampPosition(pos, zone, widthPx, fit.sizePx, extraHeightBelowPx);
+        if (fit.sizePx < requestedSizePx - 0.5) anyShrunk = true;
+
+        node.setAttribute("x", clamped.x.toFixed(2));
+        node.setAttribute("y", clamped.y.toFixed(2));
+        node.style.fontFamily = fontDef.cssStack;
+        node.style.fontWeight = String(fontDef.weight);
+        node.style.fontSize = `${fit.sizePx.toFixed(1)}px`;
+        setMultilineContent(node, fit.lines, clamped.x, fit.sizePx * LINE_HEIGHT_RATIO);
+      } else {
+        const fit = fitFontSize(text, fontKey, requestedSizePx, zone.w, (t, _k, s) => measureWith(node, t, s));
+        if (fit.shrunk) anyShrunk = true;
+        const clamped = clampPosition(pos, zone, fit.widthPx, fit.sizePx);
+
+        node.setAttribute("x", clamped.x.toFixed(2));
+        node.setAttribute("y", clamped.y.toFixed(2));
+        node.style.fontFamily = fontDef.cssStack;
+        node.style.fontWeight = String(fontDef.weight);
+        node.style.fontSize = `${fit.sizePx.toFixed(1)}px`;
+        node.textContent = text;
+      }
     }
     setShrunk(anyShrunk);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -364,13 +401,23 @@ export default function Konfigurator() {
                   {(values[polje.key] ?? "").length}/{polje.max_len}
                 </span>
               </div>
-              <input
-                type="text"
-                value={values[polje.key] ?? ""}
-                maxLength={polje.max_len}
-                onChange={(e) => setValues((v) => ({ ...v, [polje.key]: e.target.value }))}
-                className="h-12 px-3.5 border border-[#A9B0B8] rounded-[10px] text-base bg-white"
-              />
+              {polje.multiline ? (
+                <textarea
+                  value={values[polje.key] ?? ""}
+                  maxLength={polje.max_len}
+                  rows={3}
+                  onChange={(e) => setValues((v) => ({ ...v, [polje.key]: e.target.value }))}
+                  className="px-3.5 py-3 border border-[#A9B0B8] rounded-[10px] text-base bg-white resize-none"
+                />
+              ) : (
+                <input
+                  type="text"
+                  value={values[polje.key] ?? ""}
+                  maxLength={polje.max_len}
+                  onChange={(e) => setValues((v) => ({ ...v, [polje.key]: e.target.value }))}
+                  className="h-12 px-3.5 border border-[#A9B0B8] rounded-[10px] text-base bg-white"
+                />
+              )}
               <div className="flex items-center gap-2.5">
                 <label className="text-[13px] text-muted whitespace-nowrap">Veličina slova</label>
                 <input

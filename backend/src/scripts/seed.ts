@@ -71,10 +71,10 @@ async function main() {
   // Per-field limits/defaults are human judgment, not derivable from the SVG
   // alone (see shared/sablon-core parseSablonTemplate) — matched here to the
   // already-validated values from proba-sablona.html.
-  const fieldOverrides: Record<string, Pick<PoljeDef, "label" | "max_len" | "min_mm" | "max_mm" | "default_mm" | "required">> = {
+  const fieldOverrides: Record<string, Pick<PoljeDef, "label" | "max_len" | "min_mm" | "max_mm" | "default_mm" | "required" | "multiline">> = {
     broj: { label: "Broj", max_len: 6, min_mm: 5, max_mm: 40, default_mm: 26, required: true },
     prezime: { label: "Prezime ili natpis", max_len: 28, min_mm: 5, max_mm: 30, default_mm: 16, required: true },
-    posveta: { label: "Posveta", max_len: 40, min_mm: 5, max_mm: 25, default_mm: 11, required: false },
+    posveta: { label: "Posveta", max_len: 160, min_mm: 4, max_mm: 14, default_mm: 8, required: false, multiline: true },
   };
 
   const polja: PoljeDef[] = parsed.fields.map((f) => {

@@ -29,12 +29,16 @@ export interface PoljeDef {
   max_mm: number;
   default_mm: number;
   required: boolean;
+  /** When true, long text wraps onto multiple lines instead of just shrinking to fit one. */
+  multiline?: boolean;
 }
 
 export interface Pozicija {
   x: number;
   y: number;
   sizePx: number;
+  /** Wrapped lines for a multiline field; a single-line field has exactly one entry. */
+  lines: string[];
 }
 
 /** Measures rendered text width in px for a given font at a given pixel size. */

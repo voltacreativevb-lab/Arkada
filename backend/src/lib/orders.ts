@@ -2,7 +2,9 @@ import {
   applyFieldsToTemplate,
   clampPosition,
   fitFontSize,
+  fitMultilineText,
   findFont,
+  LINE_HEIGHT_RATIO,
   transliterate,
   type Pismo,
 } from "@maestrovolta/sablon-core";
@@ -42,6 +44,7 @@ interface PoljeDefRow {
   max_mm: number;
   default_mm: number;
   required: boolean;
+  multiline?: boolean;
 }
 
 interface SablonConfigRow {
@@ -78,9 +81,9 @@ export async function createOrder(input: CreateOrderInput) {
   const config = model.sablon_config as unknown as SablonConfigRow;
 
   const byKey = new Map(input.polja.map((p) => [p.key, p]));
-  const finalFields: { key: string; value: string; x: number; y: number; sizePx: number }[] = [];
+  const finalFields: { key: string; lines: string[]; x: number; y: number; sizePx: number }[] = [];
   const storedPolja: Record<string, string> = {};
-  const storedPozicije: Record<string, { x: number; y: number; sizePx: number }> = {};
+  const storedPozicije: Record<string, { x: number; y: number; sizePx: number; lines: string[] }> = {};
 
   for (const def of poljaDefs) {
     const incoming = byKey.get(def.key);
@@ -94,15 +97,32 @@ export async function createOrder(input: CreateOrderInput) {
     const value = transliterate(rawValue, input.pismo);
     const requestedMm = Math.min(Math.max(incoming?.sizeMm ?? def.default_mm, def.min_mm), def.max_mm);
     const requestedSizePx = requestedMm * config.mmScale;
-
     // 3% safety margin under the zone width — guards against fontkit/browser metric drift (see plan risks).
-    const fit = fitFontSize(value, fontDef.key, requestedSizePx, config.zone.w * 0.97, measureServerText);
+    const maxWidthPx = config.zone.w * 0.97;
 
+    let lines: string[];
+    let sizePx: number;
+    let widthPx: number;
+
+    if (def.multiline) {
+      const maxHeightPx = Math.max(0, config.zone.y + config.zone.h - def.default_y - config.zone.h * 0.03);
+      const fit = fitMultilineText(value, fontDef.key, requestedSizePx, maxWidthPx, maxHeightPx, measureServerText);
+      lines = fit.lines;
+      sizePx = fit.sizePx;
+      widthPx = Math.max(0, ...lines.map((l) => measureServerText(l, fontDef.key, sizePx)));
+    } else {
+      const fit = fitFontSize(value, fontDef.key, requestedSizePx, maxWidthPx, measureServerText);
+      lines = [value];
+      sizePx = fit.sizePx;
+      widthPx = fit.widthPx;
+    }
+
+    const extraHeightBelowPx = (lines.length - 1) * sizePx * LINE_HEIGHT_RATIO;
     const requestedPos = { x: incoming?.x ?? def.default_x, y: incoming?.y ?? def.default_y };
-    const clamped = clampPosition(requestedPos, config.zone, fit.widthPx, fit.sizePx);
+    const clamped = clampPosition(requestedPos, config.zone, widthPx, sizePx, extraHeightBelowPx);
 
-    finalFields.push({ key: def.key, value, x: clamped.x, y: clamped.y, sizePx: fit.sizePx });
-    storedPozicije[def.key] = { x: clamped.x, y: clamped.y, sizePx: fit.sizePx };
+    finalFields.push({ key: def.key, lines, x: clamped.x, y: clamped.y, sizePx });
+    storedPozicije[def.key] = { x: clamped.x, y: clamped.y, sizePx, lines };
   }
 
   const cena = model.cena ?? proizvod.osnovna_cena;

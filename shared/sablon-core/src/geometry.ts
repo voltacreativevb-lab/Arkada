@@ -9,16 +9,21 @@ export function centerX(rect: Rect): number {
  * Clamps a dragged text position to stay fully inside `zone`, accounting for
  * the text's own width/height so it never overflows the zone's edges. Direct
  * port of the pointermove handler in proba-sablona.html (lines 244-251).
+ *
+ * `extraHeightBelowPx` is the block height consumed below the anchor line by
+ * additional wrapped lines (0 for a single-line field) — it tightens the
+ * lower bound so a multi-line block's last line can't run past the zone.
  */
 export function clampPosition(
   pos: { x: number; y: number },
   zone: Rect,
   textWidthPx: number,
-  fontSizePx: number
+  fontSizePx: number,
+  extraHeightBelowPx = 0
 ): { x: number; y: number } {
   const half = textWidthPx / 2;
   const x = Math.max(zone.x + half, Math.min(zone.x + zone.w - half, pos.x));
-  const y = Math.max(zone.y + fontSizePx * 0.75, Math.min(zone.y + zone.h - fontSizePx * 0.2, pos.y));
+  const y = Math.max(zone.y + fontSizePx * 0.75, Math.min(zone.y + zone.h - fontSizePx * 0.2 - extraHeightBelowPx, pos.y));
   return { x, y };
 }
 

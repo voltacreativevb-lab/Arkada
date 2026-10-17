@@ -3,19 +3,153 @@ import { Link, useParams } from "react-router-dom";
 import QRCode from "qrcode";
 import { getPorudzbinaStatus } from "../../lib/api";
 
+type Info = Awaited<ReturnType<typeof getPorudzbinaStatus>>["porudzbina"];
+
+/** Draws a shareable "receipt" card (code + QR + order summary) onto an offscreen canvas. */
+async function buildReceiptImage(kod: string, qrDataUrl: string, info: Info | null): Promise<Blob> {
+  const width = 640;
+  const height = 860;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d")!;
+
+  ctx.fillStyle = "#EEF0F2";
+  ctx.fillRect(0, 0, width, height);
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillRect(24, 24, width - 48, height - 48);
+
+  ctx.fillStyle = "#1E6B45";
+  ctx.beginPath();
+  ctx.arc(70, 76, 16, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "#FFFFFF";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(62, 76);
+  ctx.lineTo(68, 83);
+  ctx.lineTo(80, 68);
+  ctx.stroke();
+
+  ctx.fillStyle = "#16191D";
+  ctx.font = "600 22px system-ui, sans-serif";
+  ctx.textBaseline = "middle";
+  ctx.fillText("Porudžbina je kreirana", 98, 76);
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#3F454C";
+  ctx.font = "15px system-ui, sans-serif";
+  ctx.fillText("Pokažite ovaj kod na kasi", width / 2, 150);
+
+  ctx.fillStyle = "#16191D";
+  ctx.font = "800 64px system-ui, sans-serif";
+  ctx.fillText(kod, width / 2, 220);
+
+  const qrImg = new Image();
+  await new Promise<void>((resolve) => {
+    qrImg.onload = () => resolve();
+    qrImg.src = qrDataUrl;
+  });
+  const qrSize = 260;
+  ctx.drawImage(qrImg, (width - qrSize) / 2, 270, qrSize, qrSize);
+
+  let y = 580;
+  ctx.strokeStyle = "#E3E6EA";
+  ctx.beginPath();
+  ctx.moveTo(56, y);
+  ctx.lineTo(width - 56, y);
+  ctx.stroke();
+  y += 50;
+
+  ctx.textAlign = "left";
+  ctx.font = "15px system-ui, sans-serif";
+  if (info) {
+    ctx.fillStyle = "#3F454C";
+    ctx.fillText("Proizvod", 56, y);
+    ctx.fillStyle = "#16191D";
+    ctx.font = "600 15px system-ui, sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(`${info.modeli.proizvodi.naziv} · ${info.modeli.naziv}`, width - 56, y);
+    y += 38;
+
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#3F454C";
+    ctx.font = "15px system-ui, sans-serif";
+    ctx.fillText("Za plaćanje na kasi", 56, y);
+    ctx.fillStyle = "#16191D";
+    ctx.font = "800 22px system-ui, sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(`${info.cena} din`, width - 56, y);
+    y += 50;
+  }
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#4A3B00";
+  ctx.font = "13px system-ui, sans-serif";
+  wrapCanvasText(ctx, "Neplaćena porudžbina se automatski poništava posle 48 sati.", width / 2, y, width - 140, 18);
+
+  return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob!), "image/png"));
+}
+
+function wrapCanvasText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) {
+  const words = text.split(" ");
+  let line = "";
+  let cy = y;
+  for (const word of words) {
+    const test = line ? `${line} ${word}` : word;
+    if (ctx.measureText(test).width > maxWidth && line) {
+      ctx.fillText(line, x, cy);
+      line = word;
+      cy += lineHeight;
+    } else {
+      line = test;
+    }
+  }
+  if (line) ctx.fillText(line, x, cy);
+}
+
 export default function Potvrda() {
   const { slug, kod } = useParams<{ slug: string; kod: string }>();
   const [qr, setQr] = useState<string | null>(null);
-  const [info, setInfo] = useState<Awaited<ReturnType<typeof getPorudzbinaStatus>>["porudzbina"] | null>(null);
+  const [info, setInfo] = useState<Info | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (!kod) return;
     getPorudzbinaStatus(kod)
       .then((r) => setInfo(r.porudzbina))
       .catch((e) => setError(e.message));
-    QRCode.toDataURL(kod, { margin: 1, width: 160, color: { dark: "#16191D", light: "#FFFFFF" } }).then(setQr);
+    QRCode.toDataURL(kod, { margin: 1, width: 260, color: { dark: "#16191D", light: "#FFFFFF" } }).then(setQr);
   }, [kod]);
+
+  async function handleSaveToGallery() {
+    if (!kod || !qr) return;
+    setSaveMsg(null);
+    setSaving(true);
+    try {
+      const blob = await buildReceiptImage(kod, qr, info);
+      const file = new File([blob], `porudzbina-${kod}.png`, { type: "image/png" });
+
+      // Web Share with a file opens the native share sheet, where "Save Image" goes straight to the phone's gallery.
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: `Porudžbina ${kod}` });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `porudzbina-${kod}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+        setSaveMsg("Slika je preuzeta.");
+      }
+    } catch (err) {
+      if (err instanceof Error && err.name !== "AbortError") setSaveMsg("Nije uspelo čuvanje slike.");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   if (error) {
     return (
@@ -40,6 +174,17 @@ export default function Potvrda() {
         <span className="text-sm text-[#3F454C]">Pokažite ovaj kod na kasi</span>
         <span className="font-display font-extrabold text-[46px] tracking-widest">{kod}</span>
         {qr && <img src={qr} alt={`QR kod porudžbine ${kod}`} width={150} height={150} />}
+        <button
+          onClick={handleSaveToGallery}
+          disabled={saving || !qr}
+          className="h-11 px-5 rounded-xl bg-ink text-white text-sm font-semibold flex items-center gap-2 disabled:opacity-50"
+        >
+          <svg aria-hidden viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 4v12m0 0l-4-4m4 4l4-4M5 18h14" />
+          </svg>
+          {saving ? "Čuvanje…" : "Sačuvaj u galeriju"}
+        </button>
+        {saveMsg && <span className="text-xs text-muted">{saveMsg}</span>}
       </section>
 
       {info && (
