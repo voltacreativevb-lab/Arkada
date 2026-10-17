@@ -144,7 +144,9 @@ async function adminFetch(path: string, init?: RequestInit) {
   return fetch(`${API_URL}${path}`, {
     ...init,
     headers: {
-      ...(init?.body ? { "Content-Type": "application/json" } : {}),
+      // FormData bodies must NOT get an explicit Content-Type — the browser
+      // sets multipart/form-data with the correct boundary itself.
+      ...(typeof init?.body === "string" ? { "Content-Type": "application/json" } : {}),
       ...(init?.headers ?? {}),
       Authorization: `Bearer ${token}`,
     },
@@ -254,4 +256,87 @@ export async function createAdminRadnik(prodavnicaId: string, input: { ime: stri
 
 export async function updateAdminRadnik(id: string, patch: { aktivan?: boolean; pin?: string }) {
   return handle<{ radnik: AdminRadnik }>(await adminFetch(`/admin/radnici/${id}`, { method: "PATCH", body: JSON.stringify(patch) }));
+}
+
+// ---------- Admin: katalog (proizvodi/modeli) ----------
+
+export interface AdminProizvod {
+  id: string;
+  naziv: string;
+  slug: string;
+  opis: string | null;
+  osnovna_cena: number;
+  slika_glavna: string | null;
+  aktivan: boolean;
+  sort_order: number;
+  broj_modela: number;
+  created_at: string;
+}
+
+export interface AdminModel {
+  id: string;
+  proizvod_id: string;
+  naziv: string;
+  kod: string;
+  cena: number | null;
+  sablon_svg_path: string;
+  sablon_config: SablonConfig;
+  polja: PoljeDef[];
+  aktivan: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
+export async function getAdminProizvodi() {
+  return handle<{ proizvodi: AdminProizvod[] }>(await adminFetch("/admin/proizvodi"));
+}
+
+export async function createAdminProizvod(input: { naziv: string; slug: string; opis?: string; osnovna_cena: number; slika?: File }) {
+  const fd = new FormData();
+  fd.append("naziv", input.naziv);
+  fd.append("slug", input.slug);
+  if (input.opis) fd.append("opis", input.opis);
+  fd.append("osnovna_cena", String(input.osnovna_cena));
+  if (input.slika) fd.append("slika", input.slika);
+  return handle<{ proizvod: AdminProizvod }>(await adminFetch("/admin/proizvodi", { method: "POST", body: fd }));
+}
+
+export async function updateAdminProizvod(
+  id: string,
+  patch: { naziv?: string; opis?: string | null; osnovna_cena?: number; aktivan?: boolean; sort_order?: number; slika?: File }
+) {
+  const fd = new FormData();
+  if (patch.naziv !== undefined) fd.append("naziv", patch.naziv);
+  if (patch.opis !== undefined) fd.append("opis", patch.opis ?? "");
+  if (patch.osnovna_cena !== undefined) fd.append("osnovna_cena", String(patch.osnovna_cena));
+  if (patch.aktivan !== undefined) fd.append("aktivan", String(patch.aktivan));
+  if (patch.sort_order !== undefined) fd.append("sort_order", String(patch.sort_order));
+  if (patch.slika) fd.append("slika", patch.slika);
+  return handle<{ proizvod: AdminProizvod }>(await adminFetch(`/admin/proizvodi/${id}`, { method: "PATCH", body: fd }));
+}
+
+export async function getAdminProizvodDetail(id: string) {
+  return handle<{ proizvod: AdminProizvod; modeli: AdminModel[] }>(await adminFetch(`/admin/proizvodi/${id}`));
+}
+
+export async function parseSablon(file: File) {
+  const fd = new FormData();
+  fd.append("sablon", file);
+  return handle<{ config: SablonConfig; fields: { key: string; placeholder: string; default_x: number; default_y: number }[] }>(
+    await adminFetch("/admin/sabloni/parse", { method: "POST", body: fd })
+  );
+}
+
+export async function createAdminModel(proizvodId: string, input: { naziv: string; kod: string; cena?: number; polja: PoljeDef[]; sablon: File }) {
+  const fd = new FormData();
+  fd.append("naziv", input.naziv);
+  fd.append("kod", input.kod);
+  if (input.cena !== undefined) fd.append("cena", String(input.cena));
+  fd.append("polja", JSON.stringify(input.polja));
+  fd.append("sablon", input.sablon);
+  return handle<{ model: AdminModel }>(await adminFetch(`/admin/proizvodi/${proizvodId}/modeli`, { method: "POST", body: fd }));
+}
+
+export async function updateAdminModel(id: string, patch: { naziv?: string; cena?: number | null; aktivan?: boolean }) {
+  return handle<{ model: AdminModel }>(await adminFetch(`/admin/modeli/${id}`, { method: "PATCH", body: JSON.stringify(patch) }));
 }

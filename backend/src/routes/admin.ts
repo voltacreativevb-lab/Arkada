@@ -1,12 +1,16 @@
+import { createHash } from "node:crypto";
 import { Router } from "express";
+import multer from "multer";
 import { z } from "zod";
+import { parseSablonTemplate } from "@maestrovolta/sablon-core";
 import { requireAdmin } from "../lib/adminAuth.js";
 import { transitionStatus } from "../lib/statusTransitions.js";
-import { signedUrl } from "../lib/storage.js";
+import { publicUrl, signedUrl, uploadBuffer, uploadText } from "../lib/storage.js";
 import { supabaseAdmin } from "../lib/supabase.js";
 import { hashPin } from "../lib/workerAuth.js";
 
 export const adminRouter = Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
 adminRouter.use(requireAdmin);
 
@@ -244,4 +248,214 @@ adminRouter.patch("/admin/radnici/:id", async (req, res) => {
 
   if (error) return res.status(500).json({ error: error.message });
   res.json({ radnik: data });
+});
+
+// ----------------------------------------------------------------------------
+// Proizvodi i modeli (katalog)
+// ----------------------------------------------------------------------------
+
+/** GET /admin/proizvodi — every product (incl. inactive), with model counts. */
+adminRouter.get("/admin/proizvodi", async (_req, res) => {
+  const { data, error } = await supabaseAdmin
+    .from("proizvodi")
+    .select("*, modeli(count)")
+    .order("sort_order");
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  const proizvodi = (data ?? []).map((p: any) => ({ ...p, modeli: undefined, broj_modela: p.modeli?.[0]?.count ?? 0 }));
+  res.json({ proizvodi });
+});
+
+const createProizvodSchema = z.object({
+  naziv: z.string().min(1).max(120),
+  slug: z
+    .string()
+    .min(1)
+    .max(80)
+    .regex(/^[a-z0-9-]+$/, "Slug sme sadržati samo mala slova, brojeve i crtice"),
+  opis: z.string().max(500).optional(),
+  osnovna_cena: z.coerce.number().positive(),
+});
+
+/** POST /admin/proizvodi — creates a product, optionally with a cover photo ("slika" field). */
+adminRouter.post("/admin/proizvodi", upload.single("slika"), async (req, res) => {
+  const parsed = createProizvodSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+
+  const { data: existing } = await supabaseAdmin.from("proizvodi").select("id").eq("slug", parsed.data.slug).maybeSingle();
+  if (existing) return res.status(409).json({ error: "Slug je već zauzet" });
+
+  let slika_glavna: string | null = null;
+  if (req.file) {
+    const ext = (req.file.originalname.split(".").pop() || "jpg").toLowerCase();
+    const path = `${parsed.data.slug}-${Date.now()}.${ext}`;
+    try {
+      await uploadBuffer("slike", path, req.file.buffer, req.file.mimetype);
+      slika_glavna = publicUrl("slike", path);
+    } catch (err) {
+      return res.status(500).json({ error: err instanceof Error ? err.message : "Greška pri otpremanju slike" });
+    }
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from("proizvodi")
+    .insert({ ...parsed.data, slika_glavna })
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json({ proizvod: data });
+});
+
+const updateProizvodSchema = z
+  .object({
+    naziv: z.string().min(1).max(120),
+    opis: z.string().max(500).nullable(),
+    osnovna_cena: z.coerce.number().positive(),
+    aktivan: z.boolean(),
+    sort_order: z.coerce.number().int(),
+  })
+  .partial();
+
+/** PATCH /admin/proizvodi/:id — edit product fields, optionally replacing the cover photo. */
+adminRouter.patch("/admin/proizvodi/:id", upload.single("slika"), async (req, res) => {
+  const parsed = updateProizvodSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+
+  const update: Record<string, unknown> = { ...parsed.data };
+  if (req.file) {
+    const ext = (req.file.originalname.split(".").pop() || "jpg").toLowerCase();
+    const path = `${req.params.id}-${Date.now()}.${ext}`;
+    try {
+      await uploadBuffer("slike", path, req.file.buffer, req.file.mimetype);
+      update.slika_glavna = publicUrl("slike", path);
+    } catch (err) {
+      return res.status(500).json({ error: err instanceof Error ? err.message : "Greška pri otpremanju slike" });
+    }
+  }
+  if (Object.keys(update).length === 0) return res.status(400).json({ error: "Nema izmena" });
+
+  const { data, error } = await supabaseAdmin.from("proizvodi").update(update).eq("id", req.params.id).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ proizvod: data });
+});
+
+/** GET /admin/proizvodi/:id — product detail with its models. */
+adminRouter.get("/admin/proizvodi/:id", async (req, res) => {
+  const [{ data: proizvod, error: proizvodError }, { data: modeli, error: modeliError }] = await Promise.all([
+    supabaseAdmin.from("proizvodi").select("*").eq("id", req.params.id).maybeSingle(),
+    supabaseAdmin.from("modeli").select("*").eq("proizvod_id", req.params.id).order("sort_order"),
+  ]);
+
+  if (proizvodError) return res.status(500).json({ error: proizvodError.message });
+  if (!proizvod) return res.status(404).json({ error: "Proizvod nije pronađen" });
+  if (modeliError) return res.status(500).json({ error: modeliError.message });
+
+  res.json({ proizvod, modeli });
+});
+
+/**
+ * POST /admin/sabloni/parse — dry-run parse of an uploaded SVG template, no
+ * save. Lets the admin review the detected zone/fields before committing to
+ * a model (the per-field label/limits still need human judgment — see
+ * shared/sablon-core parseSablonTemplate).
+ */
+adminRouter.post("/admin/sabloni/parse", upload.single("sablon"), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "Fajl (SVG) nije poslat" });
+  try {
+    const svgText = req.file.buffer.toString("utf8");
+    const parsed = parseSablonTemplate(svgText);
+    res.json(parsed);
+  } catch (err) {
+    res.status(400).json({ error: err instanceof Error ? err.message : "Greška pri parsiranju šablona" });
+  }
+});
+
+const modelFieldSchema = z.object({
+  key: z.string().min(1),
+  label: z.string().min(1).max(60),
+  placeholder: z.string(),
+  default_x: z.number(),
+  default_y: z.number(),
+  max_len: z.coerce.number().int().min(1).max(200),
+  min_mm: z.coerce.number().min(1).max(200),
+  max_mm: z.coerce.number().min(1).max(200),
+  default_mm: z.coerce.number().min(1).max(200),
+  required: z.boolean(),
+});
+
+const createModelBodySchema = z.object({
+  naziv: z.string().min(1).max(80),
+  kod: z.string().min(1).max(10),
+  cena: z.coerce.number().positive().optional(),
+  polja: z.string(),
+});
+
+/** POST /admin/proizvodi/:id/modeli — creates a model from a reviewed SVG template + admin-filled field limits. */
+adminRouter.post("/admin/proizvodi/:id/modeli", upload.single("sablon"), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "Šablon (SVG) je obavezan" });
+
+  const parsedBody = createModelBodySchema.safeParse(req.body);
+  if (!parsedBody.success) return res.status(400).json({ error: parsedBody.error.flatten() });
+
+  let polja;
+  try {
+    polja = z.array(modelFieldSchema).min(1).parse(JSON.parse(parsedBody.data.polja));
+  } catch (err) {
+    return res.status(400).json({ error: err instanceof Error ? err.message : "Neispravan format polja" });
+  }
+
+  const svgText = req.file.buffer.toString("utf8");
+  let config;
+  try {
+    config = parseSablonTemplate(svgText).config;
+  } catch (err) {
+    return res.status(400).json({ error: err instanceof Error ? err.message : "Greška u šablonu" });
+  }
+
+  const sablon_hash = createHash("sha256").update(svgText).digest("hex");
+  const sablon_svg_path = `${req.params.id}-${parsedBody.data.kod}-${Date.now()}.svg`;
+  try {
+    await uploadText("sabloni", sablon_svg_path, svgText);
+  } catch (err) {
+    return res.status(500).json({ error: err instanceof Error ? err.message : "Greška pri otpremanju šablona" });
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from("modeli")
+    .insert({
+      proizvod_id: req.params.id,
+      naziv: parsedBody.data.naziv,
+      kod: parsedBody.data.kod,
+      cena: parsedBody.data.cena ?? null,
+      sablon_svg_path,
+      sablon_hash,
+      sablon_config: config,
+      polja,
+    })
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json({ model: data });
+});
+
+const updateModelSchema = z
+  .object({
+    naziv: z.string().min(1).max(80),
+    cena: z.coerce.number().positive().nullable(),
+    aktivan: z.boolean(),
+  })
+  .partial();
+
+/** PATCH /admin/modeli/:id — edit a model's name/price/active status. */
+adminRouter.patch("/admin/modeli/:id", async (req, res) => {
+  const parsed = updateModelSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+  if (Object.keys(parsed.data).length === 0) return res.status(400).json({ error: "Nema izmena" });
+
+  const { data, error } = await supabaseAdmin.from("modeli").update(parsed.data).eq("id", req.params.id).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ model: data });
 });

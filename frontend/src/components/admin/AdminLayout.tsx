@@ -4,6 +4,7 @@ import { supabase } from "../../lib/supabase";
 const navItems = [
   { to: "/admin/red", label: "Red za izradu" },
   { to: "/admin/prodavnice", label: "Prodavnice" },
+  { to: "/admin/katalog", label: "Katalog" },
 ];
 
 export default function AdminLayout() {

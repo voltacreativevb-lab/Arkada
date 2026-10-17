@@ -18,3 +18,14 @@ export async function signedUrl(bucket: string, path: string, expiresInSeconds =
   if (error || !data) throw new Error(`Ne mogu da napravim link za ${bucket}/${path}: ${error?.message}`);
   return data.signedUrl;
 }
+
+export async function uploadBuffer(bucket: string, path: string, buffer: Buffer, contentType: string): Promise<void> {
+  const { error } = await supabaseAdmin.storage.from(bucket).upload(path, buffer, { upsert: true, contentType });
+  if (error) throw new Error(`Ne mogu da sačuvam ${bucket}/${path}: ${error.message}`);
+}
+
+/** Direct public URL for a file in a public bucket (e.g. "slike") — no signing needed. */
+export function publicUrl(bucket: string, path: string): string {
+  const { data } = supabaseAdmin.storage.from(bucket).getPublicUrl(path);
+  return data.publicUrl;
+}
