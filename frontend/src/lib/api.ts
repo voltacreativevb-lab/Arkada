@@ -136,6 +136,10 @@ export async function radnikPreuzeto(kod: string) {
   return handle<{ ok: true }>(await workerFetch(`/radnik/porudzbine/${kod}/preuzeto`, { method: "POST" }));
 }
 
+export async function radnikOtkazi(kod: string) {
+  return handle<{ ok: true }>(await workerFetch(`/radnik/porudzbine/${kod}/otkazi`, { method: "POST" }));
+}
+
 // ---------- Admin ----------
 
 async function adminFetch(path: string, init?: RequestInit) {

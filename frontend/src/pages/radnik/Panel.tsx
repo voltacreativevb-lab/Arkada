@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   getRadnikPorudzbine,
   radnikNaplaceno,
+  radnikOtkazi,
   radnikPreuzeto,
   radnikPrimljeno,
   type RadnikPorudzbina,
@@ -60,6 +61,21 @@ export default function RadnikPanel() {
     setBusy(true);
     try {
       await radnikNaplaceno(found.kod);
+      setCode("");
+      await refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Greška");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function cancelOrder() {
+    if (!found) return;
+    if (!confirm(`Otkazati porudžbinu ${found.kod}? Ovo se ne može poništiti.`)) return;
+    setBusy(true);
+    try {
+      await radnikOtkazi(found.kod);
       setCode("");
       await refresh();
     } catch (err) {
@@ -149,13 +165,22 @@ export default function RadnikPanel() {
                 <span className="font-display font-extrabold text-[30px]">{found.cena} din</span>
               </div>
               {found.status === "kreirana" && (
-                <button
-                  onClick={confirmPayment}
-                  disabled={busy}
-                  className="mt-auto h-16 rounded-2xl bg-good text-white font-bold text-lg disabled:opacity-50"
-                >
-                  Naplaćeno — potvrdi uplatu
-                </button>
+                <div className="mt-auto flex gap-2">
+                  <button
+                    onClick={confirmPayment}
+                    disabled={busy}
+                    className="flex-1 h-16 rounded-2xl bg-good text-white font-bold text-lg disabled:opacity-50"
+                  >
+                    Naplaćeno — potvrdi uplatu
+                  </button>
+                  <button
+                    onClick={cancelOrder}
+                    disabled={busy}
+                    className="h-16 px-5 rounded-2xl border border-[#D03B3B] text-[#D03B3B] font-semibold text-sm disabled:opacity-50"
+                  >
+                    Otkaži
+                  </button>
+                </div>
               )}
             </article>
           )}

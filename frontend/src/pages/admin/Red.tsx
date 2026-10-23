@@ -35,6 +35,7 @@ const FILTERS = [
   { key: "placena", label: "Plaćeno" },
   { key: "u_proizvodnji", label: "U izradi" },
   { key: "spremna_za_preuzimanje", label: "Za preuzimanje" },
+  { key: "otkazana", label: "Otkazane" },
 ];
 
 function buildMessage(tip: Obavestenje["tip"], o: Obavestenje["porudzbine"]): string {
@@ -74,6 +75,19 @@ export default function AdminRed() {
     try {
       await setPorudzbinaStatus(kod, next);
       await refresh();
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function cancelOrder(kod: string) {
+    if (!confirm(`Otkazati porudžbinu ${kod}? Ovo se ne može poništiti.`)) return;
+    setBusy(kod);
+    try {
+      await setPorudzbinaStatus(kod, "otkazana");
+      await refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Greška");
     } finally {
       setBusy(null);
     }
@@ -161,6 +175,15 @@ export default function AdminRed() {
                       <button onClick={() => downloadSvg(o.kod)} className="h-9 px-3 rounded-lg border border-line bg-white text-xs font-semibold mr-2">
                         SVG
                       </button>
+                      {!["preuzeta", "otkazana", "istekla"].includes(o.status) && (
+                        <button
+                          onClick={() => cancelOrder(o.kod)}
+                          disabled={busy === o.kod}
+                          className="h-9 px-3 rounded-lg border border-[#D03B3B] text-[#D03B3B] text-xs font-semibold mr-2 disabled:opacity-50"
+                        >
+                          Otkaži
+                        </button>
+                      )}
                       {NEXT_STATUS[o.status] && (
                         <button
                           onClick={() => advance(o.kod, o.status)}

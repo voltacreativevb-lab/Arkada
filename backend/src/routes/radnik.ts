@@ -88,3 +88,19 @@ radnikRouter.post("/radnik/porudzbine/:kod/preuzeto", requireWorkerAuth, async (
   await transitionStatus(order.id, "preuzeta", "radnik", req.radnik!.id);
   res.json({ ok: true });
 });
+
+/**
+ * POST /radnik/porudzbine/:kod/otkazi — cancels an order, but only while it's
+ * still unpaid. Once money has changed hands (placena or later), cancelling
+ * is an admin-only decision — see PATCH /admin/porudzbine/:kod/status.
+ */
+radnikRouter.post("/radnik/porudzbine/:kod/otkazi", requireWorkerAuth, async (req, res) => {
+  const order = await findOwnOrder(req.radnik!.prodavnicaId, req.params.kod);
+  if (!order) return res.status(404).json({ error: "Porudžbina nije pronađena u ovoj prodavnici" });
+  if (order.status !== "kreirana") {
+    return res.status(409).json({ error: "Samo neplaćena porudžbina može da se otkaže ovde — za plaćenu zovi administratora." });
+  }
+
+  await transitionStatus(order.id, "otkazana", "radnik", req.radnik!.id, "Otkazano na kasi pre uplate");
+  res.json({ ok: true });
+});
