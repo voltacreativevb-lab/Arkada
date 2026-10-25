@@ -372,11 +372,9 @@ export async function getFinansije(od?: string, doDate?: string) {
 
 export interface BirackoMesto {
   broj: number;
-  upisani: number;
-  glasalo: number;
   sns: number;
   student: number;
-  nevazeci: number;
+  sps: number;
   unet: boolean;
   updated_at: string;
 }
@@ -385,10 +383,7 @@ export async function getIzboriMesta() {
   return handle<{ mesta: BirackoMesto[] }>(await fetch(`${API_URL}/izbori/mesta`));
 }
 
-export async function setIzboriMesto(
-  broj: number,
-  input: { upisani: number; glasalo: number; sns: number; student: number; nevazeci: number }
-) {
+export async function setIzboriMesto(broj: number, input: { sns: number; student: number; sps: number }) {
   return handle<{ mesto: BirackoMesto }>(
     await fetch(`${API_URL}/izbori/mesta/${broj}`, {
       method: "PUT",

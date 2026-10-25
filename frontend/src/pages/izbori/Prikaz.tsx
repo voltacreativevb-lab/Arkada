@@ -4,6 +4,7 @@ import { getIzboriMesta, getIzboriStanje, type BirackoMesto } from "../../lib/ap
 const TOTAL = 37;
 const SNS = "#163a8c";
 const STUDENT = "#d91f2c";
+const SPS = "#d4a017";
 const R = 80;
 const C = 2 * Math.PI * R;
 
@@ -78,11 +79,9 @@ export default function IzboriPrikaz() {
 
   const stats = useMemo(() => {
     const byBroj = new Map((mesta ?? []).map((m) => [m.broj, m]));
-    let upisani = 0,
-      glasalo = 0,
-      sns = 0,
+    let sns = 0,
       student = 0,
-      nevazeci = 0,
+      sps = 0,
       done = 0;
     const cells: { broj: number; unet: boolean }[] = [];
     for (let i = 1; i <= TOTAL; i++) {
@@ -91,34 +90,28 @@ export default function IzboriPrikaz() {
       cells.push({ broj: i, unet });
       if (unet && m) {
         done++;
-        upisani += m.upisani;
-        glasalo += m.glasalo;
         sns += m.sns;
         student += m.student;
-        nevazeci += m.nevazeci;
+        sps += m.sps;
       }
     }
-    const valid = sns + student;
-    const snsFrac = valid > 0 ? sns / valid : 0;
-    const studentFrac = valid > 0 ? student / valid : 0;
-    return { upisani, glasalo, sns, student, nevazeci, done, valid, snsFrac, studentFrac, cells };
+    const ukupno = sns + student + sps;
+    const snsFrac = ukupno > 0 ? sns / ukupno : 0;
+    const studentFrac = ukupno > 0 ? student / ukupno : 0;
+    const spsFrac = ukupno > 0 ? sps / ukupno : 0;
+    return { sns, student, sps, done, ukupno, snsFrac, studentFrac, spsFrac, cells };
   }, [mesta]);
-
-  const izlaznost = stats.upisani > 0 ? (stats.glasalo / stats.upisani) * 100 : 0;
-  const nevazeciPct = stats.glasalo > 0 ? (stats.nevazeci / stats.glasalo) * 100 : 0;
 
   const snsLen = useCountUp(C * stats.snsFrac, 900);
   const studentLen = useCountUp(C * stats.studentFrac, 900);
-  const validAnim = useCountUp(stats.valid, 900);
-  const snsPctAnim = useCountUp(stats.valid > 0 ? stats.snsFrac * 100 : 0, 900);
-  const studentPctAnim = useCountUp(stats.valid > 0 ? stats.studentFrac * 100 : 0, 900);
+  const spsLen = useCountUp(C * stats.spsFrac, 900);
+  const ukupnoAnim = useCountUp(stats.ukupno, 900);
+  const snsPctAnim = useCountUp(stats.ukupno > 0 ? stats.snsFrac * 100 : 0, 900);
+  const studentPctAnim = useCountUp(stats.ukupno > 0 ? stats.studentFrac * 100 : 0, 900);
+  const spsPctAnim = useCountUp(stats.ukupno > 0 ? stats.spsFrac * 100 : 0, 900);
   const snsVotesAnim = useCountUp(stats.sns, 900);
   const studentVotesAnim = useCountUp(stats.student, 900);
-  const upisaniAnim = useCountUp(stats.upisani, 900);
-  const glasaloAnim = useCountUp(stats.glasalo, 900);
-  const nevazeciAnim = useCountUp(stats.nevazeci, 900);
-  const izlaznostAnim = useCountUp(izlaznost, 900);
-  const nevazeciPctAnim = useCountUp(nevazeciPct, 900);
+  const spsVotesAnim = useCountUp(stats.sps, 900);
 
   return (
     <div className="h-screen bg-[#f4f6fa] text-[#15192b] font-sans flex flex-col overflow-hidden">
@@ -255,7 +248,7 @@ export default function IzboriPrikaz() {
             className="flex-1 min-w-[320px] bg-white rounded-2xl p-4 flex flex-col items-center justify-center gap-3 shadow-[0_4px_24px_rgba(22,58,140,0.08)] border-t-4 overflow-hidden"
             style={{ borderColor: SNS }}
           >
-            <div className="relative shrink-0" style={{ width: "min(30vh, 280px)", height: "min(30vh, 280px)" }}>
+            <div className="relative shrink-0" style={{ width: "min(28vh, 260px)", height: "min(28vh, 260px)" }}>
               <svg viewBox="0 0 200 200" className="w-full h-full">
                 <circle cx="100" cy="100" r={R} fill="none" stroke="#e7eaf0" strokeWidth="28" />
                 <circle
@@ -283,13 +276,26 @@ export default function IzboriPrikaz() {
                   strokeDashoffset={-snsLen}
                   transform="rotate(-90 100 100)"
                 />
+                <circle
+                  className="arc"
+                  cx="100"
+                  cy="100"
+                  r={R}
+                  fill="none"
+                  stroke={SPS}
+                  strokeWidth="28"
+                  strokeLinecap="round"
+                  strokeDasharray={`${spsLen.toFixed(2)} ${(C - spsLen).toFixed(2)}`}
+                  strokeDashoffset={-(snsLen + studentLen)}
+                  transform="rotate(-90 100 100)"
+                />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
                 <div
                   className="font-mono font-bold tabular-nums leading-none"
-                  style={{ color: SNS, fontSize: "clamp(1.6rem, 5vh, 2.6rem)" }}
+                  style={{ color: SNS, fontSize: "clamp(1.5rem, 4.6vh, 2.4rem)" }}
                 >
-                  {Math.round(validAnim).toLocaleString("sr-RS")}
+                  {Math.round(ukupnoAnim).toLocaleString("sr-RS")}
                 </div>
                 <div className="font-display text-[11px] tracking-[0.14em] uppercase text-[#7a8294] mt-1">
                   пренетих гласова
@@ -303,11 +309,11 @@ export default function IzboriPrikaz() {
                 <span className="font-bold text-sm flex-1 min-w-0">СНС</span>
                 <span
                   className="font-mono font-bold tabular-nums"
-                  style={{ color: SNS, fontSize: "clamp(1.2rem, 3.4vh, 1.9rem)" }}
+                  style={{ color: SNS, fontSize: "clamp(1.1rem, 3vh, 1.7rem)" }}
                 >
                   {snsPctAnim.toFixed(1)}%
                 </span>
-                <span className="font-mono text-xs text-[#7a8294] tabular-nums min-w-[70px] text-right">
+                <span className="font-mono text-xs text-[#7a8294] tabular-nums min-w-[64px] text-right">
                   {Math.round(snsVotesAnim).toLocaleString("sr-RS")}
                 </span>
               </div>
@@ -316,56 +322,45 @@ export default function IzboriPrikaz() {
                 <span className="font-bold text-sm flex-1 min-w-0">Студентска листа</span>
                 <span
                   className="font-mono font-bold tabular-nums"
-                  style={{ color: STUDENT, fontSize: "clamp(1.2rem, 3.4vh, 1.9rem)" }}
+                  style={{ color: STUDENT, fontSize: "clamp(1.1rem, 3vh, 1.7rem)" }}
                 >
                   {studentPctAnim.toFixed(1)}%
                 </span>
-                <span className="font-mono text-xs text-[#7a8294] tabular-nums min-w-[70px] text-right">
+                <span className="font-mono text-xs text-[#7a8294] tabular-nums min-w-[64px] text-right">
                   {Math.round(studentVotesAnim).toLocaleString("sr-RS")}
+                </span>
+              </div>
+              <div className="flex items-center gap-3 bg-[#fbf3e0] rounded-xl px-3.5 py-2">
+                <span className="w-4 h-4 rounded shrink-0" style={{ background: SPS }} />
+                <span className="font-bold text-sm flex-1 min-w-0">СПС</span>
+                <span
+                  className="font-mono font-bold tabular-nums"
+                  style={{ color: SPS, fontSize: "clamp(1.1rem, 3vh, 1.7rem)" }}
+                >
+                  {spsPctAnim.toFixed(1)}%
+                </span>
+                <span className="font-mono text-xs text-[#7a8294] tabular-nums min-w-[64px] text-right">
+                  {Math.round(spsVotesAnim).toLocaleString("sr-RS")}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="flex-1 min-w-[320px] grid grid-cols-2 gap-2.5 content-stretch">
+          <div
+            className="flex-1 min-w-[260px] bg-white rounded-2xl px-6 py-5 flex flex-col items-center justify-center gap-1.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)] border-l-4"
+            style={{ borderColor: STUDENT }}
+          >
+            <div className="font-display text-sm tracking-[0.1em] uppercase text-[#7a8294]">
+              Обрађено бирачких места
+            </div>
             <div
-              className="col-span-2 bg-white rounded-2xl px-5 py-3 flex flex-col justify-center gap-0.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)] border-l-4 overflow-hidden"
-              style={{ borderColor: STUDENT }}
+              className="font-mono font-bold tabular-nums leading-none"
+              style={{ color: SNS, fontSize: "clamp(3.5rem, 11vh, 7rem)" }}
             >
-              <div className="font-display text-xs tracking-[0.1em] uppercase text-[#7a8294]">
-                Обрађено бирачких места
-              </div>
-              <div
-                className="font-mono font-bold tabular-nums leading-none"
-                style={{ color: SNS, fontSize: "clamp(1.8rem, 6.5vh, 3.4rem)" }}
-              >
-                {stats.done} / {TOTAL}
-              </div>
-              <div className="text-xs text-[#7a8294]">
-                {Math.round((stats.done / TOTAL) * 100)}% бирачких места пребројано
-              </div>
+              {stats.done} / {TOTAL}
             </div>
-            <div className="bg-white rounded-2xl px-5 py-3 flex flex-col justify-center gap-0.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)] overflow-hidden">
-              <div className="font-display text-xs tracking-[0.1em] uppercase text-[#7a8294]">Уписаних бирача</div>
-              <div className="font-mono font-bold tabular-nums leading-none" style={{ fontSize: "clamp(1.1rem, 3.8vh, 2rem)" }}>
-                {Math.round(upisaniAnim).toLocaleString("sr-RS")}
-              </div>
-            </div>
-            <div className="bg-white rounded-2xl px-5 py-3 flex flex-col justify-center gap-0.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)] overflow-hidden">
-              <div className="font-display text-xs tracking-[0.1em] uppercase text-[#7a8294]">Изашло да гласа</div>
-              <div className="font-mono font-bold tabular-nums leading-none" style={{ fontSize: "clamp(1.1rem, 3.8vh, 2rem)" }}>
-                {Math.round(glasaloAnim).toLocaleString("sr-RS")}
-              </div>
-              <div className="text-xs text-[#7a8294]">{izlaznostAnim.toFixed(1)}% излазност</div>
-            </div>
-            <div className="col-span-2 bg-white rounded-2xl px-5 py-3 flex items-center justify-between gap-3 shadow-[0_4px_24px_rgba(22,58,140,0.08)] overflow-hidden">
-              <div>
-                <div className="font-display text-xs tracking-[0.1em] uppercase text-[#7a8294]">Неважећи гласови</div>
-                <div className="text-xs text-[#7a8294]">{nevazeciPctAnim.toFixed(1)}% од гласалих</div>
-              </div>
-              <div className="font-mono font-bold tabular-nums leading-none" style={{ fontSize: "clamp(1.1rem, 3.8vh, 2rem)" }}>
-                {Math.round(nevazeciAnim).toLocaleString("sr-RS")}
-              </div>
+            <div className="text-base text-[#7a8294]">
+              {Math.round((stats.done / TOTAL) * 100)}% бирачких места пребројано
             </div>
           </div>
         </div>

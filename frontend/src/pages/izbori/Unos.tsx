@@ -15,17 +15,15 @@ const TOTAL = 37;
 
 type RowDraft = {
   broj: number;
-  upisani: string;
-  glasalo: string;
   sns: string;
   student: string;
-  nevazeci: string;
+  sps: string;
   unet: boolean;
   updated_at: string | null;
 };
 
 function emptyDraft(broj: number): RowDraft {
-  return { broj, upisani: "", glasalo: "", sns: "", student: "", nevazeci: "", unet: false, updated_at: null };
+  return { broj, sns: "", student: "", sps: "", unet: false, updated_at: null };
 }
 
 type Filter = "sve" | "nije" | "uneto";
@@ -54,11 +52,9 @@ export default function IzboriUnos() {
       mesta.forEach((m) => {
         next[m.broj] = {
           broj: m.broj,
-          upisani: m.unet ? String(m.upisani) : "",
-          glasalo: m.unet ? String(m.glasalo) : "",
           sns: m.unet ? String(m.sns) : "",
           student: m.unet ? String(m.student) : "",
-          nevazeci: m.unet ? String(m.nevazeci) : "",
+          sps: m.unet ? String(m.sps) : "",
           unet: m.unet,
           updated_at: m.unet ? m.updated_at : null,
         };
@@ -100,16 +96,18 @@ export default function IzboriUnos() {
 
   const summary = useMemo(() => {
     let done = 0,
-      upisani = 0,
-      glasalo = 0;
+      sns = 0,
+      student = 0,
+      sps = 0;
     Object.values(rows).forEach((r) => {
       if (r.unet) {
         done++;
-        upisani += Number(r.upisani) || 0;
-        glasalo += Number(r.glasalo) || 0;
+        sns += Number(r.sns) || 0;
+        student += Number(r.student) || 0;
+        sps += Number(r.sps) || 0;
       }
     });
-    return { done, upisani, glasalo, izlaznost: upisani > 0 ? (glasalo / upisani) * 100 : 0 };
+    return { done, sns, student, sps, ukupno: sns + student + sps };
   }, [rows]);
 
   function updateField(broj: number, key: keyof RowDraft, value: string) {
@@ -122,11 +120,9 @@ export default function IzboriUnos() {
     setSaveError(null);
     try {
       const { mesto } = await setIzboriMesto(broj, {
-        upisani: Number(r.upisani) || 0,
-        glasalo: Number(r.glasalo) || 0,
         sns: Number(r.sns) || 0,
         student: Number(r.student) || 0,
-        nevazeci: Number(r.nevazeci) || 0,
+        sps: Number(r.sps) || 0,
       });
       setRows((prev) => ({
         ...prev,
@@ -249,13 +245,13 @@ export default function IzboriUnos() {
             Uneto: <b className="font-mono text-ink tabular-nums">{summary.done} / {TOTAL}</b>
           </span>
           <span>
-            Upisanih: <b className="font-mono text-ink tabular-nums">{summary.upisani.toLocaleString("sr-RS")}</b>
+            SNS: <b className="font-mono text-ink tabular-nums">{summary.sns.toLocaleString("sr-RS")}</b>
           </span>
           <span>
-            Glasalo: <b className="font-mono text-ink tabular-nums">{summary.glasalo.toLocaleString("sr-RS")}</b>
+            Studentska lista: <b className="font-mono text-ink tabular-nums">{summary.student.toLocaleString("sr-RS")}</b>
           </span>
           <span>
-            Izlaznost: <b className="font-mono text-ink tabular-nums">{summary.izlaznost.toFixed(1)}%</b>
+            SPS: <b className="font-mono text-ink tabular-nums">{summary.sps.toLocaleString("sr-RS")}</b>
           </span>
         </div>
         <div className="max-w-[720px] mx-auto flex gap-2 mt-3 flex-wrap">
@@ -360,9 +356,6 @@ export default function IzboriUnos() {
         </div>
 
         {visibleRows.map((r) => {
-          const glasaloNum = Number(r.glasalo) || 0;
-          const sumNum = (Number(r.sns) || 0) + (Number(r.student) || 0) + (Number(r.nevazeci) || 0);
-          const mismatch = glasaloNum > 0 && sumNum > 0 && sumNum !== glasaloNum;
           return (
             <div key={r.broj} className="bg-white border border-line rounded-2xl p-4 flex flex-col gap-3">
               <div className="flex justify-between items-center gap-2.5 flex-wrap">
@@ -378,11 +371,9 @@ export default function IzboriUnos() {
 
               <div className="grid gap-2.5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))" }}>
                 {([
-                  ["upisani", "Upisani birači"],
-                  ["glasalo", "Broj glasalih"],
                   ["sns", "SNS"],
                   ["student", "Studentska lista"],
-                  ["nevazeci", "Nevažeći glasovi"],
+                  ["sps", "SPS"],
                 ] as [keyof RowDraft, string][]).map(([key, label]) => (
                   <div key={key} className="flex flex-col gap-1">
                     <label className="text-xs text-muted">{label}</label>
@@ -399,13 +390,6 @@ export default function IzboriUnos() {
               </div>
 
               <div className="flex justify-between items-center gap-2.5 flex-wrap">
-                {mismatch ? (
-                  <span className="text-xs text-[#b4650f] bg-[#fdeedd] rounded-lg px-2.5 py-1.5">
-                    Zbir SNS + Studentska lista + nevažeći ({sumNum}) se ne poklapa sa brojem glasalih ({glasaloNum}).
-                  </span>
-                ) : (
-                  <span />
-                )}
                 <div className="flex items-center gap-2.5 ml-auto">
                   <span className="text-xs text-muted">
                     {saveError === r.broj

@@ -8,7 +8,7 @@ export const izboriRouter = Router();
 izboriRouter.get("/izbori/mesta", async (_req, res) => {
   const { data, error } = await supabaseAdmin
     .from("biracka_mesta")
-    .select("broj, upisani, glasalo, sns, student, nevazeci, unet, updated_at")
+    .select("broj, sns, student, sps, unet, updated_at")
     .order("broj", { ascending: true });
 
   if (error) return res.status(500).json({ error: error.message });
@@ -16,14 +16,12 @@ izboriRouter.get("/izbori/mesta", async (_req, res) => {
 });
 
 const unosSchema = z.object({
-  upisani: z.number().int().min(0),
-  glasalo: z.number().int().min(0),
   sns: z.number().int().min(0),
   student: z.number().int().min(0),
-  nevazeci: z.number().int().min(0),
+  sps: z.number().int().min(0),
 });
 
-/** PUT /izbori/mesta/:broj — upis rezultata za jedno biračko mesto, javno (bez prijave). */
+/** PUT /izbori/mesta/:broj — upis glasova po listama za jedno biračko mesto, javno (bez prijave). */
 izboriRouter.put("/izbori/mesta/:broj", async (req, res) => {
   const broj = Number(req.params.broj);
   if (!Number.isInteger(broj) || broj < 1 || broj > 37) {
@@ -39,7 +37,7 @@ izboriRouter.put("/izbori/mesta/:broj", async (req, res) => {
     .from("biracka_mesta")
     .update({ ...parsed.data, unet: true, updated_at: new Date().toISOString() })
     .eq("broj", broj)
-    .select("broj, upisani, glasalo, sns, student, nevazeci, unet, updated_at")
+    .select("broj, sns, student, sps, unet, updated_at")
     .maybeSingle();
 
   if (error) return res.status(500).json({ error: error.message });
@@ -56,9 +54,9 @@ izboriRouter.delete("/izbori/mesta/:broj", async (req, res) => {
 
   const { data, error } = await supabaseAdmin
     .from("biracka_mesta")
-    .update({ upisani: 0, glasalo: 0, sns: 0, student: 0, nevazeci: 0, unet: false, updated_at: new Date().toISOString() })
+    .update({ sns: 0, student: 0, sps: 0, unet: false, updated_at: new Date().toISOString() })
     .eq("broj", broj)
-    .select("broj, upisani, glasalo, sns, student, nevazeci, unet, updated_at")
+    .select("broj, sns, student, sps, unet, updated_at")
     .maybeSingle();
 
   if (error) return res.status(500).json({ error: error.message });
@@ -82,13 +80,13 @@ izboriRouter.post("/izbori/test", async (_req, res) => {
   const nowIso = now.toISOString();
   const rows = Array.from({ length: 37 }, (_, i) => {
     const broj = i + 1;
-    const upisani = randomInt(500, 1200);
-    const glasalo = Math.round(upisani * (0.35 + Math.random() * 0.3));
-    const nevazeci = Math.round(glasalo * (0.01 + Math.random() * 0.05));
-    const valid = glasalo - nevazeci;
-    const sns = Math.round(valid * (0.73 + Math.random() * 0.04)); // SNS pobeđuje sa ~75%
-    const student = valid - sns;
-    return { broj, upisani, glasalo, sns, student, nevazeci, unet: true, updated_at: nowIso };
+    const ukupno = randomInt(300, 800);
+    const sns = Math.round(ukupno * (0.73 + Math.random() * 0.04)); // SNS pobeđuje sa ~75%
+    const ostalo = ukupno - sns;
+    const studentUdeo = 0.3 + Math.random() * 0.4; // ostatak deli Studentska lista i SPS
+    const student = Math.round(ostalo * studentUdeo);
+    const sps = ostalo - student;
+    return { broj, sns, student, sps, unet: true, updated_at: nowIso };
   });
 
   const { error: mestaError } = await supabaseAdmin.from("biracka_mesta").upsert(rows);
@@ -110,7 +108,7 @@ izboriRouter.post("/izbori/reset-sve", async (_req, res) => {
 
   const { error: mestaError } = await supabaseAdmin
     .from("biracka_mesta")
-    .update({ upisani: 0, glasalo: 0, sns: 0, student: 0, nevazeci: 0, unet: false, updated_at: now })
+    .update({ sns: 0, student: 0, sps: 0, unet: false, updated_at: now })
     .gte("broj", 1)
     .lte("broj", 37);
   if (mestaError) return res.status(500).json({ error: mestaError.message });
