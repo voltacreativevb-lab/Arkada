@@ -226,19 +226,29 @@ export default function IzboriPrikaz() {
       </header>
 
       <main className="flex-1 min-h-0 flex flex-col gap-2.5 px-5 md:px-8 py-2.5 overflow-y-auto">
-        {poruka.trim() && (
-          <div
-            className="shrink-0 bg-white rounded-xl px-5 py-2.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)] border-l-4 text-center"
-            style={{ borderColor: STUDENT }}
-          >
+        <div
+          className="shrink-0 bg-white rounded-xl px-5 py-2.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)] border-l-4 text-center flex flex-col items-center justify-center gap-0.5"
+          style={{ borderColor: STUDENT }}
+        >
+          {poruka.trim() ? (
             <p
               className="font-display font-bold leading-snug break-words"
               style={{ fontSize: "clamp(1.1rem, 3vh, 1.9rem)", color: SNS }}
             >
               {poruka}
             </p>
-          </div>
-        )}
+          ) : (
+            <>
+              <div
+                className="font-mono font-bold tabular-nums leading-none"
+                style={{ color: SNS, fontSize: "clamp(1.3rem, 3.6vh, 2.2rem)" }}
+              >
+                {now.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+              </div>
+              <div className="font-display text-sm text-[#7a8294]">Чекамо прве резултате са бирачких места</div>
+            </>
+          )}
+        </div>
 
         <div className="flex-1 min-h-0 flex gap-5 flex-wrap items-stretch">
           <div
@@ -374,7 +384,6 @@ export default function IzboriPrikaz() {
             {stats.cells.map((c) => (
               <div
                 key={c.broj}
-                title={`Бирачко место ${c.broj} — ${c.unet ? "уписано" : "чека податке"}`}
                 className="relative h-full rounded-md flex items-center justify-center font-mono text-[11px] font-semibold border"
                 style={
                   c.unet
