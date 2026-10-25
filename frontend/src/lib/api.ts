@@ -398,6 +398,26 @@ export async function setIzboriMesto(
   );
 }
 
+export interface IzboriStanje {
+  poruka: string;
+  pobeda_prikaz: boolean;
+  updated_at: string | null;
+}
+
+export async function getIzboriStanje() {
+  return handle<{ stanje: IzboriStanje }>(await fetch(`${API_URL}/izbori/stanje`));
+}
+
+export async function setIzboriStanje(patch: Partial<Pick<IzboriStanje, "poruka" | "pobeda_prikaz">>) {
+  return handle<{ stanje: IzboriStanje }>(
+    await fetch(`${API_URL}/izbori/stanje`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch),
+    })
+  );
+}
+
 export async function downloadFinansijeCsv(od?: string, doDate?: string) {
   const qs = new URLSearchParams();
   if (od) qs.set("od", od);

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { getIzboriMesta, type BirackoMesto } from "../../lib/api";
+import { getIzboriMesta, getIzboriStanje, type BirackoMesto } from "../../lib/api";
 
 const TOTAL = 37;
 const SNS = "#163a8c";
@@ -37,14 +37,19 @@ function useCountUp(value: number, duration = 800) {
 
 export default function IzboriPrikaz() {
   const [mesta, setMesta] = useState<BirackoMesto[] | null>(null);
+  const [poruka, setPoruka] = useState("");
+  const [pobeda, setPobeda] = useState(false);
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
     let active = true;
     async function poll() {
       try {
-        const { mesta } = await getIzboriMesta();
-        if (active) setMesta(mesta);
+        const [{ mesta }, { stanje }] = await Promise.all([getIzboriMesta(), getIzboriStanje()]);
+        if (!active) return;
+        setMesta(mesta);
+        setPoruka(stanje.poruka);
+        setPobeda(stanje.pobeda_prikaz);
       } catch {
         // tiha greška — sledeći poll pokušava ponovo
       }
@@ -110,8 +115,44 @@ export default function IzboriPrikaz() {
     <div className="min-h-screen bg-[#f4f6fa] text-[#15192b] font-sans flex flex-col">
       <style>{`
         .arc { transition: stroke-dasharray 900ms cubic-bezier(.22,1,.36,1); }
-        @media (prefers-reduced-motion: reduce) { .arc { transition: none } }
+        @keyframes pobedaStripes { from { background-position: 0 0; } to { background-position: 160px 0; } }
+        @keyframes pobedaPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.045); } }
+        @keyframes pobedaGlow {
+          0%, 100% { text-shadow: 0 0 36px rgba(217,31,44,.55), 0 0 90px rgba(22,58,140,.45); }
+          50% { text-shadow: 0 0 64px rgba(217,31,44,.9), 0 0 130px rgba(22,58,140,.75); }
+        }
+        @keyframes pobedaIn { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: scale(1); } }
+        .pobeda-bg { animation: pobedaStripes 6s linear infinite; }
+        .pobeda-text { animation: pobedaPulse 2.4s ease-in-out infinite, pobedaGlow 2.4s ease-in-out infinite; }
+        .pobeda-overlay { animation: pobedaIn 500ms cubic-bezier(.22,1,.36,1); }
+        @media (prefers-reduced-motion: reduce) {
+          .arc { transition: none }
+          .pobeda-bg, .pobeda-text, .pobeda-overlay { animation: none }
+        }
       `}</style>
+
+      {pobeda && (
+        <div
+          className="pobeda-overlay fixed inset-0 z-50 flex items-center justify-center overflow-hidden"
+          style={{ background: `linear-gradient(160deg, #0d2456, ${SNS})` }}
+        >
+          <div
+            className="pobeda-bg absolute inset-0 opacity-25"
+            style={{
+              backgroundImage: `repeating-linear-gradient(45deg, ${STUDENT} 0 18px, transparent 18px 36px, #fff 36px 54px, transparent 54px 72px)`,
+              backgroundSize: "160px 160px",
+            }}
+          />
+          <h2
+            className="pobeda-text relative font-display font-extrabold text-white text-center px-6 leading-none"
+            style={{ fontSize: "clamp(2.8rem, 11vw, 9rem)", letterSpacing: "0.02em" }}
+          >
+            СРБИЈА
+            <br />
+            ПОБЕЂУЈЕ
+          </h2>
+        </div>
+      )}
 
       <div className="h-[7px] w-full flex shrink-0" aria-hidden="true">
         <div className="flex-1" style={{ background: SNS }} />
@@ -145,12 +186,26 @@ export default function IzboriPrikaz() {
       </header>
 
       <main className="flex flex-col gap-6 flex-1 px-5 md:px-10 py-6">
+        {poruka.trim() && (
+          <div
+            className="bg-white rounded-2xl px-6 py-5 shadow-[0_4px_24px_rgba(22,58,140,0.08)] border-l-4 text-center"
+            style={{ borderColor: STUDENT }}
+          >
+            <p
+              className="font-display font-bold leading-snug break-words"
+              style={{ fontSize: "clamp(1.5rem, 4vw, 2.75rem)", color: SNS }}
+            >
+              {poruka}
+            </p>
+          </div>
+        )}
+
         <div className="flex gap-7 flex-wrap items-stretch">
           <div
             className="flex-1 min-w-[380px] bg-white rounded-[20px] p-7 flex flex-col items-center gap-4.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)] border-t-4"
             style={{ borderColor: SNS }}
           >
-            <div className="relative w-[min(340px,70vw)] aspect-square">
+            <div className="relative w-[min(360px,72vw)] aspect-square">
               <svg viewBox="0 0 200 200" className="w-full h-full">
                 <circle cx="100" cy="100" r={R} fill="none" stroke="#e7eaf0" strokeWidth="28" />
                 <circle
@@ -180,83 +235,96 @@ export default function IzboriPrikaz() {
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                <div className="font-mono font-bold text-3xl md:text-[44px] tabular-nums leading-none" style={{ color: SNS }}>
+                <div
+                  className="font-mono font-bold tabular-nums leading-none"
+                  style={{ color: SNS, fontSize: "clamp(2.5rem, 7vw, 4.5rem)" }}
+                >
                   {Math.round(validAnim).toLocaleString("sr-RS")}
                 </div>
-                <div className="font-display text-xs tracking-[0.14em] uppercase text-[#7a8294] mt-1.5">
+                <div className="font-display text-sm tracking-[0.14em] uppercase text-[#7a8294] mt-2">
                   пренетих гласова
                 </div>
               </div>
             </div>
 
             <div className="w-full flex flex-col gap-2.5">
-              <div className="flex items-center gap-3 bg-[#eef1f9] rounded-xl px-3.5 py-2.5">
-                <span className="w-4 h-4 rounded shrink-0" style={{ background: SNS }} />
-                <span className="font-bold text-[15px] flex-1 min-w-0">СНС</span>
-                <span className="font-mono font-bold text-xl tabular-nums" style={{ color: SNS }}>
+              <div className="flex items-center gap-3 bg-[#eef1f9] rounded-xl px-4 py-3.5">
+                <span className="w-5 h-5 rounded shrink-0" style={{ background: SNS }} />
+                <span className="font-bold text-lg flex-1 min-w-0">СНС</span>
+                <span
+                  className="font-mono font-bold tabular-nums"
+                  style={{ color: SNS, fontSize: "clamp(1.75rem, 4vw, 3rem)" }}
+                >
                   {snsPctAnim.toFixed(1)}%
                 </span>
-                <span className="font-mono text-xs text-[#7a8294] tabular-nums min-w-[70px] text-right">
+                <span className="font-mono text-sm text-[#7a8294] tabular-nums min-w-[80px] text-right">
                   {Math.round(snsVotesAnim).toLocaleString("sr-RS")}
                 </span>
               </div>
-              <div className="flex items-center gap-3 bg-[#fbebec] rounded-xl px-3.5 py-2.5">
-                <span className="w-4 h-4 rounded shrink-0" style={{ background: STUDENT }} />
-                <span className="font-bold text-[15px] flex-1 min-w-0">Студентска листа</span>
-                <span className="font-mono font-bold text-xl tabular-nums" style={{ color: STUDENT }}>
+              <div className="flex items-center gap-3 bg-[#fbebec] rounded-xl px-4 py-3.5">
+                <span className="w-5 h-5 rounded shrink-0" style={{ background: STUDENT }} />
+                <span className="font-bold text-lg flex-1 min-w-0">Студентска листа</span>
+                <span
+                  className="font-mono font-bold tabular-nums"
+                  style={{ color: STUDENT, fontSize: "clamp(1.75rem, 4vw, 3rem)" }}
+                >
                   {studentPctAnim.toFixed(1)}%
                 </span>
-                <span className="font-mono text-xs text-[#7a8294] tabular-nums min-w-[70px] text-right">
+                <span className="font-mono text-sm text-[#7a8294] tabular-nums min-w-[80px] text-right">
                   {Math.round(studentVotesAnim).toLocaleString("sr-RS")}
                 </span>
               </div>
             </div>
-            <p className="text-xs text-[#7a8294] text-center max-w-[320px]">
+            <p className="text-sm text-[#7a8294] text-center max-w-[340px]">
               Проценти су рачунати у односу на важеће гласове (СНС + Студентска листа), без неважећих.
             </p>
           </div>
 
           <div className="flex-1 min-w-[380px] grid grid-cols-2 gap-3.5 content-start">
-            <div className="col-span-2 bg-white rounded-2xl px-5 py-4.5 flex flex-col gap-1.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)] border-l-4" style={{ borderColor: STUDENT }}>
-              <div className="font-display text-xs tracking-[0.1em] uppercase text-[#7a8294]">
+            <div
+              className="col-span-2 bg-white rounded-2xl px-6 py-5 flex flex-col gap-1.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)] border-l-4"
+              style={{ borderColor: STUDENT }}
+            >
+              <div className="font-display text-sm tracking-[0.1em] uppercase text-[#7a8294]">
                 Обрађено бирачких места
               </div>
-              <div className="font-mono font-bold text-2xl md:text-3xl tabular-nums" style={{ color: SNS }}>
+              <div
+                className="font-mono font-bold tabular-nums"
+                style={{ color: SNS, fontSize: "clamp(3rem, 8vw, 5.5rem)" }}
+              >
                 {stats.done} / {TOTAL}
               </div>
-              <div className="text-[13px] text-[#7a8294]">
+              <div className="text-base text-[#7a8294]">
                 {Math.round((stats.done / TOTAL) * 100)}% бирачких места пребројано
               </div>
             </div>
-            <div className="bg-white rounded-2xl px-5 py-4.5 flex flex-col gap-1.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)]">
-              <div className="font-display text-xs tracking-[0.1em] uppercase text-[#7a8294]">Уписаних бирача</div>
-              <div className="font-mono font-bold text-2xl md:text-3xl tabular-nums">
+            <div className="bg-white rounded-2xl px-6 py-5 flex flex-col gap-1.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)]">
+              <div className="font-display text-sm tracking-[0.1em] uppercase text-[#7a8294]">Уписаних бирача</div>
+              <div className="font-mono font-bold tabular-nums" style={{ fontSize: "clamp(1.8rem, 4.5vw, 3rem)" }}>
                 {Math.round(upisaniAnim).toLocaleString("sr-RS")}
               </div>
             </div>
-            <div className="bg-white rounded-2xl px-5 py-4.5 flex flex-col gap-1.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)]">
-              <div className="font-display text-xs tracking-[0.1em] uppercase text-[#7a8294]">Изашло да гласа</div>
-              <div className="font-mono font-bold text-2xl md:text-3xl tabular-nums">
+            <div className="bg-white rounded-2xl px-6 py-5 flex flex-col gap-1.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)]">
+              <div className="font-display text-sm tracking-[0.1em] uppercase text-[#7a8294]">Изашло да гласа</div>
+              <div className="font-mono font-bold tabular-nums" style={{ fontSize: "clamp(1.8rem, 4.5vw, 3rem)" }}>
                 {Math.round(glasaloAnim).toLocaleString("sr-RS")}
               </div>
-              <div className="text-[13px] text-[#7a8294]">{izlaznostAnim.toFixed(1)}% излазност</div>
+              <div className="text-base text-[#7a8294]">{izlaznostAnim.toFixed(1)}% излазност</div>
             </div>
-            <div className="col-span-2 bg-white rounded-2xl px-5 py-4.5 flex flex-col gap-1.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)]">
-              <div className="font-display text-xs tracking-[0.1em] uppercase text-[#7a8294]">Неважећи гласови</div>
-              <div className="font-mono font-bold text-2xl md:text-3xl tabular-nums">
+            <div className="col-span-2 bg-white rounded-2xl px-6 py-5 flex flex-col gap-1.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)]">
+              <div className="font-display text-sm tracking-[0.1em] uppercase text-[#7a8294]">Неважећи гласови</div>
+              <div className="font-mono font-bold tabular-nums" style={{ fontSize: "clamp(1.8rem, 4.5vw, 3rem)" }}>
                 {Math.round(nevazeciAnim).toLocaleString("sr-RS")}
               </div>
-              <div className="text-[13px] text-[#7a8294]">{nevazeciPctAnim.toFixed(1)}% од гласалих</div>
+              <div className="text-base text-[#7a8294]">{nevazeciPctAnim.toFixed(1)}% од гласалих</div>
             </div>
           </div>
         </div>
 
         <div className="flex flex-col gap-3">
           <div className="flex justify-between items-baseline gap-2.5 flex-wrap">
-            <span className="font-display text-[13px] tracking-[0.1em] uppercase text-[#7a8294]">
-              Бирачка места
-            </span>
-            <span className="font-display text-[13px] tracking-[0.1em] uppercase text-[#7a8294]">
+            <span className="font-display text-sm tracking-[0.1em] uppercase text-[#7a8294]">Бирачка места</span>
+            <span className="font-display text-sm tracking-[0.1em] uppercase text-[#7a8294]">
               {stats.done} / {TOTAL} пребројано
             </span>
           </div>

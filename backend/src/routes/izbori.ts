@@ -46,3 +46,42 @@ izboriRouter.put("/izbori/mesta/:broj", async (req, res) => {
   if (!data) return res.status(404).json({ error: "Biračko mesto nije pronađeno" });
   res.json({ mesto: data });
 });
+
+/** GET /izbori/stanje — objavljena poruka i da li je uključena "pobeda" animacija, javno. */
+izboriRouter.get("/izbori/stanje", async (_req, res) => {
+  const { data, error } = await supabaseAdmin
+    .from("izbori_stanje")
+    .select("poruka, pobeda_prikaz, updated_at")
+    .eq("id", 1)
+    .maybeSingle();
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ stanje: data ?? { poruka: "", pobeda_prikaz: false, updated_at: null } });
+});
+
+const stanjeSchema = z.object({
+  poruka: z.string().max(2000).optional(),
+  pobeda_prikaz: z.boolean().optional(),
+});
+
+/** PUT /izbori/stanje — objavi poruku i/ili uključi/isključi "pobeda" animaciju, javno. */
+izboriRouter.put("/izbori/stanje", async (req, res) => {
+  const parsed = stanjeSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues[0]?.message ?? "Nevažeći podaci" });
+  }
+  if (Object.keys(parsed.data).length === 0) {
+    return res.status(400).json({ error: "Nema šta da se sačuva" });
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from("izbori_stanje")
+    .update({ ...parsed.data, updated_at: new Date().toISOString() })
+    .eq("id", 1)
+    .select("poruka, pobeda_prikaz, updated_at")
+    .maybeSingle();
+
+  if (error) return res.status(500).json({ error: error.message });
+  if (!data) return res.status(404).json({ error: "Stanje nije pronađeno" });
+  res.json({ stanje: data });
+});

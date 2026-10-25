@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { transliterate } from "@maestrovolta/sablon-core";
-import { getIzboriMesta, setIzboriMesto, type BirackoMesto } from "../../lib/api";
+import { getIzboriMesta, getIzboriStanje, setIzboriMesto, setIzboriStanje, type BirackoMesto } from "../../lib/api";
 
 const TOTAL = 37;
 
@@ -31,6 +31,28 @@ export default function IzboriUnos() {
   const [saving, setSaving] = useState<number | null>(null);
   const [saveError, setSaveError] = useState<number | null>(null);
   const [poruka, setPoruka] = useState("");
+  const [objavljenaPoruka, setObjavljenaPoruka] = useState("");
+  const [publishing, setPublishing] = useState(false);
+  const [publishError, setPublishError] = useState(false);
+  const [pobeda, setPobeda] = useState(false);
+  const [pobedaSaving, setPobedaSaving] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    getIzboriStanje()
+      .then(({ stanje }) => {
+        if (!active) return;
+        setPoruka(stanje.poruka);
+        setObjavljenaPoruka(stanje.poruka);
+        setPobeda(stanje.pobeda_prikaz);
+      })
+      .catch(() => {
+        // ostaje praznina — operater može ponovo da pokuša objavu
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -103,6 +125,33 @@ export default function IzboriUnos() {
     }
   }
 
+  async function objavi() {
+    setPublishing(true);
+    setPublishError(false);
+    try {
+      const cyr = transliterate(poruka, "cyr");
+      const { stanje } = await setIzboriStanje({ poruka: cyr });
+      setPoruka(stanje.poruka);
+      setObjavljenaPoruka(stanje.poruka);
+    } catch {
+      setPublishError(true);
+    } finally {
+      setPublishing(false);
+    }
+  }
+
+  async function togglePobeda() {
+    setPobedaSaving(true);
+    try {
+      const { stanje } = await setIzboriStanje({ pobeda_prikaz: !pobeda });
+      setPobeda(stanje.pobeda_prikaz);
+    } catch {
+      // ostaje na staroj vrednosti — operater može ponovo da pokuša
+    } finally {
+      setPobedaSaving(false);
+    }
+  }
+
   const visibleRows = Object.values(rows)
     .sort((a, b) => a.broj - b.broj)
     .filter((r) => (filter === "uneto" ? r.unet : filter === "nije" ? !r.unet : true));
@@ -168,6 +217,46 @@ export default function IzboriUnos() {
             ) : (
               <p className="text-muted text-sm">Текст ће се овде приказати ћирилицом.</p>
             )}
+          </div>
+        </div>
+
+        <div className="bg-white border border-line rounded-2xl p-4 flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={objavi}
+              disabled={publishing}
+              className="bg-accent text-white rounded-lg px-4 py-2 text-sm font-bold disabled:opacity-50"
+            >
+              {publishing ? "Objavljivanje…" : "Objavi na TV"}
+            </button>
+            <span className="text-xs text-muted">
+              {publishError
+                ? "Greška — pokušajte ponovo."
+                : transliterate(poruka, "cyr") === objavljenaPoruka && objavljenaPoruka !== ""
+                  ? "Objavljeno na TV."
+                  : poruka.trim()
+                    ? "Ima neobjavljenih izmena."
+                    : ""}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2.5 md:ml-auto">
+            <span className="text-sm font-semibold">СРБИЈА ПОБЕЂУЈЕ на TV</span>
+            <button
+              onClick={togglePobeda}
+              disabled={pobedaSaving}
+              role="switch"
+              aria-checked={pobeda}
+              className={`relative w-12 h-7 rounded-full transition-colors disabled:opacity-50 ${
+                pobeda ? "bg-accent" : "bg-line"
+              }`}
+            >
+              <span
+                className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white transition-transform ${
+                  pobeda ? "translate-x-5" : "translate-x-0"
+                }`}
+              />
+            </button>
           </div>
         </div>
 
