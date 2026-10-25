@@ -47,6 +47,25 @@ izboriRouter.put("/izbori/mesta/:broj", async (req, res) => {
   res.json({ mesto: data });
 });
 
+/** DELETE /izbori/mesta/:broj — poništi pogrešno unete rezultate za jedno biračko mesto, javno. */
+izboriRouter.delete("/izbori/mesta/:broj", async (req, res) => {
+  const broj = Number(req.params.broj);
+  if (!Number.isInteger(broj) || broj < 1 || broj > 37) {
+    return res.status(400).json({ error: "Nevažeći broj biračkog mesta" });
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from("biracka_mesta")
+    .update({ upisani: 0, glasalo: 0, sns: 0, student: 0, nevazeci: 0, unet: false, updated_at: new Date().toISOString() })
+    .eq("broj", broj)
+    .select("broj, upisani, glasalo, sns, student, nevazeci, unet, updated_at")
+    .maybeSingle();
+
+  if (error) return res.status(500).json({ error: error.message });
+  if (!data) return res.status(404).json({ error: "Biračko mesto nije pronađeno" });
+  res.json({ mesto: data });
+});
+
 /** GET /izbori/stanje — objavljena poruka i da li je uključena "pobeda" animacija, javno. */
 izboriRouter.get("/izbori/stanje", async (_req, res) => {
   const { data, error } = await supabaseAdmin

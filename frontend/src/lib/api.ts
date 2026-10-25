@@ -398,6 +398,10 @@ export async function setIzboriMesto(
   );
 }
 
+export async function resetIzboriMesto(broj: number) {
+  return handle<{ mesto: BirackoMesto }>(await fetch(`${API_URL}/izbori/mesta/${broj}`, { method: "DELETE" }));
+}
+
 export interface IzboriStanje {
   poruka: string;
   pobeda_prikaz: boolean;

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { transliterate } from "@maestrovolta/sablon-core";
-import { getIzboriMesta, getIzboriStanje, setIzboriMesto, setIzboriStanje, type BirackoMesto } from "../../lib/api";
+import { getIzboriMesta, getIzboriStanje, resetIzboriMesto, setIzboriMesto, setIzboriStanje, type BirackoMesto } from "../../lib/api";
 
 const TOTAL = 37;
 
@@ -117,6 +117,23 @@ export default function IzboriUnos() {
       setRows((prev) => ({
         ...prev,
         [broj]: { ...prev[broj], unet: mesto.unet, updated_at: mesto.updated_at },
+      }));
+    } catch {
+      setSaveError(broj);
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  async function obrisi(broj: number) {
+    if (!confirm(`Obrisati unete rezultate za biračko mesto ${broj}? Ovo se ne može poništiti.`)) return;
+    setSaving(broj);
+    setSaveError(null);
+    try {
+      await resetIzboriMesto(broj);
+      setRows((prev) => ({
+        ...prev,
+        [broj]: emptyDraft(broj),
       }));
     } catch {
       setSaveError(broj);
@@ -315,6 +332,13 @@ export default function IzboriUnos() {
                         ? `Sačuvano ${new Date(r.updated_at).toLocaleTimeString("sr-RS")}`
                         : ""}
                   </span>
+                  <button
+                    onClick={() => obrisi(r.broj)}
+                    disabled={saving === r.broj}
+                    className="border border-[#D03B3B] text-[#D03B3B] rounded-lg px-4 py-2 text-sm font-bold disabled:opacity-50"
+                  >
+                    Obriši
+                  </button>
                   <button
                     onClick={() => save(r.broj)}
                     disabled={saving === r.broj}
