@@ -124,7 +124,6 @@ export default function IzboriPrikaz() {
     <div className="h-screen bg-[#f4f6fa] text-[#15192b] font-sans flex flex-col overflow-hidden">
       <style>{`
         .arc { transition: stroke-dasharray 900ms cubic-bezier(.22,1,.36,1); }
-        @keyframes pobedaStripes { from { background-position: 0 0; } to { background-position: 160px 0; } }
         @keyframes pobedaPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.045); } }
         @keyframes pobedaGlow {
           0%, 100% { text-shadow: 0 0 36px rgba(217,31,44,.55), 0 0 90px rgba(22,58,140,.45); }
@@ -133,14 +132,13 @@ export default function IzboriPrikaz() {
         @keyframes pobedaIn { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: scale(1); } }
         @keyframes ringSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes flagWave { 0%, 100% { transform: skewY(-7deg) scaleX(1); } 50% { transform: skewY(7deg) scaleX(.95); } }
-        .pobeda-bg { animation: pobedaStripes 7s linear infinite; }
         .pobeda-text { animation: pobedaPulse 2.4s ease-in-out infinite, pobedaGlow 2.4s ease-in-out infinite; }
         .pobeda-overlay { animation: pobedaIn 450ms cubic-bezier(.22,1,.36,1); }
         .ring-spin { animation: ringSpin 3s linear infinite; }
         .flag-wave { animation: flagWave 2.1s ease-in-out infinite; transform-origin: 0% 20%; }
         @media (prefers-reduced-motion: reduce) {
           .arc { transition: none }
-          .pobeda-bg, .pobeda-text, .pobeda-overlay, .ring-spin, .flag-wave { animation: none }
+          .pobeda-text, .pobeda-overlay, .ring-spin, .flag-wave { animation: none }
         }
       `}</style>
 
@@ -150,14 +148,6 @@ export default function IzboriPrikaz() {
             className="absolute inset-0"
             style={{ background: `linear-gradient(160deg, rgba(13,36,86,.74), rgba(22,58,140,.7))`, backdropFilter: "blur(1px)" }}
           />
-          <div
-            className="pobeda-bg absolute inset-0 opacity-20"
-            style={{
-              backgroundImage: `repeating-linear-gradient(45deg, ${STUDENT} 0 18px, transparent 18px 36px, #fff 36px 54px, transparent 54px 72px)`,
-              backgroundSize: "160px 160px",
-            }}
-          />
-
           {FLAG_POSITIONS.map((f, i) => (
             <div key={i} className="absolute" style={{ top: f.top, left: f.left }}>
               <div style={{ width: 3, height: "clamp(44px, 8vh, 72px)", background: "#e3c76b", borderRadius: 2 }} />
