@@ -368,6 +368,36 @@ export async function getFinansije(od?: string, doDate?: string) {
   return handle<Finansije>(await adminFetch(`/admin/finansije${query ? `?${query}` : ""}`));
 }
 
+// ---------- Izborni rezultati (javno, bez prijave) ----------
+
+export interface BirackoMesto {
+  broj: number;
+  upisani: number;
+  glasalo: number;
+  sns: number;
+  student: number;
+  nevazeci: number;
+  unet: boolean;
+  updated_at: string;
+}
+
+export async function getIzboriMesta() {
+  return handle<{ mesta: BirackoMesto[] }>(await fetch(`${API_URL}/izbori/mesta`));
+}
+
+export async function setIzboriMesto(
+  broj: number,
+  input: { upisani: number; glasalo: number; sns: number; student: number; nevazeci: number }
+) {
+  return handle<{ mesto: BirackoMesto }>(
+    await fetch(`${API_URL}/izbori/mesta/${broj}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    })
+  );
+}
+
 export async function downloadFinansijeCsv(od?: string, doDate?: string) {
   const qs = new URLSearchParams();
   if (od) qs.set("od", od);

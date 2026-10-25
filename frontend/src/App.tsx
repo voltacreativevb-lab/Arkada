@@ -15,6 +15,8 @@ import AdminCatalog from "./pages/admin/Catalog";
 import AdminProductDetail from "./pages/admin/ProductDetail";
 import AdminFinance from "./pages/admin/Finance";
 import AdminLayout from "./components/admin/AdminLayout";
+import IzboriUnos from "./pages/izbori/Unos";
+import IzboriPrikaz from "./pages/izbori/Prikaz";
 
 function Pocetna() {
   return (
@@ -47,6 +49,9 @@ export default function App() {
       <Route path="/" element={<Pocetna />} />
       <Route path="/status" element={<Status />} />
       <Route path="/status/:kod" element={<Status />} />
+
+      <Route path="/izbori/unos" element={<IzboriUnos />} />
+      <Route path="/izbori/prikaz" element={<IzboriPrikaz />} />
 
       <Route path="/prodavnica/:slug" element={<RadnikPrijava />} />
       <Route path="/prodavnica/:slug/panel" element={<RadnikPanel />} />

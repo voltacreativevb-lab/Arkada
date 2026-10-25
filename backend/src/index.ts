@@ -6,6 +6,7 @@ import { healthRouter } from "./routes/health.js";
 import { publicRouter } from "./routes/public.js";
 import { radnikRouter } from "./routes/radnik.js";
 import { adminRouter } from "./routes/admin.js";
+import { izboriRouter } from "./routes/izbori.js";
 import { startExpirySweep } from "./lib/expirySweep.js";
 
 const app = express();
@@ -16,6 +17,7 @@ app.use(express.json());
 app.use(healthRouter);
 app.use(publicRouter);
 app.use(radnikRouter);
+app.use(izboriRouter);
 app.use(adminRouter);
 
 app.use((_req, res) => res.status(404).json({ error: "Not found" }));
