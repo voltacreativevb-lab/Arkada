@@ -7,6 +7,15 @@ const STUDENT = "#d91f2c";
 const R = 80;
 const C = 2 * Math.PI * R;
 
+const FLAG_POSITIONS = [
+  { top: "5%", left: "6%", delay: "0s" },
+  { top: "5%", left: "27%", delay: ".3s" },
+  { top: "5%", left: "73%", delay: ".6s" },
+  { top: "5%", left: "92%", delay: ".15s" },
+  { top: "80%", left: "9%", delay: ".45s" },
+  { top: "80%", left: "89%", delay: ".75s" },
+];
+
 /** Animira broj od prethodne do nove vrednosti (ease-out), umesto da skoči. */
 function useCountUp(value: number, duration = 800) {
   const [display, setDisplay] = useState(value);
@@ -121,36 +130,77 @@ export default function IzboriPrikaz() {
           0%, 100% { text-shadow: 0 0 36px rgba(217,31,44,.55), 0 0 90px rgba(22,58,140,.45); }
           50% { text-shadow: 0 0 64px rgba(217,31,44,.9), 0 0 130px rgba(22,58,140,.75); }
         }
-        @keyframes pobedaIn { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: scale(1); } }
-        .pobeda-bg { animation: pobedaStripes 6s linear infinite; }
+        @keyframes pobedaIn { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: scale(1); } }
+        @keyframes ringSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes flagWave { 0%, 100% { transform: skewY(-7deg) scaleX(1); } 50% { transform: skewY(7deg) scaleX(.95); } }
+        .pobeda-bg { animation: pobedaStripes 7s linear infinite; }
         .pobeda-text { animation: pobedaPulse 2.4s ease-in-out infinite, pobedaGlow 2.4s ease-in-out infinite; }
-        .pobeda-overlay { animation: pobedaIn 500ms cubic-bezier(.22,1,.36,1); }
+        .pobeda-overlay { animation: pobedaIn 450ms cubic-bezier(.22,1,.36,1); }
+        .ring-spin { animation: ringSpin 3s linear infinite; }
+        .flag-wave { animation: flagWave 2.1s ease-in-out infinite; transform-origin: 0% 20%; }
         @media (prefers-reduced-motion: reduce) {
           .arc { transition: none }
-          .pobeda-bg, .pobeda-text, .pobeda-overlay { animation: none }
+          .pobeda-bg, .pobeda-text, .pobeda-overlay, .ring-spin, .flag-wave { animation: none }
         }
       `}</style>
 
       {pobeda && (
-        <div
-          className="pobeda-overlay fixed inset-0 z-50 flex items-center justify-center overflow-hidden"
-          style={{ background: `linear-gradient(160deg, #0d2456, ${SNS})` }}
-        >
+        <div className="pobeda-overlay fixed inset-0 z-50 flex items-center justify-center overflow-hidden pointer-events-none">
           <div
-            className="pobeda-bg absolute inset-0 opacity-25"
+            className="absolute inset-0"
+            style={{ background: `linear-gradient(160deg, rgba(13,36,86,.74), rgba(22,58,140,.7))`, backdropFilter: "blur(1px)" }}
+          />
+          <div
+            className="pobeda-bg absolute inset-0 opacity-20"
             style={{
               backgroundImage: `repeating-linear-gradient(45deg, ${STUDENT} 0 18px, transparent 18px 36px, #fff 36px 54px, transparent 54px 72px)`,
               backgroundSize: "160px 160px",
             }}
           />
-          <h2
-            className="pobeda-text relative font-display font-extrabold text-white text-center px-6 leading-none"
-            style={{ fontSize: "clamp(2.8rem, 11vw, 9rem)", letterSpacing: "0.02em" }}
-          >
-            СРБИЈА
-            <br />
-            ПОБЕЂУЈЕ
-          </h2>
+
+          {FLAG_POSITIONS.map((f, i) => (
+            <div key={i} className="absolute" style={{ top: f.top, left: f.left }}>
+              <div style={{ width: 3, height: "clamp(44px, 8vh, 72px)", background: "#e3c76b", borderRadius: 2 }} />
+              <div
+                className="flag-wave absolute"
+                style={{
+                  left: 3,
+                  top: 0,
+                  width: "clamp(46px, 8vh, 74px)",
+                  height: "clamp(30px, 5.3vh, 48px)",
+                  background: `linear-gradient(to bottom, ${STUDENT} 0 34%, ${SNS} 34% 67%, #fff 67% 100%)`,
+                  boxShadow: "0 3px 10px rgba(0,0,0,.3)",
+                  borderRadius: "0 2px 2px 0",
+                  animationDelay: f.delay,
+                }}
+              />
+            </div>
+          ))}
+
+          <div className="relative flex flex-col items-center gap-3 px-6">
+            <div className="relative flex items-center justify-center" style={{ width: "min(24vh, 210px)", height: "min(24vh, 210px)" }}>
+              <div
+                className="ring-spin absolute inset-0 rounded-full"
+                style={{ background: `conic-gradient(from 0deg, ${STUDENT}, #fff, ${SNS}, ${STUDENT})` }}
+              />
+              <div className="absolute rounded-full flex items-center justify-center" style={{ inset: 8, background: "#0b1d44" }}>
+                <span className="font-display font-extrabold text-white leading-none" style={{ fontSize: "min(13vh, 112px)" }}>
+                  1
+                </span>
+              </div>
+            </div>
+            <h2
+              className="pobeda-text font-display font-extrabold text-white text-center leading-none"
+              style={{ fontSize: "clamp(2rem, 7vw, 5.5rem)", letterSpacing: "0.02em" }}
+            >
+              СРБИЈА
+              <br />
+              ПОБЕЂУЈЕ
+            </h2>
+            <p className="font-display font-bold text-white/90 text-center" style={{ fontSize: "clamp(1.1rem, 3vw, 2rem)" }}>
+              Врњачка Бања
+            </p>
+          </div>
         </div>
       )}
 
