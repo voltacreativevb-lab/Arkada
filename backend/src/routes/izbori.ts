@@ -72,11 +72,14 @@ function randomInt(min: number, max: number): number {
 
 /**
  * POST /izbori/test — popuni sva 37 mesta plauzibilnim demo brojevima i
- * uključi "pobeda" prikaz, da operater može da uvežba/proveri TV prikaz
- * pre prave večeri. Frontend sam gasi pobeda_prikaz nakon 10s.
+ * uključi "pobeda" prikaz na tačno 10 sekundi, da operater može da
+ * uvežba/proveri TV prikaz pre prave večeri. Gašenje je upisano kao
+ * pobeda_until u bazi (GET /izbori/stanje ga sam primenjuje) — ne zavisi
+ * od toga da li operaterova stranica ostane otvorena 10s.
  */
 izboriRouter.post("/izbori/test", async (_req, res) => {
-  const now = new Date().toISOString();
+  const now = new Date();
+  const nowIso = now.toISOString();
   const rows = Array.from({ length: 37 }, (_, i) => {
     const broj = i + 1;
     const upisani = randomInt(500, 1200);
@@ -85,15 +88,16 @@ izboriRouter.post("/izbori/test", async (_req, res) => {
     const valid = glasalo - nevazeci;
     const sns = Math.round(valid * (0.73 + Math.random() * 0.04)); // SNS pobeđuje sa ~75%
     const student = valid - sns;
-    return { broj, upisani, glasalo, sns, student, nevazeci, unet: true, updated_at: now };
+    return { broj, upisani, glasalo, sns, student, nevazeci, unet: true, updated_at: nowIso };
   });
 
   const { error: mestaError } = await supabaseAdmin.from("biracka_mesta").upsert(rows);
   if (mestaError) return res.status(500).json({ error: mestaError.message });
 
+  const pobedaUntil = new Date(now.getTime() + 10_000).toISOString();
   const { error: stanjeError } = await supabaseAdmin
     .from("izbori_stanje")
-    .update({ poruka: "Ово је тест — демо подаци.", pobeda_prikaz: true, updated_at: now })
+    .update({ poruka: "Ово је тест — демо подаци.", pobeda_prikaz: true, pobeda_until: pobedaUntil, updated_at: nowIso })
     .eq("id", 1);
   if (stanjeError) return res.status(500).json({ error: stanjeError.message });
 
@@ -113,23 +117,40 @@ izboriRouter.post("/izbori/reset-sve", async (_req, res) => {
 
   const { error: stanjeError } = await supabaseAdmin
     .from("izbori_stanje")
-    .update({ poruka: "", pobeda_prikaz: false, updated_at: now })
+    .update({ poruka: "", pobeda_prikaz: false, pobeda_until: null, updated_at: now })
     .eq("id", 1);
   if (stanjeError) return res.status(500).json({ error: stanjeError.message });
 
   res.json({ ok: true });
 });
 
-/** GET /izbori/stanje — objavljena poruka i da li je uključena "pobeda" animacija, javno. */
+/**
+ * GET /izbori/stanje — objavljena poruka i da li je uključena "pobeda"
+ * animacija, javno. Ako je pobeda_prikaz uključen preko /izbori/test i
+ * pobeda_until je istekao, ovde se sam gasi (server je jedini izvor
+ * istine — ne zavisi od toga da li je operaterova stranica ostala otvorena).
+ */
 izboriRouter.get("/izbori/stanje", async (_req, res) => {
   const { data, error } = await supabaseAdmin
     .from("izbori_stanje")
-    .select("poruka, pobeda_prikaz, updated_at")
+    .select("poruka, pobeda_prikaz, pobeda_until, updated_at")
     .eq("id", 1)
     .maybeSingle();
 
   if (error) return res.status(500).json({ error: error.message });
-  res.json({ stanje: data ?? { poruka: "", pobeda_prikaz: false, updated_at: null } });
+  if (!data) return res.json({ stanje: { poruka: "", pobeda_prikaz: false, updated_at: null } });
+
+  if (data.pobeda_prikaz && data.pobeda_until && new Date(data.pobeda_until) <= new Date()) {
+    const nowIso = new Date().toISOString();
+    await supabaseAdmin
+      .from("izbori_stanje")
+      .update({ pobeda_prikaz: false, pobeda_until: null, updated_at: nowIso })
+      .eq("id", 1);
+    data.pobeda_prikaz = false;
+    data.updated_at = nowIso;
+  }
+
+  res.json({ stanje: { poruka: data.poruka, pobeda_prikaz: data.pobeda_prikaz, updated_at: data.updated_at } });
 });
 
 const stanjeSchema = z.object({
@@ -137,7 +158,11 @@ const stanjeSchema = z.object({
   pobeda_prikaz: z.boolean().optional(),
 });
 
-/** PUT /izbori/stanje — objavi poruku i/ili uključi/isključi "pobeda" animaciju, javno. */
+/**
+ * PUT /izbori/stanje — objavi poruku i/ili ručno uključi/isključi "pobeda"
+ * animaciju, javno. Ručni prekidač je trajan (bez isteka) — briše
+ * pobeda_until koji eventualno ostane od poslednjeg /izbori/test pokretanja.
+ */
 izboriRouter.put("/izbori/stanje", async (req, res) => {
   const parsed = stanjeSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -147,9 +172,12 @@ izboriRouter.put("/izbori/stanje", async (req, res) => {
     return res.status(400).json({ error: "Nema šta da se sačuva" });
   }
 
+  const patch: Record<string, unknown> = { ...parsed.data, updated_at: new Date().toISOString() };
+  if (parsed.data.pobeda_prikaz !== undefined) patch.pobeda_until = null;
+
   const { data, error } = await supabaseAdmin
     .from("izbori_stanje")
-    .update({ ...parsed.data, updated_at: new Date().toISOString() })
+    .update(patch)
     .eq("id", 1)
     .select("poruka, pobeda_prikaz, updated_at")
     .maybeSingle();

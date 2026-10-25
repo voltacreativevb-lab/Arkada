@@ -196,16 +196,19 @@ export default function IzboriUnos() {
       setTestRunning(false);
       return;
     }
+    // Server sam gasi pobeda_prikaz nakon 10s (pobeda_until) — ovde samo
+    // osvežimo prekidač u UI-ju da prati to, bez obzira da li ova stranica
+    // ostane otvorena.
     setTimeout(async () => {
       try {
-        const { stanje } = await setIzboriStanje({ pobeda_prikaz: false });
+        const { stanje } = await getIzboriStanje();
         setPobeda(stanje.pobeda_prikaz);
       } catch {
-        // ostaje uključeno — operater može ručno da isključi prekidačem
+        // ostaje kako je bilo — sledeći poll/učitavanje će se poklopiti
       } finally {
         setTestRunning(false);
       }
-    }, 10000);
+    }, 10500);
   }
 
   async function resetSve() {
