@@ -148,6 +148,11 @@ export default function IzboriPrikaz() {
             className="absolute inset-0"
             style={{ background: `linear-gradient(160deg, rgba(13,36,86,.74), rgba(22,58,140,.7))`, backdropFilter: "blur(1px)" }}
           />
+
+          <div className="absolute top-5 right-6 font-mono font-bold text-white/90 tabular-nums" style={{ fontSize: "clamp(1.1rem, 2.6vh, 1.6rem)" }}>
+            {now.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+          </div>
+
           {FLAG_POSITIONS.map((f, i) => (
             <div key={i} className="absolute" style={{ top: f.top, left: f.left }}>
               <div style={{ width: 3, height: "clamp(44px, 8vh, 72px)", background: "#e3c76b", borderRadius: 2 }} />
@@ -190,6 +195,9 @@ export default function IzboriPrikaz() {
             <p className="font-display font-bold text-white/90 text-center" style={{ fontSize: "clamp(1.1rem, 3vw, 2rem)" }}>
               Врњачка Бања
             </p>
+            <p className="font-display font-semibold text-white/80 text-center" style={{ fontSize: "clamp(0.9rem, 2.2vw, 1.3rem)" }}>
+              Чекамо прве резултате са бирачких места
+            </p>
           </div>
         </div>
       )}
@@ -226,29 +234,19 @@ export default function IzboriPrikaz() {
       </header>
 
       <main className="flex-1 min-h-0 flex flex-col gap-2.5 px-5 md:px-8 py-2.5 overflow-y-auto">
-        <div
-          className="shrink-0 bg-white rounded-xl px-5 py-2.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)] border-l-4 text-center flex flex-col items-center justify-center gap-0.5"
-          style={{ borderColor: STUDENT }}
-        >
-          {poruka.trim() ? (
+        {poruka.trim() && (
+          <div
+            className="shrink-0 bg-white rounded-xl px-5 py-2.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)] border-l-4 text-center"
+            style={{ borderColor: STUDENT }}
+          >
             <p
               className="font-display font-bold leading-snug break-words"
               style={{ fontSize: "clamp(1.1rem, 3vh, 1.9rem)", color: SNS }}
             >
               {poruka}
             </p>
-          ) : (
-            <>
-              <div
-                className="font-mono font-bold tabular-nums leading-none"
-                style={{ color: SNS, fontSize: "clamp(1.3rem, 3.6vh, 2.2rem)" }}
-              >
-                {now.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
-              </div>
-              <div className="font-display text-sm text-[#7a8294]">Чекамо прве резултате са бирачких места</div>
-            </>
-          )}
-        </div>
+          </div>
+        )}
 
         <div className="flex-1 min-h-0 flex gap-5 flex-wrap items-stretch">
           <div
