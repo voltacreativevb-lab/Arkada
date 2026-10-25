@@ -1,6 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { transliterate } from "@maestrovolta/sablon-core";
-import { getIzboriMesta, getIzboriStanje, resetIzboriMesto, setIzboriMesto, setIzboriStanje, type BirackoMesto } from "../../lib/api";
+import {
+  getIzboriMesta,
+  getIzboriStanje,
+  resetIzboriMesto,
+  resetSveIzbori,
+  runIzboriTest,
+  setIzboriMesto,
+  setIzboriStanje,
+  type BirackoMesto,
+} from "../../lib/api";
 
 const TOTAL = 37;
 
@@ -36,6 +45,27 @@ export default function IzboriUnos() {
   const [publishError, setPublishError] = useState(false);
   const [pobeda, setPobeda] = useState(false);
   const [pobedaSaving, setPobedaSaving] = useState(false);
+  const [testRunning, setTestRunning] = useState(false);
+  const [resetting, setResetting] = useState(false);
+
+  function applyMesta(mesta: BirackoMesto[]) {
+    setRows((prev) => {
+      const next = { ...prev };
+      mesta.forEach((m) => {
+        next[m.broj] = {
+          broj: m.broj,
+          upisani: m.unet ? String(m.upisani) : "",
+          glasalo: m.unet ? String(m.glasalo) : "",
+          sns: m.unet ? String(m.sns) : "",
+          student: m.unet ? String(m.student) : "",
+          nevazeci: m.unet ? String(m.nevazeci) : "",
+          unet: m.unet,
+          updated_at: m.unet ? m.updated_at : null,
+        };
+      });
+      return next;
+    });
+  }
 
   useEffect(() => {
     let active = true;
@@ -58,23 +88,7 @@ export default function IzboriUnos() {
     let active = true;
     getIzboriMesta()
       .then(({ mesta }) => {
-        if (!active) return;
-        setRows((prev) => {
-          const next = { ...prev };
-          mesta.forEach((m: BirackoMesto) => {
-            next[m.broj] = {
-              broj: m.broj,
-              upisani: m.unet ? String(m.upisani) : "",
-              glasalo: m.unet ? String(m.glasalo) : "",
-              sns: m.unet ? String(m.sns) : "",
-              student: m.unet ? String(m.student) : "",
-              nevazeci: m.unet ? String(m.nevazeci) : "",
-              unet: m.unet,
-              updated_at: m.unet ? m.updated_at : null,
-            };
-          });
-          return next;
-        });
+        if (active) applyMesta(mesta);
       })
       .catch(() => {
         // prazna lista ostaje — operater i dalje može da unosi
@@ -166,6 +180,51 @@ export default function IzboriUnos() {
       // ostaje na staroj vrednosti — operater može ponovo da pokuša
     } finally {
       setPobedaSaving(false);
+    }
+  }
+
+  async function pokreniTest() {
+    setTestRunning(true);
+    try {
+      await runIzboriTest();
+      const [{ mesta }, { stanje }] = await Promise.all([getIzboriMesta(), getIzboriStanje()]);
+      applyMesta(mesta);
+      setPoruka(stanje.poruka);
+      setObjavljenaPoruka(stanje.poruka);
+      setPobeda(stanje.pobeda_prikaz);
+    } catch {
+      setTestRunning(false);
+      return;
+    }
+    setTimeout(async () => {
+      try {
+        const { stanje } = await setIzboriStanje({ pobeda_prikaz: false });
+        setPobeda(stanje.pobeda_prikaz);
+      } catch {
+        // ostaje uključeno — operater može ručno da isključi prekidačem
+      } finally {
+        setTestRunning(false);
+      }
+    }, 10000);
+  }
+
+  async function resetSve() {
+    if (!confirm("Resetovati SVIH 37 biračkih mesta i objavljenu poruku na nulu? Ovo se ne može poništiti.")) return;
+    setResetting(true);
+    try {
+      await resetSveIzbori();
+      setRows(() => {
+        const next: Record<number, RowDraft> = {};
+        for (let i = 1; i <= TOTAL; i++) next[i] = emptyDraft(i);
+        return next;
+      });
+      setPoruka("");
+      setObjavljenaPoruka("");
+      setPobeda(false);
+    } catch {
+      // ostaje kako je bilo — operater može ponovo da pokuša
+    } finally {
+      setResetting(false);
     }
   }
 
@@ -275,6 +334,26 @@ export default function IzboriUnos() {
               />
             </button>
           </div>
+        </div>
+
+        <div className="bg-white border border-line rounded-2xl p-4 flex items-center gap-3 flex-wrap">
+          <span className="text-xs text-muted flex-1 min-w-[160px]">
+            Test popuni sva mesta demo brojevima (SNS pobeđuje) i pokaže animaciju 10 sekundi. Reset vraća sve na nulu.
+          </span>
+          <button
+            onClick={pokreniTest}
+            disabled={testRunning || resetting}
+            className="border border-accent text-accent rounded-lg px-4 py-2 text-sm font-bold disabled:opacity-50"
+          >
+            {testRunning ? "Test u toku…" : "Test"}
+          </button>
+          <button
+            onClick={resetSve}
+            disabled={testRunning || resetting}
+            className="border border-[#D03B3B] text-[#D03B3B] rounded-lg px-4 py-2 text-sm font-bold disabled:opacity-50"
+          >
+            {resetting ? "Resetovanje…" : "Reset na nulu"}
+          </button>
         </div>
 
         {visibleRows.map((r) => {

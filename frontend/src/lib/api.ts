@@ -402,6 +402,14 @@ export async function resetIzboriMesto(broj: number) {
   return handle<{ mesto: BirackoMesto }>(await fetch(`${API_URL}/izbori/mesta/${broj}`, { method: "DELETE" }));
 }
 
+export async function runIzboriTest() {
+  return handle<{ ok: true }>(await fetch(`${API_URL}/izbori/test`, { method: "POST" }));
+}
+
+export async function resetSveIzbori() {
+  return handle<{ ok: true }>(await fetch(`${API_URL}/izbori/reset-sve`, { method: "POST" }));
+}
+
 export interface IzboriStanje {
   poruka: string;
   pobeda_prikaz: boolean;

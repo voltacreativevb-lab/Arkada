@@ -66,6 +66,60 @@ izboriRouter.delete("/izbori/mesta/:broj", async (req, res) => {
   res.json({ mesto: data });
 });
 
+function randomInt(min: number, max: number): number {
+  return Math.floor(min + Math.random() * (max - min + 1));
+}
+
+/**
+ * POST /izbori/test — popuni sva 37 mesta plauzibilnim demo brojevima i
+ * uključi "pobeda" prikaz, da operater može da uvežba/proveri TV prikaz
+ * pre prave večeri. Frontend sam gasi pobeda_prikaz nakon 10s.
+ */
+izboriRouter.post("/izbori/test", async (_req, res) => {
+  const now = new Date().toISOString();
+  const rows = Array.from({ length: 37 }, (_, i) => {
+    const broj = i + 1;
+    const upisani = randomInt(500, 1200);
+    const glasalo = Math.round(upisani * (0.35 + Math.random() * 0.3));
+    const nevazeci = Math.round(glasalo * (0.01 + Math.random() * 0.05));
+    const valid = glasalo - nevazeci;
+    const sns = Math.round(valid * (0.73 + Math.random() * 0.04)); // SNS pobeđuje sa ~75%
+    const student = valid - sns;
+    return { broj, upisani, glasalo, sns, student, nevazeci, unet: true, updated_at: now };
+  });
+
+  const { error: mestaError } = await supabaseAdmin.from("biracka_mesta").upsert(rows);
+  if (mestaError) return res.status(500).json({ error: mestaError.message });
+
+  const { error: stanjeError } = await supabaseAdmin
+    .from("izbori_stanje")
+    .update({ poruka: "Ово је тест — демо подаци.", pobeda_prikaz: true, updated_at: now })
+    .eq("id", 1);
+  if (stanjeError) return res.status(500).json({ error: stanjeError.message });
+
+  res.json({ ok: true });
+});
+
+/** POST /izbori/reset-sve — vrati svih 37 mesta i objavljeno stanje na početne (nula/prazno) vrednosti. */
+izboriRouter.post("/izbori/reset-sve", async (_req, res) => {
+  const now = new Date().toISOString();
+
+  const { error: mestaError } = await supabaseAdmin
+    .from("biracka_mesta")
+    .update({ upisani: 0, glasalo: 0, sns: 0, student: 0, nevazeci: 0, unet: false, updated_at: now })
+    .gte("broj", 1)
+    .lte("broj", 37);
+  if (mestaError) return res.status(500).json({ error: mestaError.message });
+
+  const { error: stanjeError } = await supabaseAdmin
+    .from("izbori_stanje")
+    .update({ poruka: "", pobeda_prikaz: false, updated_at: now })
+    .eq("id", 1);
+  if (stanjeError) return res.status(500).json({ error: stanjeError.message });
+
+  res.json({ ok: true });
+});
+
 /** GET /izbori/stanje — objavljena poruka i da li je uključena "pobeda" animacija, javno. */
 izboriRouter.get("/izbori/stanje", async (_req, res) => {
   const { data, error } = await supabaseAdmin
