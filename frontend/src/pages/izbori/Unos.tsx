@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { transliterate } from "@maestrovolta/sablon-core";
 import { getIzboriMesta, setIzboriMesto, type BirackoMesto } from "../../lib/api";
 
 const TOTAL = 37;
@@ -29,6 +30,7 @@ export default function IzboriUnos() {
   const [filter, setFilter] = useState<Filter>("sve");
   const [saving, setSaving] = useState<number | null>(null);
   const [saveError, setSaveError] = useState<number | null>(null);
+  const [poruka, setPoruka] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -144,6 +146,31 @@ export default function IzboriUnos() {
       </div>
 
       <main className="max-w-[720px] mx-auto px-4 py-4.5 flex flex-col gap-3.5 pb-16">
+        <div className="bg-white border border-line rounded-2xl p-4 flex flex-col md:flex-row gap-4">
+          <div className="flex-1 flex flex-col gap-1.5 min-w-0">
+            <label htmlFor="poruka" className="text-xs text-muted">
+              Tekst / poruka
+            </label>
+            <textarea
+              id="poruka"
+              value={poruka}
+              onChange={(e) => setPoruka(e.target.value)}
+              rows={5}
+              placeholder="Unesite tekst — automatski se prikazuje ćirilicom desno..."
+              className="border border-line bg-[#F7F8FA] rounded-lg px-3 py-2.5 text-[15px] w-full resize-none"
+            />
+          </div>
+          <div className="flex-1 min-w-0 flex items-center justify-center text-center p-3 min-h-[130px] bg-[#F7F8FA] rounded-xl">
+            {poruka.trim() ? (
+              <p className="font-display font-bold text-3xl md:text-4xl leading-snug break-words">
+                {transliterate(poruka, "cyr")}
+              </p>
+            ) : (
+              <p className="text-muted text-sm">Текст ће се овде приказати ћирилицом.</p>
+            )}
+          </div>
+        </div>
+
         {visibleRows.map((r) => {
           const glasaloNum = Number(r.glasalo) || 0;
           const sumNum = (Number(r.sns) || 0) + (Number(r.student) || 0) + (Number(r.nevazeci) || 0);
