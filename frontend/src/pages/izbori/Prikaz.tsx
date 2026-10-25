@@ -149,10 +149,6 @@ export default function IzboriPrikaz() {
             style={{ background: `linear-gradient(160deg, rgba(13,36,86,.74), rgba(22,58,140,.7))`, backdropFilter: "blur(1px)" }}
           />
 
-          <div className="absolute top-5 right-6 font-mono font-bold text-white/90 tabular-nums" style={{ fontSize: "clamp(1.1rem, 2.6vh, 1.6rem)" }}>
-            {now.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
-          </div>
-
           {FLAG_POSITIONS.map((f, i) => (
             <div key={i} className="absolute" style={{ top: f.top, left: f.left }}>
               <div style={{ width: 3, height: "clamp(44px, 8vh, 72px)", background: "#e3c76b", borderRadius: 2 }} />
@@ -173,6 +169,12 @@ export default function IzboriPrikaz() {
           ))}
 
           <div className="relative flex flex-col items-center gap-3 px-6">
+            <div
+              className="font-mono font-bold text-white tabular-nums leading-none"
+              style={{ fontSize: "clamp(2.2rem, 6.5vh, 4.2rem)" }}
+            >
+              {now.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+            </div>
             <div className="relative flex items-center justify-center" style={{ width: "min(24vh, 210px)", height: "min(24vh, 210px)" }}>
               <div
                 className="ring-spin absolute inset-0 rounded-full"
@@ -195,7 +197,7 @@ export default function IzboriPrikaz() {
             <p className="font-display font-bold text-white/90 text-center" style={{ fontSize: "clamp(1.1rem, 3vw, 2rem)" }}>
               Врњачка Бања
             </p>
-            <p className="font-display font-semibold text-white/80 text-center" style={{ fontSize: "clamp(0.9rem, 2.2vw, 1.3rem)" }}>
+            <p className="font-display font-bold text-white/90 text-center" style={{ fontSize: "clamp(1.4rem, 3.6vw, 2.4rem)" }}>
               Чекамо прве резултате са бирачких места
             </p>
           </div>
