@@ -112,7 +112,7 @@ export default function IzboriPrikaz() {
   const nevazeciPctAnim = useCountUp(nevazeciPct, 900);
 
   return (
-    <div className="min-h-screen bg-[#f4f6fa] text-[#15192b] font-sans flex flex-col">
+    <div className="h-screen bg-[#f4f6fa] text-[#15192b] font-sans flex flex-col overflow-hidden">
       <style>{`
         .arc { transition: stroke-dasharray 900ms cubic-bezier(.22,1,.36,1); }
         @keyframes pobedaStripes { from { background-position: 0 0; } to { background-position: 160px 0; } }
@@ -154,58 +154,58 @@ export default function IzboriPrikaz() {
         </div>
       )}
 
-      <div className="h-[7px] w-full flex shrink-0" aria-hidden="true">
+      <div className="h-1.5 w-full flex shrink-0" aria-hidden="true">
         <div className="flex-1" style={{ background: SNS }} />
         <div className="flex-1 bg-white" />
         <div className="flex-1" style={{ background: STUDENT }} />
       </div>
 
       <header className="shrink-0 text-white" style={{ background: `linear-gradient(135deg, ${SNS}, #0d2456)` }}>
-        <div className="flex justify-between items-end gap-4 flex-wrap px-5 md:px-10 py-5">
+        <div className="flex justify-between items-end gap-4 flex-wrap px-5 md:px-8 py-2.5">
           <div>
-            <div className="font-display font-semibold text-xs tracking-[0.18em] uppercase text-white/70">
+            <div className="font-display font-semibold text-[10px] tracking-[0.18em] uppercase text-white/70">
               Резултати избора · 37 бирачких места
             </div>
-            <h1 className="font-display font-extrabold text-2xl md:text-[38px] mt-1 leading-tight">
+            <h1 className="font-display font-extrabold text-xl md:text-[28px] mt-0.5 leading-tight">
               Изборни штаб СНС Врњачка Бања
             </h1>
           </div>
-          <div className="flex flex-col items-end gap-1.5">
+          <div className="flex flex-col items-end gap-1">
             <div
-              className="flex items-center gap-2 font-display font-bold text-sm tracking-[0.14em] uppercase px-3 py-1 rounded-full"
+              className="flex items-center gap-2 font-display font-bold text-xs tracking-[0.14em] uppercase px-2.5 py-1 rounded-full"
               style={{ background: STUDENT }}
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
               Уживо
             </div>
-            <div className="font-mono text-sm text-white/70 tabular-nums">
+            <div className="font-mono text-xs text-white/70 tabular-nums">
               Ажурирано {now.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
             </div>
           </div>
         </div>
       </header>
 
-      <main className="flex flex-col gap-6 flex-1 px-5 md:px-10 py-6">
+      <main className="flex-1 min-h-0 flex flex-col gap-2.5 px-5 md:px-8 py-2.5 overflow-y-auto">
         {poruka.trim() && (
           <div
-            className="bg-white rounded-2xl px-6 py-5 shadow-[0_4px_24px_rgba(22,58,140,0.08)] border-l-4 text-center"
+            className="shrink-0 bg-white rounded-xl px-5 py-2.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)] border-l-4 text-center"
             style={{ borderColor: STUDENT }}
           >
             <p
               className="font-display font-bold leading-snug break-words"
-              style={{ fontSize: "clamp(1.5rem, 4vw, 2.75rem)", color: SNS }}
+              style={{ fontSize: "clamp(1.1rem, 3vh, 1.9rem)", color: SNS }}
             >
               {poruka}
             </p>
           </div>
         )}
 
-        <div className="flex gap-7 flex-wrap items-stretch">
+        <div className="flex-1 min-h-0 flex gap-5 flex-wrap items-stretch">
           <div
-            className="flex-1 min-w-[380px] bg-white rounded-[20px] p-7 flex flex-col items-center gap-4.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)] border-t-4"
+            className="flex-1 min-w-[320px] bg-white rounded-2xl p-4 flex flex-col items-center justify-center gap-3 shadow-[0_4px_24px_rgba(22,58,140,0.08)] border-t-4 overflow-hidden"
             style={{ borderColor: SNS }}
           >
-            <div className="relative w-[min(360px,72vw)] aspect-square">
+            <div className="relative shrink-0" style={{ width: "min(30vh, 280px)", height: "min(30vh, 280px)" }}>
               <svg viewBox="0 0 200 200" className="w-full h-full">
                 <circle cx="100" cy="100" r={R} fill="none" stroke="#e7eaf0" strokeWidth="28" />
                 <circle
@@ -237,103 +237,105 @@ export default function IzboriPrikaz() {
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
                 <div
                   className="font-mono font-bold tabular-nums leading-none"
-                  style={{ color: SNS, fontSize: "clamp(2.5rem, 7vw, 4.5rem)" }}
+                  style={{ color: SNS, fontSize: "clamp(1.6rem, 5vh, 2.6rem)" }}
                 >
                   {Math.round(validAnim).toLocaleString("sr-RS")}
                 </div>
-                <div className="font-display text-sm tracking-[0.14em] uppercase text-[#7a8294] mt-2">
+                <div className="font-display text-[11px] tracking-[0.14em] uppercase text-[#7a8294] mt-1">
                   пренетих гласова
                 </div>
               </div>
             </div>
 
-            <div className="w-full flex flex-col gap-2.5">
-              <div className="flex items-center gap-3 bg-[#eef1f9] rounded-xl px-4 py-3.5">
-                <span className="w-5 h-5 rounded shrink-0" style={{ background: SNS }} />
-                <span className="font-bold text-lg flex-1 min-w-0">СНС</span>
+            <div className="w-full flex flex-col gap-2 shrink-0">
+              <div className="flex items-center gap-3 bg-[#eef1f9] rounded-xl px-3.5 py-2">
+                <span className="w-4 h-4 rounded shrink-0" style={{ background: SNS }} />
+                <span className="font-bold text-sm flex-1 min-w-0">СНС</span>
                 <span
                   className="font-mono font-bold tabular-nums"
-                  style={{ color: SNS, fontSize: "clamp(1.75rem, 4vw, 3rem)" }}
+                  style={{ color: SNS, fontSize: "clamp(1.2rem, 3.4vh, 1.9rem)" }}
                 >
                   {snsPctAnim.toFixed(1)}%
                 </span>
-                <span className="font-mono text-sm text-[#7a8294] tabular-nums min-w-[80px] text-right">
+                <span className="font-mono text-xs text-[#7a8294] tabular-nums min-w-[70px] text-right">
                   {Math.round(snsVotesAnim).toLocaleString("sr-RS")}
                 </span>
               </div>
-              <div className="flex items-center gap-3 bg-[#fbebec] rounded-xl px-4 py-3.5">
-                <span className="w-5 h-5 rounded shrink-0" style={{ background: STUDENT }} />
-                <span className="font-bold text-lg flex-1 min-w-0">Студентска листа</span>
+              <div className="flex items-center gap-3 bg-[#fbebec] rounded-xl px-3.5 py-2">
+                <span className="w-4 h-4 rounded shrink-0" style={{ background: STUDENT }} />
+                <span className="font-bold text-sm flex-1 min-w-0">Студентска листа</span>
                 <span
                   className="font-mono font-bold tabular-nums"
-                  style={{ color: STUDENT, fontSize: "clamp(1.75rem, 4vw, 3rem)" }}
+                  style={{ color: STUDENT, fontSize: "clamp(1.2rem, 3.4vh, 1.9rem)" }}
                 >
                   {studentPctAnim.toFixed(1)}%
                 </span>
-                <span className="font-mono text-sm text-[#7a8294] tabular-nums min-w-[80px] text-right">
+                <span className="font-mono text-xs text-[#7a8294] tabular-nums min-w-[70px] text-right">
                   {Math.round(studentVotesAnim).toLocaleString("sr-RS")}
                 </span>
               </div>
             </div>
-            <p className="text-sm text-[#7a8294] text-center max-w-[340px]">
-              Проценти су рачунати у односу на важеће гласове (СНС + Студентска листа), без неважећих.
-            </p>
           </div>
 
-          <div className="flex-1 min-w-[380px] grid grid-cols-2 gap-3.5 content-start">
+          <div className="flex-1 min-w-[320px] grid grid-cols-2 gap-2.5 content-stretch">
             <div
-              className="col-span-2 bg-white rounded-2xl px-6 py-5 flex flex-col gap-1.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)] border-l-4"
+              className="col-span-2 bg-white rounded-2xl px-5 py-3 flex flex-col justify-center gap-0.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)] border-l-4 overflow-hidden"
               style={{ borderColor: STUDENT }}
             >
-              <div className="font-display text-sm tracking-[0.1em] uppercase text-[#7a8294]">
+              <div className="font-display text-xs tracking-[0.1em] uppercase text-[#7a8294]">
                 Обрађено бирачких места
               </div>
               <div
-                className="font-mono font-bold tabular-nums"
-                style={{ color: SNS, fontSize: "clamp(3rem, 8vw, 5.5rem)" }}
+                className="font-mono font-bold tabular-nums leading-none"
+                style={{ color: SNS, fontSize: "clamp(1.8rem, 6.5vh, 3.4rem)" }}
               >
                 {stats.done} / {TOTAL}
               </div>
-              <div className="text-base text-[#7a8294]">
+              <div className="text-xs text-[#7a8294]">
                 {Math.round((stats.done / TOTAL) * 100)}% бирачких места пребројано
               </div>
             </div>
-            <div className="bg-white rounded-2xl px-6 py-5 flex flex-col gap-1.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)]">
-              <div className="font-display text-sm tracking-[0.1em] uppercase text-[#7a8294]">Уписаних бирача</div>
-              <div className="font-mono font-bold tabular-nums" style={{ fontSize: "clamp(1.8rem, 4.5vw, 3rem)" }}>
+            <div className="bg-white rounded-2xl px-5 py-3 flex flex-col justify-center gap-0.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)] overflow-hidden">
+              <div className="font-display text-xs tracking-[0.1em] uppercase text-[#7a8294]">Уписаних бирача</div>
+              <div className="font-mono font-bold tabular-nums leading-none" style={{ fontSize: "clamp(1.1rem, 3.8vh, 2rem)" }}>
                 {Math.round(upisaniAnim).toLocaleString("sr-RS")}
               </div>
             </div>
-            <div className="bg-white rounded-2xl px-6 py-5 flex flex-col gap-1.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)]">
-              <div className="font-display text-sm tracking-[0.1em] uppercase text-[#7a8294]">Изашло да гласа</div>
-              <div className="font-mono font-bold tabular-nums" style={{ fontSize: "clamp(1.8rem, 4.5vw, 3rem)" }}>
+            <div className="bg-white rounded-2xl px-5 py-3 flex flex-col justify-center gap-0.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)] overflow-hidden">
+              <div className="font-display text-xs tracking-[0.1em] uppercase text-[#7a8294]">Изашло да гласа</div>
+              <div className="font-mono font-bold tabular-nums leading-none" style={{ fontSize: "clamp(1.1rem, 3.8vh, 2rem)" }}>
                 {Math.round(glasaloAnim).toLocaleString("sr-RS")}
               </div>
-              <div className="text-base text-[#7a8294]">{izlaznostAnim.toFixed(1)}% излазност</div>
+              <div className="text-xs text-[#7a8294]">{izlaznostAnim.toFixed(1)}% излазност</div>
             </div>
-            <div className="col-span-2 bg-white rounded-2xl px-6 py-5 flex flex-col gap-1.5 shadow-[0_4px_24px_rgba(22,58,140,0.08)]">
-              <div className="font-display text-sm tracking-[0.1em] uppercase text-[#7a8294]">Неважећи гласови</div>
-              <div className="font-mono font-bold tabular-nums" style={{ fontSize: "clamp(1.8rem, 4.5vw, 3rem)" }}>
+            <div className="col-span-2 bg-white rounded-2xl px-5 py-3 flex items-center justify-between gap-3 shadow-[0_4px_24px_rgba(22,58,140,0.08)] overflow-hidden">
+              <div>
+                <div className="font-display text-xs tracking-[0.1em] uppercase text-[#7a8294]">Неважећи гласови</div>
+                <div className="text-xs text-[#7a8294]">{nevazeciPctAnim.toFixed(1)}% од гласалих</div>
+              </div>
+              <div className="font-mono font-bold tabular-nums leading-none" style={{ fontSize: "clamp(1.1rem, 3.8vh, 2rem)" }}>
                 {Math.round(nevazeciAnim).toLocaleString("sr-RS")}
               </div>
-              <div className="text-base text-[#7a8294]">{nevazeciPctAnim.toFixed(1)}% од гласалих</div>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div className="shrink-0 flex flex-col gap-1">
           <div className="flex justify-between items-baseline gap-2.5 flex-wrap">
-            <span className="font-display text-sm tracking-[0.1em] uppercase text-[#7a8294]">Бирачка места</span>
-            <span className="font-display text-sm tracking-[0.1em] uppercase text-[#7a8294]">
+            <span className="font-display text-xs tracking-[0.1em] uppercase text-[#7a8294]">Бирачка места</span>
+            <span className="font-display text-xs tracking-[0.1em] uppercase text-[#7a8294]">
               {stats.done} / {TOTAL} пребројано
             </span>
           </div>
-          <div className="grid gap-1.5" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(42px, 1fr))" }}>
+          <div
+            className="grid gap-[3px]"
+            style={{ gridTemplateColumns: `repeat(${TOTAL}, minmax(0, 1fr))`, height: "clamp(40px, 7vh, 64px)" }}
+          >
             {stats.cells.map((c) => (
               <div
                 key={c.broj}
                 title={`Бирачко место ${c.broj} — ${c.unet ? "уписано" : "чека податке"}`}
-                className="relative aspect-square rounded-lg flex items-center justify-center font-mono text-[13px] font-semibold border"
+                className="relative h-full rounded-md flex items-center justify-center font-mono text-[11px] font-semibold border"
                 style={
                   c.unet
                     ? { background: SNS, borderColor: SNS, color: "#fff" }
@@ -343,11 +345,11 @@ export default function IzboriPrikaz() {
                 {c.broj}
                 {c.unet && (
                   <span
-                    className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full flex items-center justify-center"
+                    className="absolute -top-1 -right-1 w-3 h-3 rounded-full flex items-center justify-center"
                     style={{ background: STUDENT }}
                   >
-                    <svg viewBox="0 0 12 12" className="w-2.5 h-2.5">
-                      <path d="M2.5 6.2L5 8.7L9.5 3.5" fill="none" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                    <svg viewBox="0 0 12 12" className="w-2 h-2">
+                      <path d="M2.5 6.2L5 8.7L9.5 3.5" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </span>
                 )}
